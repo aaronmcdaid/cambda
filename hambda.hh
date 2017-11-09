@@ -65,6 +65,10 @@ namespace hambda {
     toString( utils::char_pack<c...> s)
     { return s.c_str0(); }
 
+    std::string
+    toString( types_t<> )
+    { return ""; }
+
     template<typename S>
     std::string
     toString( types_t<S> )
