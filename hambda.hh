@@ -1,7 +1,9 @@
 #include "../module-bits.and.pieces/utils.hh"
 namespace hambda {
     bool constexpr is_whitespace    (char c) { return c==' ' || c=='\t' || c=='\n'; }
-    bool constexpr is_grouper       (char c) { return c=='(' || c==')' || c=='[' || c == ']' || c=='{' || c=='}'; }
+    bool constexpr is_opener        (char c) { return c=='(' || c=='[' || c=='{'; }
+    bool constexpr is_closer        (char c) { return c==')' || c==']' || c=='}'; }
+    bool constexpr is_grouper       (char c) { return is_opener(c) || is_closer(c); }
 
     template< typename C >
     auto constexpr
@@ -47,7 +49,7 @@ namespace hambda {
 
     template<char c, typename T>
     struct grouped_t {
-        static_assert(is_grouper(c) ,"");
+        static_assert(is_opener(c) ,"");
     };
 
 
@@ -121,16 +123,12 @@ namespace hambda {
         };
     };
 
-    template<typename E, size_t O>
-    auto constexpr
-    ast_from_offset(E e, std::integral_constant<size_t, O> ) {
-        constexpr auto tk = find_next_token(e, O);
-        constexpr char selecting_char = e.at(tk.first); // one char, which may be '\0', is enough to decide what to do next
-        return parser<E, tk.first, tk.second, selecting_char>{};
-    }
-
     template<typename E>
     auto constexpr
     ast(E e)
-    { return ast_from_offset(e, std::integral_constant<size_t, 0>{}); }
+    {
+        constexpr auto tk = find_next_token(e, 0);
+        constexpr char selecting_char = e.at(tk.first); // one char, which may be '\0', is enough to decide what to do next
+        return parser<E, tk.first, tk.second, selecting_char>{};
+    }
 }
