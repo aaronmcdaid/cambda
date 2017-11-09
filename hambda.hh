@@ -83,9 +83,9 @@ namespace hambda {
     std::string
     toString(grouped_t<c,T> grp)
     {
-        return      std::string{c , '\0'}
+        return      std::string{'<', c ,'>' , '\0'}
                 +   toString(T{})
-                +   std::string{grp.my_closer , '\0'}
+                +   std::string{'<', grp.my_closer , '>', '\0'}
                 ;
     }
 
@@ -135,10 +135,49 @@ namespace hambda {
     };
 
 
+    // parse_many_things. Returns two 'types_t', everything up to the next grouper, and the 'rest'
+    template<typename First, typename ... T>
+    struct parse_many_things
+    {
+        using future =  parse_many_things<T...>;
+        using me    = typename future :: me :: template prepend<First>;
+        using rest  = typename future :: rest;
+    };
+    template<typename Only>
+    struct parse_many_things<Only>
+    {
+        using me    = types_t<Only>;
+        using rest  = types_t<>;
+    };
+
+    template<typename ... T>
+    struct parse_many_things<utils::char_pack<'('>, T...>
+    {
+        using future = parse_many_things<T...>;
+        using me = types_t<grouped_t<'(', typename future::me>>;
+        using rest = typename future:: rest;
+    };
+    template<typename ... T>
+    struct parse_many_things<utils::char_pack<')'>, T...>
+    {
+        using me    = types_t<>;
+        using rest  = types_t<T...>;
+    };
+
+
+    template<typename ...T>
+    constexpr static auto
+    parser(types_t<T...>)
+    {
+        return parse_many_things<T...> {};
+    }
+
     template<typename E>
     auto constexpr
     ast(E )
     {
-        return typename parse_flat_list_of_terms<E, 0>::all_the_terms {};
+        using all_the_terms_t = typename parse_flat_list_of_terms<E, 0>::all_the_terms;
+        return parser( all_the_terms_t{} );
+        //return all_the_terms_t {};
     }
 }
