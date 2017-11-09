@@ -40,7 +40,10 @@ namespace hambda {
     template<size_t c>  using c_sizet   = std::integral_constant<size_t, c>;
 
     template<typename ... T>
-    struct types_t {};
+    struct types_t {
+        template<typename Prepend>
+        using prepend = types_t<Prepend, T...>;
+    };
 
     template<typename Parsed, size_t Unprocessed>
     struct parse_result_t{
@@ -54,9 +57,28 @@ namespace hambda {
      */
 
     template<typename E, size_t F, size_t S, char C>
+    struct parser;
+
+    template<typename E, size_t F, size_t S, char C>
     struct parser {
-        constexpr static auto parsed() { return types_t< c_char<C> >{}; };
-        constexpr static size_t remain = S;
+        static_assert(C != '\0' ,"");
+        static_assert(C != ')' ,"");
+
+        static E e;
+
+        constexpr static auto
+        tk = find_next_token(e, S);
+
+        using future = parser<E, tk.first, tk.second, e.at(tk.first) >;
+
+        static_assert(future::remain > S ,"");
+        constexpr static size_t remain = future::remain;
+
+        using future_parsed = decltype(future::parsed());
+
+        constexpr static auto parsed() {
+            return types_t< typename future_parsed:: template prepend<c_char<C>> >{};
+        };
     };
 
     template<typename E, size_t F, size_t S>
@@ -66,7 +88,7 @@ namespace hambda {
     };
 
     template<typename E, size_t F, size_t S>
-    struct parser<E,F,S, '('> {
+    struct parser<E,F,S, ')'> {
         constexpr static auto parsed() { return types_t< >{}; };
         constexpr static size_t remain = S;
     };
