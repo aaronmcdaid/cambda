@@ -50,6 +50,11 @@ namespace hambda {
     template<char c, typename T>
     struct grouped_t {
         static_assert(is_opener(c) ,"");
+        constexpr static char my_closer =
+            c=='(' ? ')' :
+            c=='{' ? '}' :
+            c=='[' ? ']' : '?';
+        static_assert(my_closer != '?' ,"");
     };
 
 
