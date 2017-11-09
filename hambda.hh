@@ -94,102 +94,10 @@ namespace hambda {
      * what was parsed and what was left over
      */
 
-    template<typename E, size_t F, size_t S, char C>
-    struct parser;
-
-    template<typename E, size_t F, size_t S, char C>
-    struct parser {
-        static_assert(C != '\0' ,"");
-        static_assert(C != ')' ,"");
-
-
-        template<size_t ... I>
-        static auto
-        full_token(std::index_sequence<I...>)
-        -> utils::char_pack<E::at(F+I)...>
-        { return {}; }
-
-        using full_token_t = decltype(full_token(std::make_index_sequence<S-F>{}));
-
-        static E e;
-
-        constexpr static auto
-        tk = find_next_token(e, S);
-
-        static_assert(tk.second >= tk.first, "");
-
-        using future = parser<E, tk.first, tk.second, e.at(tk.first) >;
-
-        static_assert(future::remain >= S ,"");
-        constexpr static size_t remain = future::remain;
-
-        using future_parsed = decltype(future::parsed());
-
-        constexpr static auto parsed() {
-            return typename future_parsed:: template prepend<
-                full_token_t
-                > {};
-        };
-    };
-
-    template<typename E, size_t F, size_t S>
-    struct parser<E,F,S, '\0'> {
-        constexpr static auto parsed() { return types_t< >{}; };
-        constexpr static size_t remain = S;
-    };
-
-    template<typename E, size_t F, size_t S>
-    struct parser<E,F,S, ')'> {
-        static_assert(E::at(F) == ')' ,"");
-        static_assert(S == F+1   ,"");
-        constexpr static auto parsed() { return types_t< >{}; };
-        constexpr static size_t remain = S;
-    };
-
-    template<typename E, size_t F, size_t S>
-    struct parser<E,F,S, '('> {
-
-        static E e;
-
-        constexpr static auto
-        tk = find_next_token(e, S);
-
-        using mygroup = parser<E, tk.first, tk.second, e.at(tk.first) >;
-
-        static_assert(mygroup::remain > S ,"");
-        //constexpr static size_t remain = mygroup::remain;
-
-        using mygroup_parsed = decltype(mygroup::parsed());
-
-        // and now to continue
-        //
-        constexpr static auto
-        tk2 = find_next_token(e, mygroup::remain);
-
-        using mygroup2 = parser<E, tk2.first, tk2.second, e.at(tk2.first) >;
-
-        static_assert(mygroup2::remain > mygroup::remain ,"");
-        constexpr static size_t remain = mygroup2::remain;
-
-        using mygroup2_parsed = decltype(mygroup2::parsed());
-
-        constexpr static auto parsed() {
-            return typename mygroup2_parsed:: template prepend<
-                types_t<grouped_t<'(', mygroup_parsed >>>{};
-        };
-    };
 
     template<typename E>
     auto constexpr
-    ast(E e)
+    ast(E )
     {
-        constexpr auto tk = find_next_token(e, 0);
-        constexpr char selecting_char = e.at(tk.first); // one char, which may be '\0', is enough to decide what to do next
-        using result_t = parser<E, tk.first, tk.second, selecting_char>;
-
-        //constexpr auto confirm_the_end = find_next_token(e, result_t::remain);
-        //static_assert( E::at(confirm_the_end.second) == '\0' ,"");
-
-        return result_t{};
     }
 }
