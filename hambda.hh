@@ -52,46 +52,31 @@ namespace hambda {
      * end, or to a closing grouper) and then return a pair representing
      * what was parsed and what was left over
      */
-    template<typename E, size_t F, size_t S>
-    auto constexpr
-    ast_from_offset ( E e
-                    , std::integral_constant<size_t, F> f
-                    , std::integral_constant<size_t, S> s
-                    , std::integral_constant<char, '\0'> current_char
-                    ) {
-        static_assert(e.at(f) == current_char ,"");
-        (void)e; (void)f; (void)s; (void) current_char;
-        return parse_result_t< types_t<>, 0 >{};
-    }
-    template<typename E, size_t F, size_t S>
-    auto constexpr
-    ast_from_offset (E e
-                    , std::integral_constant<size_t, F> f
-                    , std::integral_constant<size_t, S> s
-                    , std::integral_constant<char, ']'> current_char
-                    ) {
-        static_assert(e.at(f) == current_char ,"");
-        (void)e; (void)f; (void)s; (void) current_char;
-        return parse_result_t< types_t<>, 0 >{};
-    }
+
     template<typename E, size_t F, size_t S, char C>
-    auto constexpr
-    ast_from_offset (E e
-                    , std::integral_constant<size_t, F> f
-                    , std::integral_constant<size_t, S> s
-                    , std::integral_constant<char, C> current_char
-                    ) {
-        static_assert(e.at(f) == current_char ,"");
-        (void)e; (void)f; (void)s; (void) current_char;
-        return parse_result_t< types_t<>, 0 >{};
-    }
+    struct parser {
+        constexpr static auto parsed() { return types_t< c_char<C> >{}; };
+        constexpr static size_t remain = S;
+    };
+
+    template<typename E, size_t F, size_t S>
+    struct parser<E,F,S, '\0'> {
+        constexpr static auto parsed() { return types_t< >{}; };
+        constexpr static size_t remain = S;
+    };
+
+    template<typename E, size_t F, size_t S>
+    struct parser<E,F,S, '('> {
+        constexpr static auto parsed() { return types_t< >{}; };
+        constexpr static size_t remain = S;
+    };
 
     template<typename E, size_t O>
     auto constexpr
     ast_from_offset(E e, std::integral_constant<size_t, O> ) {
         constexpr auto tk = find_next_token(e, O);
         constexpr char selecting_char = e.at(tk.first); // one char, which may be '\0', is enough to decide what to do next
-        return ast_from_offset(e, c_sizet<tk.first>{}, c_sizet<tk.second>{}, c_char< selecting_char >{});
+        return parser<E, tk.first, tk.second, selecting_char>{};
     }
 
     template<typename E>
