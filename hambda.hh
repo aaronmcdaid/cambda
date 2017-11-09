@@ -98,6 +98,18 @@ namespace hambda {
         static_assert(C != '\0' ,"");
         static_assert(C != ')' ,"");
 
+
+        constexpr static size_t length_of_token = S - F;
+
+        template<size_t ... I>
+        static auto
+        full_token(std::index_sequence<I...>)
+        -> utils::char_pack<E::at(F+I)...>
+        { return {}; }
+
+        using full_token_t = decltype(full_token(std::make_index_sequence<length_of_token>{}));
+
+
         static E e;
 
         constexpr static auto
@@ -113,7 +125,10 @@ namespace hambda {
         using future_parsed = decltype(future::parsed());
 
         constexpr static auto parsed() {
-            return typename future_parsed:: template prepend<c_char<C>> {};
+            return typename future_parsed:: template prepend<
+                //c_char<C>
+                full_token_t
+                > {};
         };
     };
 
@@ -155,6 +170,11 @@ namespace hambda {
     {
         constexpr auto tk = find_next_token(e, 0);
         constexpr char selecting_char = e.at(tk.first); // one char, which may be '\0', is enough to decide what to do next
-        return parser<E, tk.first, tk.second, selecting_char>{};
+        using result_t = parser<E, tk.first, tk.second, selecting_char>;
+
+        //constexpr auto confirm_the_end = find_next_token(e, result_t::remain);
+        //static_assert( E::at(confirm_the_end.second) == '\0' ,"");
+
+        return result_t{};
     }
 }
