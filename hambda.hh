@@ -58,11 +58,32 @@ namespace hambda {
     };
 
 
-    template<typename Parsed, size_t Unprocessed>
-    struct parse_result_t{
-        static constexpr Parsed     parsed() {return{};}
-        static constexpr size_t     remain() {return{};}
-    };
+    // a few toString overloads just to print the output after parsing to help debugging
+
+    template<char ... c>
+    std::string
+    toString( utils::char_pack<c...> s)
+    { return s.c_str0(); }
+
+    template<typename S>
+    std::string
+    toString( types_t<S> )
+    { return toString( S{} ); }
+
+    template<typename R, typename S, typename ...T>
+    std::string
+    toString( types_t<R, S, T...> )
+    { return toString( R{} ) + " " + toString( types_t<S, T...>{} ); }
+
+    template<char c, typename T>
+    std::string
+    toString(grouped_t<c,T> grp)
+    {
+        return      std::string{c , '\0'}
+                +   toString(T{})
+                +   std::string{grp.my_closer , '\0'}
+                ;
+    }
 
     /* Starting from position 'o', parse as much as possible (up to the
      * end, or to a closing grouper) and then return a pair representing
