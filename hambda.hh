@@ -45,6 +45,12 @@ namespace hambda {
         using prepend = types_t<Prepend, T...>;
     };
 
+    template<char c, typename T>
+    struct grouped_t {
+        static_assert(is_grouper(c) ,"");
+    };
+
+
     template<typename Parsed, size_t Unprocessed>
     struct parse_result_t{
         static constexpr Parsed     parsed() {return{};}
@@ -109,7 +115,7 @@ namespace hambda {
         using future_parsed = decltype(future::parsed());
 
         constexpr static auto parsed() {
-            return types_t< types_t<future_parsed> >{};
+            return types_t<grouped_t<'(', future_parsed >>{};
         };
     };
 
