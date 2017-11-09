@@ -75,15 +75,17 @@ namespace hambda {
         constexpr static auto
         tk = find_next_token(e, S);
 
+        static_assert(tk.second >= tk.first, "");
+
         using future = parser<E, tk.first, tk.second, e.at(tk.first) >;
 
-        static_assert(future::remain > S ,"");
+        static_assert(future::remain >= S ,"");
         constexpr static size_t remain = future::remain;
 
         using future_parsed = decltype(future::parsed());
 
         constexpr static auto parsed() {
-            return types_t< typename future_parsed:: template prepend<c_char<C>> >{};
+            return typename future_parsed:: template prepend<c_char<C>> {};
         };
     };
 
