@@ -103,16 +103,13 @@ namespace hambda {
         static_assert(C != ')' ,"");
 
 
-        constexpr static size_t length_of_token = S - F;
-
         template<size_t ... I>
         static auto
         full_token(std::index_sequence<I...>)
         -> utils::char_pack<E::at(F+I)...>
         { return {}; }
 
-        using full_token_t = decltype(full_token(std::make_index_sequence<length_of_token>{}));
-
+        using full_token_t = decltype(full_token(std::make_index_sequence<S-F>{}));
 
         static E e;
 
@@ -130,7 +127,6 @@ namespace hambda {
 
         constexpr static auto parsed() {
             return typename future_parsed:: template prepend<
-                //c_char<C>
                 full_token_t
                 > {};
         };
@@ -144,6 +140,8 @@ namespace hambda {
 
     template<typename E, size_t F, size_t S>
     struct parser<E,F,S, ')'> {
+        static_assert(E::at(F) == ')' ,"");
+        static_assert(S == F+1   ,"");
         constexpr static auto parsed() { return types_t< >{}; };
         constexpr static size_t remain = S;
     };
@@ -156,15 +154,28 @@ namespace hambda {
         constexpr static auto
         tk = find_next_token(e, S);
 
-        using future = parser<E, tk.first, tk.second, e.at(tk.first) >;
+        using mygroup = parser<E, tk.first, tk.second, e.at(tk.first) >;
 
-        static_assert(future::remain > S ,"");
-        constexpr static size_t remain = future::remain;
+        static_assert(mygroup::remain > S ,"");
+        //constexpr static size_t remain = mygroup::remain;
 
-        using future_parsed = decltype(future::parsed());
+        using mygroup_parsed = decltype(mygroup::parsed());
+
+        // and now to continue
+        //
+        constexpr static auto
+        tk2 = find_next_token(e, mygroup::remain);
+
+        using mygroup2 = parser<E, tk2.first, tk2.second, e.at(tk2.first) >;
+
+        static_assert(mygroup2::remain > mygroup::remain ,"");
+        constexpr static size_t remain = mygroup2::remain;
+
+        using mygroup2_parsed = decltype(mygroup2::parsed());
 
         constexpr static auto parsed() {
-            return types_t<grouped_t<'(', future_parsed >>{};
+            return typename mygroup2_parsed:: template prepend<
+                types_t<grouped_t<'(', mygroup_parsed >>>{};
         };
     };
 
