@@ -93,6 +93,26 @@ namespace hambda {
         constexpr static size_t remain = S;
     };
 
+    template<typename E, size_t F, size_t S>
+    struct parser<E,F,S, '('> {
+
+        static E e;
+
+        constexpr static auto
+        tk = find_next_token(e, S);
+
+        using future = parser<E, tk.first, tk.second, e.at(tk.first) >;
+
+        static_assert(future::remain > S ,"");
+        constexpr static size_t remain = future::remain;
+
+        using future_parsed = decltype(future::parsed());
+
+        constexpr static auto parsed() {
+            return types_t< types_t<future_parsed> >{};
+        };
+    };
+
     template<typename E, size_t O>
     auto constexpr
     ast_from_offset(E e, std::integral_constant<size_t, O> ) {
