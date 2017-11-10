@@ -83,9 +83,9 @@ namespace hambda {
     std::string
     toString(grouped_t<c,T> grp)
     {
-        return      std::string{'<', c ,'>' , '\0'}
+        return      std::string{c, c ,c , '\0'}
                 +   toString(T{})
-                +   std::string{'<', grp.my_closer , '>', '\0'}
+                +   std::string{grp.my_closer, grp.my_closer , grp.my_closer, '\0'}
                 ;
     }
 
@@ -136,34 +136,43 @@ namespace hambda {
 
 
     // parse_many_things. Returns two 'types_t', everything up to the next grouper, and the 'rest'
+
+    // most symbols are simply prepended to the rest of the list they're currently in:
     template<typename First, typename ... T>
     struct parse_many_things
     {
         using future =  parse_many_things<T...>;
+
         using me    = typename future :: me :: template prepend<First>;
         using rest  = typename future :: rest;
     };
-    template<typename Only>
-    struct parse_many_things<Only>
-    {
-        using me    = types_t<Only>;
-        using rest  = types_t<>;
-    };
 
-    template<typename ... T>
-    struct parse_many_things<utils::char_pack<'('>, T...>
-    {
-        using future = parse_many_things<T...>;
-        using me = types_t<grouped_t<'(', typename future::me>>;
-        using rest = typename future:: rest;
-    };
+    // but ')' closes the list:
     template<typename ... T>
     struct parse_many_things<utils::char_pack<')'>, T...>
     {
+        using future =  parse_many_things<T...>;
+
         using me    = types_t<>;
         using rest  = types_t<T...>;
     };
 
+    // but '(' closes the list:
+    template<typename ... T>
+    struct parse_many_things<utils::char_pack<'('>, T...>
+    {
+        using future =  parse_many_things<T...>;
+
+        using me    = types_t<grouped_t<'(', types_t< typename future:: me >>>;
+        using rest  = typename future:: rest;
+    };
+
+    template<char ... c>
+    struct parse_many_things<utils::char_pack<c...>>
+    {
+        using me    = types_t< utils::char_pack<c...> >;
+        using rest  = types_t<>;
+    };
 
     template<typename ...T>
     constexpr static auto
