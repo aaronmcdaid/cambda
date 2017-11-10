@@ -231,7 +231,7 @@ namespace hambda {
         , std::enable_if_t<is_closer(c)>
         >
     {
-        using me    = types_t<>;
+        using me    = types_t< utils::char_pack<c> >;
         using rest  = types_t<T...>;
     };
 
@@ -247,7 +247,18 @@ namespace hambda {
         // next_and_future::me is the rest of my group
         // next_and_future::rest is the distant future, which must be parsed here too
 
-        using mygroup    = grouped_t<o, types_t< typename next_and_future::me >>;
+        using mygroup_with_the_closer = typename next_and_future::me;
+
+        // Check that the openers and closers "match". See the static_assert
+        using my_closer = decltype(get_last_type(mygroup_with_the_closer{}));
+
+        static_assert( my_closer::size() == 1 ,""); // it must be one character ...
+        static_assert( is_closer(my_closer::at(0)) ,""); // .. one of    })]
+        static_assert( my_closer::at(0) == opener_to_closer(o) ,"opener and closer should match, i.e. (...) or {...} or (...}");
+
+        using mygroup_without_the_closer = decltype(drop_last_type(mygroup_with_the_closer{}));
+
+        using mygroup    = grouped_t<o, types_t< mygroup_without_the_closer >>;
 
         using future = parse_many_things<typename next_and_future:: rest>;
 
