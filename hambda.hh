@@ -76,12 +76,12 @@ namespace hambda {
     template<typename S, typename T, typename ... U>
     auto
     drop_last_type( types_t<S, T, U...> )
-    {
-        using stage = typename decltype( drop_last_type(std::declval< types_t<T,U...> >()) )
-                            ::template prepend<S>;
-
-        return stage{};
-    }
+    ->
+        // recursively call, i.e. ignoring S:
+        typename decltype( drop_last_type(std::declval< types_t<T,U...> >()) )
+                // , but then prepend S to the result:
+              ::template prepend<S>
+    { return{}; }
 
 
     template<char c, typename T>
