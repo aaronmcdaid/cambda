@@ -60,10 +60,14 @@ namespace hambda {
 
     // a few toString overloads just to print the output after parsing to help debugging
 
+    constexpr int indent_each_time = 4;
     template<char ... c>
     std::string
     toString( utils::char_pack<c...> s, int indent = 0)
-    { return std::string(indent, ' ') + s.c_str0() + "\n"; }
+    {
+        (void)indent;
+        return s.c_str0();
+    }
 
     std::string
     toString( types_t<> , int = 0)
@@ -82,22 +86,20 @@ namespace hambda {
     std::string
     toString( types_t<R, S, T...> , int indent = 0)
     {
-        return toString( R{}, indent) + toString( types_t<S, T...>{}, indent);
+        return toString( R{}, indent)
+            + "\n" + std::string(indent, ' ')
+            + toString( types_t<S, T...>{}, indent);
     }
 
     template<char c, typename T>
     std::string
     toString(grouped_t<c,T> grp, int indent = 0)
     {
-        return      std::string(indent, ' ')
-                +   std::string{c}
-                +   "\n"
-
-                +   toString(T{}, indent+2)
-
-                +   std::string(indent, ' ')
-                +   std::string{grp.my_closer}
-                +   "\n"
+        return
+                    std::string{c}
+                +   std::string(indent_each_time-1, ' ')
+                +   toString(T{}, indent+indent_each_time)
+                +   std::string{grp.my_closer} // the closer appears on the same line as the last item
                 ;
     }
 
