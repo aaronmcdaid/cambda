@@ -78,14 +78,8 @@ namespace hambda {
     drop_last_type( types_t<S, T, U...> )
     {
         using stage1b = decltype( drop_last_type(std::declval< types_t<T,U...> >()) );
-        typedef decltype( drop_last_type(std::declval< types_t<T,U...> >()) ) stage1;
-
         using stage2b = typename stage1b::template prepend<S>;
-        typedef typename stage1b::template prepend<S> stage2;
-
-        static_assert(std::is_same<stage1,stage1b>{}, "");
-        static_assert(std::is_same<stage2,stage2b>{}, "");
-        return stage2{};
+        return stage2b{};
     }
 
 
