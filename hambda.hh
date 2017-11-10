@@ -77,9 +77,10 @@ namespace hambda {
     auto
     drop_last_type( types_t<S, T, U...> )
     {
-        using stage1b = decltype( drop_last_type(std::declval< types_t<T,U...> >()) );
-        using stage2b = typename stage1b::template prepend<S>;
-        return stage2b{};
+        using stage = typename decltype( drop_last_type(std::declval< types_t<T,U...> >()) )
+                            ::template prepend<S>;
+
+        return stage{};
     }
 
 
