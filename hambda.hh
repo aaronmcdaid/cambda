@@ -149,11 +149,24 @@ namespace hambda {
     };
 
 
-    // parse_many_things. Returns two 'types_t', everything up to the next grouper, and the 'rest'
+    /* parse_many_things.
+     * =================
+     * Returns two 'types_t', everything up to the next grouper, and the 'rest'
+     *
+     * Many cases to be handled. There is a template specialization for each
+     */
     template<typename, typename = void> /* second type is for 'void_t' */
     struct parse_many_things;
 
-    // most symbols are simply prepended to the rest of the list they're currently in:
+    // Simplest case is an empty list:
+    template<>
+    struct parse_many_things<hambda::types_t<>, void>
+    {
+        using me = types_t<>;
+        using rest = types_t<>;
+    };
+
+    // Any symbol that is not a grouper is simply prepended to the rest of the list they're currently in:
     template<typename First, typename ... T>
     struct parse_many_things<types_t<
             First, T...
@@ -178,7 +191,7 @@ namespace hambda {
         using rest  = types_t<T...>;
     };
 
-    // but '(' closes the list:
+    // while '(' open the list. This is more complex:
     template<typename ... T>
     struct parse_many_things<types_t<
             utils::char_pack<'('>, T...
@@ -195,23 +208,6 @@ namespace hambda {
         using me    = typename future :: me :: template prepend< mygroup >;
 
         using rest  = typename future :: rest;
-    };
-
-    template<char ... c>
-    struct parse_many_things<types_t<
-            utils::char_pack<c...>
-        >
-        , std::enable_if_t< !is_grouper( utils::char_pack<c...>::at(0) )>
-        >
-    {
-        using me    = types_t< utils::char_pack<c...> >;
-        using rest  = types_t<>;
-    };
-    template<>
-    struct parse_many_things<hambda::types_t<>, void>
-    {
-        using me = types_t<>;
-        using rest = types_t<>;
     };
 
     template<typename ...T>
