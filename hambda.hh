@@ -4,6 +4,13 @@ namespace hambda {
     bool constexpr is_opener        (char c) { return c=='(' || c=='[' || c=='{'; }
     bool constexpr is_closer        (char c) { return c==')' || c==']' || c=='}'; }
     bool constexpr is_grouper       (char c) { return is_opener(c) || is_closer(c); }
+    char constexpr opener_to_closer (char c) { switch(c) {
+                                                    break; case '(': return ')';
+                                                    break; case '[': return ']';
+                                                    break; case '{': return '}';
+                                                }
+                                                throw "should never get here";
+    }
 
     template< typename C >
     auto constexpr
