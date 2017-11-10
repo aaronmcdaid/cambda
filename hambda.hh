@@ -62,8 +62,8 @@ namespace hambda {
 
     template<char ... c>
     std::string
-    toString( utils::char_pack<c...> s, int = -1)
-    { return s.c_str0(); }
+    toString( utils::char_pack<c...> s, int indent = -1)
+    { return std::string(indent, ' ') + s.c_str0() + "\n"; }
 
     std::string
     toString( types_t<> , int indent = -1)
@@ -75,24 +75,41 @@ namespace hambda {
     std::string
     toString( types_t<S> , int indent = -1)
     {   (void)indent;
-        return toString( S{} );
+        return toString( S{}, indent);
     }
 
     template<typename R, typename S, typename ...T>
     std::string
     toString( types_t<R, S, T...> , int indent = -1)
     {   (void)indent;
-        return toString( R{} ) + " " + toString( types_t<S, T...>{} );
+        return toString( R{}, indent) + toString( types_t<S, T...>{}, indent);
     }
 
     template<char c, typename T>
     std::string
     toString(grouped_t<c,T> grp, int indent = -1)
     {   (void) indent;
-        return      std::string{c, c ,c , '\0'}
-                +   toString(T{})
-                +   std::string{grp.my_closer, grp.my_closer , grp.my_closer, '\0'}
-                ;
+        if(indent != -1)
+        {
+            return      std::string(indent, ' ')
+                    +   std::string{c}
+                    +   "\n"
+
+                    +   toString(T{}, indent+2)
+
+                    +   std::string(indent, ' ')
+                    +   std::string{grp.my_closer}
+                    +   "\n"
+                    ;
+        }
+        else
+        {
+            throw 3;
+            return      std::string{c, c ,c , '\0'}
+                    +   toString(T{}, indent)
+                    +   std::string{grp.my_closer, grp.my_closer , grp.my_closer, '\0'}
+                    ;
+        }
     }
 
     /* Starting from position 'o', parse as much as possible (up to the
