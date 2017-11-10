@@ -182,26 +182,30 @@ namespace hambda {
     };
 
     // but ')' closes the list:
-    template<typename ... T>
+    template<char c, typename ... T>
     struct parse_many_things<types_t<
-            utils::char_pack<')'>, T...
-        >>
+            utils::char_pack<c>, T...
+        >
+        , std::enable_if_t<is_closer(c)>
+        >
     {
         using me    = types_t<>;
         using rest  = types_t<T...>;
     };
 
-    // while '(' open the list. This is more complex:
-    template<typename ... T>
+    // while '('/'{'/'[' open the list. This is more complex:
+    template<char o, typename ... T>
     struct parse_many_things<types_t<
-            utils::char_pack<'('>, T...
-        >>
+            utils::char_pack<o>, T...
+        >
+        , std::enable_if_t<is_opener(o)>
+        >
     {
         using next_and_future =  parse_many_things<types_t<T...>>;
         // next_and_future::me is the rest of my group
         // next_and_future::rest is the distant future, which must be parsed here too
 
-        using mygroup    = grouped_t<'(', types_t< typename next_and_future::me >>;
+        using mygroup    = grouped_t<o, types_t< typename next_and_future::me >>;
 
         using future = parse_many_things<typename next_and_future:: rest>;
 
