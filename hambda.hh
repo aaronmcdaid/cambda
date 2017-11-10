@@ -62,27 +62,33 @@ namespace hambda {
 
     template<char ... c>
     std::string
-    toString( utils::char_pack<c...> s)
+    toString( utils::char_pack<c...> s, int = -1)
     { return s.c_str0(); }
 
     std::string
-    toString( types_t<> )
-    { return ""; }
+    toString( types_t<> , int indent = -1)
+    {   (void) indent;
+        return "";
+    }
 
     template<typename S>
     std::string
-    toString( types_t<S> )
-    { return toString( S{} ); }
+    toString( types_t<S> , int indent = -1)
+    {   (void)indent;
+        return toString( S{} );
+    }
 
     template<typename R, typename S, typename ...T>
     std::string
-    toString( types_t<R, S, T...> )
-    { return toString( R{} ) + " " + toString( types_t<S, T...>{} ); }
+    toString( types_t<R, S, T...> , int indent = -1)
+    {   (void)indent;
+        return toString( R{} ) + " " + toString( types_t<S, T...>{} );
+    }
 
     template<char c, typename T>
     std::string
-    toString(grouped_t<c,T> grp)
-    {
+    toString(grouped_t<c,T> grp, int indent = -1)
+    {   (void) indent;
         return      std::string{c, c ,c , '\0'}
                 +   toString(T{})
                 +   std::string{grp.my_closer, grp.my_closer , grp.my_closer, '\0'}
