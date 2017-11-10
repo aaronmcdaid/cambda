@@ -9,7 +9,7 @@ namespace hambda {
                                                     break; case '[': return ']';
                                                     break; case '{': return '}';
                                                 }
-                                                throw "should never get here";
+                                                return -1; // should never get here
     }
 
     template< typename C >
