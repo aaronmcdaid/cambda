@@ -150,12 +150,19 @@ namespace hambda {
 
 
     // parse_many_things. Returns two 'types_t', everything up to the next grouper, and the 'rest'
+    template<typename, typename = void> /* second type is for 'void_t' */
+    struct parse_many_things;
 
     // most symbols are simply prepended to the rest of the list they're currently in:
     template<typename First, typename ... T>
-    struct parse_many_things
+    struct parse_many_things<types_t<
+            First, T...
+        >
+        , std::enable_if_t< !is_grouper( First::at(0) )>
+        >
     {
-        using future =  parse_many_things<T...>;
+        static_assert(!is_grouper(First::at(0)) ,"");
+        using future =  parse_many_things<types_t<T...>>;
 
         using me    = typename future :: me :: template prepend<First>;
         using rest  = typename future :: rest;
@@ -163,36 +170,55 @@ namespace hambda {
 
     // but ')' closes the list:
     template<typename ... T>
-    struct parse_many_things<utils::char_pack<')'>, T...>
+    struct parse_many_things<types_t<
+            utils::char_pack<')'>, T...
+        >>
     {
-        using future =  parse_many_things<T...>;
-
         using me    = types_t<>;
         using rest  = types_t<T...>;
     };
 
     // but '(' closes the list:
     template<typename ... T>
-    struct parse_many_things<utils::char_pack<'('>, T...>
+    struct parse_many_things<types_t<
+            utils::char_pack<'('>, T...
+        >>
     {
-        using future =  parse_many_things<T...>;
+        using next_and_future =  parse_many_things<types_t<T...>>;
+        // next_and_future::me is the rest of my group
+        // next_and_future::rest is the distant future, which must be parsed here too
 
-        using me    = types_t<grouped_t<'(', types_t< typename future:: me >>>;
-        using rest  = typename future:: rest;
+        using mygroup    = grouped_t<'(', types_t< typename next_and_future::me >>;
+
+        using future = parse_many_things<typename next_and_future:: rest>;
+
+        using me    = typename future :: me :: template prepend< mygroup >;
+
+        using rest  = typename future :: rest;
     };
 
     template<char ... c>
-    struct parse_many_things<utils::char_pack<c...>>
+    struct parse_many_things<types_t<
+            utils::char_pack<c...>
+        >
+        , std::enable_if_t< !is_grouper( utils::char_pack<c...>::at(0) )>
+        >
     {
         using me    = types_t< utils::char_pack<c...> >;
         using rest  = types_t<>;
+    };
+    template<>
+    struct parse_many_things<hambda::types_t<>, void>
+    {
+        using me = types_t<>;
+        using rest = types_t<>;
     };
 
     template<typename ...T>
     constexpr static auto
     parser(types_t<T...>)
     {
-        return parse_many_things<T...> {};
+        return parse_many_things<types_t<T...>> {};
     }
 
     template<typename E>
