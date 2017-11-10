@@ -54,6 +54,19 @@ namespace hambda {
         using prepend = types_t<Prepend, T...>;
     };
 
+    template<typename T>
+    auto
+    get_last_type( types_t<T> )
+    -> T
+    { return {}; }
+
+    template<typename S, typename T, typename ... U>
+    auto
+    get_last_type( types_t<S, T, U...> )
+    ->decltype( get_last_type(std::declval< types_t<T,U...> >()) )
+    { return {}; }
+
+
     template<char c, typename T>
     struct grouped_t {
         static_assert(is_opener(c) ,"");
