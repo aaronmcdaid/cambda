@@ -269,12 +269,21 @@ namespace hambda {
         return parse_many_things<types_t<T...>> {};
     }
 
+    template<typename T>
+    struct should_be_just_one_term;
+
+    template<typename T>
+    struct should_be_just_one_term< types_t<T> >
+    { using single_type = T; };
+
     template<typename E>
     auto constexpr
     ast(E )
     {
         using all_the_terms_t = typename parse_flat_list_of_terms<E, 0>::all_the_terms;
-        return parser( all_the_terms_t{} );
-        //return all_the_terms_t {};
+        auto parsed =  parser( all_the_terms_t{} );
+        static_assert(std::is_same< typename decltype(parsed) :: rest , types_t<>>{} ,"");
+        using x = typename should_be_just_one_term< typename decltype(parsed) :: me > :: single_type;
+        return x{};
     }
 }

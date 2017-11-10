@@ -20,7 +20,5 @@ int main() {
 
     std::cout << ex0.c_str0() << "\n\n";
 
-    std::cout << toString( decltype(ast(ex0))::me{}   ,0) << '\n';
-    std::cout << "\n...\n\n";
-    std::cout << toString( decltype(ast(ex0))::rest{} ,0) << '\n';
+    std::cout << toString( ast(ex0)   ,0) << '\n';
 }
