@@ -325,7 +325,10 @@ namespace hambda {
         template<char c>
         static auto constexpr
         simplify_helper(utils::char_pack<c>)
-        -> std::integral_constant<int, c-'0'>
+        ->
+            std::enable_if_t< c >= '0' && c <= '9'
+                            , std::integral_constant<int, c-'0'>
+                            >
         { return {}; }
 
         template<typename AST>
