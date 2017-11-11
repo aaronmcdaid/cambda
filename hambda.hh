@@ -287,18 +287,21 @@ namespace hambda {
 
     struct simplifier
     {
-        struct adder
+        struct addition
         {
-            template<typename ...T>
+            template<int I, int J>
             constexpr auto
-            operator() (T&& ...)
-            { return 43; }
+            operator()  ( std::integral_constant<int, I>
+                        , std::integral_constant<int, J>
+                        )
+            -> std::integral_constant<int, I+J>
+            { return{}; }
         };
 
         static auto constexpr
         simplify_helper(utils::char_pack<'+'>)
         {
-            return adder{};
+            return simplifier::addition{};
         }
 
         template<typename Unknown>
@@ -310,34 +313,27 @@ namespace hambda {
             //simplifier::simplify(F{});
             //return 3.14;
         }
-        //*
-        template<typename ...T>
+
+        template<typename F, typename ...T>
         static auto constexpr
-        simplify_helper(grouped_t<'(', types_t<T...> >)
+        simplify_helper(grouped_t<'(', types_t<F, T...> >)
         {
-            return __PRETTY_FUNCTION__;
+            return
+                simplifier::simplify(F{}) // find the function to call
+                ( simplifier::simplify(T{})... ); // pass the arguments
         }
-        //*/
 
         template<char c>
         static auto constexpr
         simplify_helper(utils::char_pack<c>)
-        {
-            return c - '0';
-        }
+        -> std::integral_constant<int, c-'0'>
+        { return {}; }
 
         template<typename AST>
         static auto constexpr
         simplify(AST ast)
         { return simplifier:: simplify_helper(ast); }
     };
-
-        std::ostream &
-        operator<<(std::ostream &o, simplifier::adder const &)
-        {
-            o << "/[a b] [a+b]";
-            return o;
-        }
 
     template<typename AST>
     auto constexpr
