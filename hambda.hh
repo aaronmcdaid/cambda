@@ -305,15 +305,13 @@ namespace hambda {
             return simplifier::addition{};
         }
 
+#if 0
         template<typename Unknown>
         constexpr static
         char const *
         simplify_elper(Unknown)
-        {
-            return __PRETTY_FUNCTION__;
-            //simplifier::simplify(F{});
-            //return 3.14;
-        }
+        { return __PRETTY_FUNCTION__; }
+#endif
 
         template<typename F, typename ...T>
         static auto constexpr
