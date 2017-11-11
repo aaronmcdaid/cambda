@@ -287,19 +287,37 @@ namespace hambda {
 
     struct simplifier
     {
+        struct adder
+        {
+            template<typename ...T>
+            constexpr auto
+            operator() (T&& ...)
+            { return 43; }
+        };
+
         static auto constexpr
         simplify_helper(utils::char_pack<'+'>)
         {
-            return 42;
+            return adder{};
         }
 
-        template<typename F, typename ... T>
-        static auto constexpr
-        simplify_helper(grouped_t<'(', types_t<F, T...>>)
+        template<typename Unknown>
+        constexpr static
+        char const *
+        simplify_elper(Unknown)
         {
+            return __PRETTY_FUNCTION__;
             //simplifier::simplify(F{});
-            return 3.14;
+            //return 3.14;
         }
+        //*
+        template<typename ...T>
+        static auto constexpr
+        simplify_helper(grouped_t<'(', types_t<T...> >)
+        {
+            return __PRETTY_FUNCTION__;
+        }
+        //*/
 
         template<char c>
         static auto constexpr
@@ -313,6 +331,13 @@ namespace hambda {
         simplify(AST ast)
         { return simplifier:: simplify_helper(ast); }
     };
+
+        std::ostream &
+        operator<<(std::ostream &o, simplifier::adder const &)
+        {
+            o << "/[a b] [a+b]";
+            return o;
+        }
 
     template<typename AST>
     auto constexpr
