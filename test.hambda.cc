@@ -8,6 +8,7 @@ using namespace hambda;
 
 int main() {
     //auto ex0 = "   (323  (5lkj  lkj) (7jlkj 1 ()) ((2)) 23 )    "_ex;
+    constexpr
     auto ex0 = "(+ (+ (+ 9 9) 0) (+ 5 7))"_ex; // closers don't seem to match
     //auto ex0 = "(3)"_ex; // closers don't seem to match
     (void)ex0;
