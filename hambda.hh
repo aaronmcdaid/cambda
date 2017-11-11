@@ -33,8 +33,6 @@ namespace hambda {
         while (C::at(o) != '\0' && !is_whitespace(C::at(o)) && !is_grouper(C::at(o)))
             ++o;
         return std:: make_pair(start, o);
-
-        throw 1324; // fail to parse. Should give an error message somehow.
     }
 
 
