@@ -251,7 +251,7 @@ namespace hambda {
 
         using mygroup_without_the_closer = decltype(drop_last_type(mygroup_with_the_closer{}));
 
-        using mygroup    = grouped_t<o, types_t< mygroup_without_the_closer >>;
+        using mygroup    = grouped_t<o, mygroup_without_the_closer >;
 
         using future = parse_many_things<typename next_and_future:: rest>;
 
