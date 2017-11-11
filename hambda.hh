@@ -276,7 +276,7 @@ namespace hambda {
 
     template<typename E>
     auto constexpr
-    ast(E )
+    parse_ast(E )
     {
         using all_the_terms_t = typename parse_flat_list_of_terms<E, 0>::all_the_terms;
         auto parsed =  parser( all_the_terms_t{} );
@@ -284,4 +284,38 @@ namespace hambda {
         using x = typename should_be_just_one_term< typename decltype(parsed) :: me > :: single_type;
         return x{};
     }
+
+    struct simplifier
+    {
+        static auto constexpr
+        simplify_helper(utils::char_pack<'+'>)
+        {
+            return 42;
+        }
+
+        template<typename F, typename ... T>
+        static auto constexpr
+        simplify_helper(grouped_t<'(', types_t<F, T...>>)
+        {
+            //simplifier::simplify(F{});
+            return 3.14;
+        }
+
+        template<char c>
+        static auto constexpr
+        simplify_helper(utils::char_pack<c>)
+        {
+            return c - '0';
+        }
+
+        template<typename AST>
+        static auto constexpr
+        simplify(AST ast)
+        { return simplifier:: simplify_helper(ast); }
+    };
+
+    template<typename AST>
+    auto constexpr
+    simplify(AST ast)
+    {   return simplifier::simplify(ast); }
 }

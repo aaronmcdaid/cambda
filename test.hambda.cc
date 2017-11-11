@@ -14,11 +14,15 @@ int main() {
 
     using utils::operator<<;
 
-    //PP(toString( ast(ex0) ));
-    //utils::print_type( decltype(ast(ex0))::me{} );
-    //utils::print_type( decltype(ast(ex0))::rest{} );
+    //PP(toString( parse_ast(ex0) ));
+    //utils::print_type( decltype(parse_ast(ex0))::me{} );
+    //utils::print_type( decltype(parse_ast(ex0))::rest{} );
 
     std::cout << ex0.c_str0() << "\n\n";
 
-    std::cout << toString( ast(ex0)   ,0) << '\n';
+    std::cout << toString( parse_ast(ex0)   ,0) << '\n';
+    constexpr auto ast = parse_ast(ex0);
+    (void)ast;
+    auto x = simplify(ast);
+    PP(x);
 }
