@@ -22,4 +22,14 @@ int main() {
     constexpr auto ast = parse_ast(ex0);
     std::cout << toString( ast   ,0) << '\n';
     PP(simplify(ast));
+
+    TEST_ME ( "char_pack_to_int"
+            , 345789.0
+            ) ^ []()
+            { return char_pack_to_int( "345789"_ex ); };
+
+    TEST_ME ( "recursive addition"
+            , 111
+            ) ^ []()
+            { return simplify(parse_ast("(+ (+ (+ 90 9) 0) (+ 5 7))"_ex)); };
 }
