@@ -351,10 +351,8 @@ namespace hambda {
 
     template<typename FuncName>
     struct simplifier   < FuncName
-                        , utils::void_t<std::enable_if_t< false
-                             || utils::type<FuncName> == utils::type<decltype("id"_charpack)>
-                             || utils::type<FuncName> == utils::type<decltype("+"_charpack)>
-                             || utils::type<FuncName> == utils::type<decltype("-"_charpack)>
+                        , utils::void_t<std::enable_if_t<
+                                !( FuncName::at(0) >= '0' && FuncName::at(0) <= '9' )
                           >>>
     {
         struct gather_args_later
