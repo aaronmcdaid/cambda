@@ -347,31 +347,22 @@ namespace hambda {
         { return {}; (void)digits; }
     };
 
-    struct id
-    {
-        template<typename T>
-        auto constexpr
-        operator()  ( T&& t )
-        -> T
-        { return std::forward<T>(t); }
-    };
-
-    struct addition
-    {
-        template<int I, int J>
-        auto constexpr
-        operator()  ( std::integral_constant<int,I>
-                    , std::integral_constant<int,J>
-                    )
-        -> std::integral_constant<int, I+J>
-        { return {}; }
-    };
 
     template<>
     struct simplifier < decltype("id"_charpack) >
     {
+        //static auto constexpr
+        //simplify(utils::char_pack<'i','d'>) -> id { return {}; }
+        struct gather_args_later
+        {
+            template<typename ...T>
+            auto constexpr
+            operator()  ( T && ...t)
+            { return starter_lib::apply_after_simplification( "id"_charpack , std::forward<T>(t) ... ); }
+        };
+
         static auto constexpr
-        simplify(utils::char_pack<'i','d'>) -> id { return {}; }
+        simplify(decltype("id"_charpack)) -> gather_args_later { return {}; }
     };
 
     template<>
