@@ -297,7 +297,7 @@ namespace hambda {
                             , T t
                             )
         -> T
-        { return t; }
+        { return std::move(t); }
 
 
         template<int I, int J>
@@ -356,16 +356,19 @@ namespace hambda {
                                 !( is_digit_constexpr(FuncName::at(0)) )
                           >>>
     {
+        static_assert(!is_grouper(FuncName::at(0)) ,"");
         struct gather_args_later
         {
+            FuncName m_f;
+
             template<typename ...T>
             auto constexpr
             operator()  ( T && ...t)
-            { return starter_lib::apply_after_simplification( FuncName{} , std::forward<T>(t) ... ); }
+            { return starter_lib::apply_after_simplification( m_f , std::forward<T>(t) ... ); }
         };
 
         static auto constexpr
-        simplify(FuncName) -> gather_args_later { return {}; }
+        simplify(FuncName f) -> gather_args_later { return {std::move(f)}; }
     };
 
 
