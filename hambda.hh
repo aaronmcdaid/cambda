@@ -288,6 +288,18 @@ namespace hambda {
 
     struct simplifier
     {
+
+
+        // id :: a -> a
+        template<typename T>
+        static auto constexpr
+        apply_after_simplification  ( decltype( "id"_charpack )
+                            , T t
+                            )
+        -> T
+        { return t; }
+
+
         // This will SFINAE away unless all characters are digits,
         // as 'char_pack_to_int' will give us a substitution failure.
         // (Actually, shouldn't we reject '345a' as an error?)
