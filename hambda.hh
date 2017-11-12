@@ -346,6 +346,58 @@ namespace hambda {
         { return {}; (void)digits; }
     };
 
+    struct id
+    {
+        template<typename T>
+        auto constexpr
+        operator()  ( T&& t )
+        -> T
+        { return std::forward<T>(t); }
+    };
+
+    struct addition
+    {
+        template<int I, int J>
+        auto constexpr
+        operator()  ( std::integral_constant<int,I>
+                    , std::integral_constant<int,J>
+                    )
+        -> std::integral_constant<int, I+J>
+        { return {}; }
+    };
+
+    struct subtraction
+    {
+        template<int I, int J>
+        auto constexpr
+        operator()  ( std::integral_constant<int,I>
+                    , std::integral_constant<int,J>
+                    )
+        -> std::integral_constant<int, I-J>
+        { return {}; }
+    };
+
+    template<>
+    struct simplifier <utils::char_pack<'i', 'd'>>
+    {
+        static auto constexpr
+        simplify(utils::char_pack<'i','d'>) -> id { return {}; }
+    };
+
+    template<>
+    struct simplifier <utils::char_pack<'+'>>
+    {
+        static auto constexpr
+        simplify(utils::char_pack<'+'>) -> addition { return {}; }
+    };
+
+    template<>
+    struct simplifier <utils::char_pack<'-'>>
+    {
+        static auto constexpr
+        simplify(utils::char_pack<'-'>) -> subtraction { return {}; }
+    };
+
 
     template<typename Func, typename ...Args>
     struct simplifier < grouped_t<'(', types_t<Func, Args...   >>>
@@ -354,15 +406,15 @@ namespace hambda {
         simplify(grouped_t<'(', types_t<Func, Args...> >)
         {
             return
-                starter_lib::apply_after_simplification
-                        ( Func{} // find the function to call
-                        , call_the_simplifier(Args{})...  // pass the arguments
-                        );
+            call_the_simplifier(Func{})
+                (
+                    call_the_simplifier(Args{})...  // pass the arguments
+                );
         }
     };
 
     template<typename AST>
     auto constexpr
     simplify(AST ast)
-    {   return simplifier<AST>::simplify(ast); }
+    {   return call_the_simplifier(ast); }
 }
