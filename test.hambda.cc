@@ -57,6 +57,18 @@ int main() {
             ) ^ []()
             { return simplify(parse_ast("'helloworld'"_charpack)); };
 
+    TEST_ME ( "string literals"
+            , 3  // yes '''''''' is equivalent to "'''"
+            ) ^ []()
+            { return simplify(parse_ast("(length '''''''')"_charpack)); };
+
+    static_assert(3 == simplify(parse_ast("(length '''''''')"_charpack)) ,"");
+
+    TEST_ME ( "string literals"
+            , std::string(" ' ' ' ")  // yes ' '' '' '' ' is equivalent to " ' ' ' "
+            ) ^ []()
+            { return simplify(parse_ast("' '' '' '' '"_charpack)); };
+
     std::cout << simplify(parse_ast( "(+ (+ (+ 90 9) 0) (+ 5 7))"_charpack)) << '\n';
     std::cout << simplify(parse_ast( "'''e''''o'"_charpack)) << '\n';
 }

@@ -29,6 +29,26 @@ namespace hambda {
         if(is_grouper(C::at(o)))
             return std::make_pair(start, start+1);
 
+        // literal strings are special. We quote them with single quotes instead
+        // of double quotes, simply to make them easier to embed within C++.
+        // The contents of a literal are entirely read in raw, except that two
+        // consecutive single-quotes are interpreted as one such quote.
+        // This allows any string to be specified
+        if(C::at(o) == '\'') {
+            ++o;
+            while(true)
+            {
+                if(C::at(o) == '\'' && C::at(o+1) == '\'')
+                { o+=2; continue; }
+
+                if(C::at(o) == '\'')
+                { o+=1; break; }
+
+                ++o;
+            }
+            return std::make_pair(start, o);
+        }
+
         // finally, we just have a string of non-special characters.
         // We must read them all in
         while (C::at(o) != '\0' && !is_whitespace(C::at(o)) && !is_grouper(C::at(o)))
@@ -318,6 +338,15 @@ namespace hambda {
                             , std::integral_constant<int,J>
                             )
         -> std::integral_constant<int, I-J>
+        { return {}; }
+
+
+        template<char ...c>
+        static auto constexpr
+        apply_after_simplification  ( decltype( "length"_charpack )
+                            , utils::char_pack<c...>
+                            )
+        -> std::integral_constant<int, sizeof...(c)>
         { return {}; }
 
 
