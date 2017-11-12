@@ -316,7 +316,7 @@ namespace hambda {
 
         template<int I, int J>
         static auto constexpr
-        simplify_and_apply  ( decltype( "+"_charpack )
+        apply_after_simplification  ( decltype( "+"_charpack )
                             , std::integral_constant<int,I>
                             , std::integral_constant<int,J>
                             )
@@ -325,7 +325,7 @@ namespace hambda {
 
         template<int I, int J>
         static auto constexpr
-        simplify_and_apply  ( decltype( "-"_charpack )
+        apply_after_simplification  ( decltype( "-"_charpack )
                             , std::integral_constant<int,I>
                             , std::integral_constant<int,J>
                             )
@@ -337,14 +337,14 @@ namespace hambda {
         simplify_priority_overload(utils::priority_tag<2>, grouped_t<'(', types_t<Func, Args...> >)
 #if 0
         ->decltype(
-                simplifier::simplify_and_apply
+                simplifier::apply_after_simplification
                         ( Func{} // find the function to call
                         , simplifier::simplify(Args{})...  // pass the arguments
                         ))
 #endif
         {
             return
-                simplifier::simplify_and_apply
+                simplifier::apply_after_simplification
                         ( Func{} // find the function to call
                         , simplifier::simplify(Args{})...  // pass the arguments
                         );
