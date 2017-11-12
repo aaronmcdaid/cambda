@@ -69,6 +69,11 @@ int main() {
             ) ^ []()
             { return simplify(parse_ast("' '' '' '' '"_charpack)); };
 
+    TEST_ME ( "extra_lib for '*'"
+            , 60
+            ) ^ []()
+            { return simplify(parse_ast("(* 6 (+ 7 3))"_charpack), combined_lib{}); };
+
     std::cout << simplify(parse_ast( "(+ (+ (+ 90 9) 0) (+ 5 7))"_charpack)) << '\n';
     std::cout << simplify(parse_ast( "'''e''''o'"_charpack)) << '\n';
 }

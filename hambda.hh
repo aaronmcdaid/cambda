@@ -352,30 +352,69 @@ namespace hambda {
 
 
     };
+    struct extra_lib_with_multiplication {
+
+        template<int I, int J>
+        static auto constexpr
+        apply_after_simplification  ( decltype( "*"_charpack )
+                            , std::integral_constant<int,I>
+                            , std::integral_constant<int,J>
+                            )
+        -> std::integral_constant<int, I+J>
+        { return {}; }
+
+    };
+    struct combined_lib
+    {
+#if 1
+        using lib1 = starter_lib;
+        using lib2 = extra_lib_with_multiplication;
+
+        template<typename ...T>
+        static auto constexpr
+        apply_after_simplification_helper  ( T ...t)
+        ->decltype(lib1::apply_after_simplification(std::move(t)...)  )
+        {   return lib1::apply_after_simplification(std::move(t)...); }
+
+        template<typename ...T>
+        static auto constexpr
+        apply_after_simplification_helper  ( T ...t)
+        ->decltype(lib2::apply_after_simplification(std::move(t)...)  )
+        {   return lib2::apply_after_simplification(std::move(t)...); }
+
+        template<typename ...T>
+        static auto constexpr
+        apply_after_simplification  ( T ...t)
+        {   return combined_lib::apply_after_simplification_helper(std::move(t)...); }
+#endif
+    };
 
 
 
-    template<typename T, typename = void /* for void_t */>
+    template< typename T
+            , typename Lib // for the 'library' - initially simply 'starter_lib', but the user can extend it
+            , typename = void /* for void_t */>
     struct simplifier;
 
 
 
-    template<typename T>
+    template<typename T, typename Lib>
     constexpr auto
-    call_the_simplifier(T t)
-    { return simplifier<T>::simplify(t); }
+    call_the_simplifier(T t, Lib l)
+    { return simplifier<T, Lib>::simplify(t, l); }
 
 
 
     // all digits
-    template<char first_digit, char ...c>
+    template<char first_digit, char ...c, typename Lib>
     struct simplifier   < utils::char_pack<first_digit, c...>
+                        , Lib
                         , utils::void_t<std::enable_if_t<
                             is_digit_constexpr(first_digit)
                           >>>
     {
         static auto constexpr
-        simplify(utils::char_pack<first_digit, c...> digits)
+        simplify(utils::char_pack<first_digit, c...> digits, Lib)
         { return std::integral_constant<int, utils::char_pack_to_int(digits)>{}; }
     };
 
@@ -439,20 +478,22 @@ namespace hambda {
         }
     }
 
-    template<typename StringLiteral>
+    template<typename StringLiteral, typename Lib>
     struct simplifier   < StringLiteral
+                        , Lib
                         , utils::void_t<std::enable_if_t<
                                    '\'' ==            StringLiteral::at(0)
                           >>>
     {
         static auto constexpr
-        simplify(StringLiteral sl)
+        simplify(StringLiteral sl, Lib)
         { return detail::parse_string_literal(sl); }
     };
 
 
-    template<typename FuncName>
+    template<typename FuncName, typename Lib>
     struct simplifier   < FuncName
+                        , Lib
                         , utils::void_t<std::enable_if_t<
                                 !( is_digit_constexpr(FuncName::at(0)) )
                              && !( '\'' ==            FuncName::at(0)  )
@@ -466,24 +507,26 @@ namespace hambda {
             template<typename ...T>
             auto constexpr
             operator()  ( T && ...t)
-            { return starter_lib::apply_after_simplification( m_f , std::forward<T>(t) ... ); }
+            { return Lib::apply_after_simplification( m_f , std::forward<T>(t) ... ); }
         };
 
         static auto constexpr
-        simplify(FuncName f) -> gather_args_later { return {std::move(f)}; }
+        simplify(FuncName f, Lib) -> gather_args_later { return {std::move(f)}; }
     };
 
 
-    template<typename Func, typename ...Args>
-    struct simplifier < grouped_t<'(', types_t<Func, Args...   >>>
+    template<typename Func, typename ...Args, typename Lib>
+    struct simplifier   < grouped_t<'(', types_t<Func, Args...   >>
+                        , Lib
+                        >
     {
         static auto constexpr
-        simplify(grouped_t<'(', types_t<Func, Args...> >)
+        simplify(grouped_t<'(', types_t<Func, Args...> >, Lib)
         {
             return
-            call_the_simplifier(Func{})
+            call_the_simplifier(Func{}, Lib{})
                 (
-                    call_the_simplifier(Args{})...  // pass the arguments
+                    call_the_simplifier(Args{}, Lib{})...  // pass the arguments
                 );
         }
     };
@@ -491,5 +534,10 @@ namespace hambda {
     template<typename AST>
     auto constexpr
     simplify(AST ast)
-    {   return call_the_simplifier(ast); }
+    {   return call_the_simplifier(ast, starter_lib{}); }
+
+    template<typename AST, typename Lib>
+    auto constexpr
+    simplify(AST ast, Lib l)
+    {   return call_the_simplifier(ast, l); }
 }
