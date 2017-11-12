@@ -319,6 +319,7 @@ namespace hambda {
         { return {}; }
 
 
+
     };
 
 
@@ -366,17 +367,6 @@ namespace hambda {
         { return {}; }
     };
 
-    struct subtraction
-    {
-        template<int I, int J>
-        auto constexpr
-        operator()  ( std::integral_constant<int,I>
-                    , std::integral_constant<int,J>
-                    )
-        -> std::integral_constant<int, I-J>
-        { return {}; }
-    };
-
     template<>
     struct simplifier < decltype("id"_charpack) >
     {
@@ -387,15 +377,31 @@ namespace hambda {
     template<>
     struct simplifier < decltype("+"_charpack) >
     {
+        struct gather_args_later
+        {
+            template<typename ...T>
+            auto constexpr
+            operator()  ( T && ...t)
+            { return starter_lib::apply_after_simplification( "+"_charpack , std::forward<T>(t) ... ); }
+        };
+
         static auto constexpr
-        simplify(utils::char_pack<'+'>) -> addition { return {}; }
+        simplify(decltype("+"_charpack)) -> gather_args_later { return {}; }
     };
 
     template<>
     struct simplifier < decltype("-"_charpack) >
     {
+        struct gather_args_later
+        {
+            template<typename ...T>
+            auto constexpr
+            operator()  ( T && ...t)
+            { return starter_lib::apply_after_simplification( "-"_charpack , std::forward<T>(t) ... ); }
+        };
+
         static auto constexpr
-        simplify(utils::char_pack<'-'>) -> subtraction { return {}; }
+        simplify(utils::char_pack<'-'>) -> gather_args_later { return {}; }
     };
 
 
