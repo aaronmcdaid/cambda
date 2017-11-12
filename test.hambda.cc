@@ -4,6 +4,13 @@
 
 using hambda::operator"" _charpack;
 
+template<char ...c>
+std::ostream & operator<<(std::ostream &o, utils::char_pack<c...> str)
+{
+    o << str.c_str0();
+    return o;
+}
+
 using namespace hambda;
 
 int main() {
@@ -33,4 +40,5 @@ int main() {
             { return simplify(parse_ast("((((((id id) id) id) id) -) ((id +) ((((id id) (id id)) +) (id 90) 9) 0) (+ 5 7))"_charpack)); };
 
     std::cout << simplify(parse_ast( "(+ (+ (+ 90 9) 0) (+ 5 7))"_charpack)) << '\n';
+    std::cout << simplify(parse_ast( "'hello'"_charpack)) << '\n';
 }

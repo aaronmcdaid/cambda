@@ -351,10 +351,23 @@ namespace hambda {
     };
 
 
+    template<typename StringLiteral>
+    struct simplifier   < StringLiteral
+                        , utils::void_t<std::enable_if_t<
+                                   '\'' ==            StringLiteral::at(0)
+                          >>>
+    {
+        static auto constexpr
+        simplify(StringLiteral)
+        { return StringLiteral{}; }
+    };
+
+
     template<typename FuncName>
     struct simplifier   < FuncName
                         , utils::void_t<std::enable_if_t<
                                 !( is_digit_constexpr(FuncName::at(0)) )
+                             && !( '\'' ==            FuncName::at(0)  )
                           >>>
     {
         static_assert(!is_grouper(FuncName::at(0)) ,"");
