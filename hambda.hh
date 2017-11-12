@@ -300,33 +300,64 @@ namespace hambda {
         };
 
         static auto constexpr
-        simplify_helper(decltype( "+"_charpack ))
+        simplify(decltype( "+"_charpack ))
         {
             return simplifier::addition{};
         }
 
+        template<int I, int J>
+        static auto constexpr
+        simplify_and_apply  ( decltype( "+"_charpack )
+                            , std::integral_constant<int,I>
+                            , std::integral_constant<int,J>
+                            )
+        -> std::integral_constant<int, I+J>
+        { return {}; }
+
+        template<int I, int J>
+        static auto constexpr
+        simplify_and_apply  ( decltype( "-"_charpack )
+                            , std::integral_constant<int,I>
+                            , std::integral_constant<int,J>
+                            )
+        -> std::integral_constant<int, I-J>
+        { return {}; }
+
         template<typename Func, typename ...Args>
         static auto constexpr
-        simplify_helper(grouped_t<'(', types_t<Func, Args...> >)
+        simplify_priority_overload(utils::priority_tag<2>, grouped_t<'(', types_t<Func, Args...> >)
+        {
+            return
+                simplifier::simplify_and_apply
+                        ( Func{} // find the function to call
+                        , simplifier::simplify(Args{})...  // pass the arguments
+                        );
+        }
+
+        /*
+        template<typename Func, typename ...Args>
+        static auto constexpr
+        simplify_priority_overload(utils::priority_tag<1>, grouped_t<'(', types_t<Func, Args...> >)
         {
             return
                 simplifier::simplify(Func{}) // find the function to call
                 ( simplifier::simplify(Args{})... ); // pass the arguments
         }
+        */
+
+        template<typename ...T>
+        static auto constexpr
+        simplify(T && ...t)
+        { return simplifier:: simplify_priority_overload(utils::priority_tag<9>{}, std::forward<T>(t)...); }
 
         // This will SFINAE away unless all characters are digits,
         // as 'char_pack_to_int' will give us a substitution failure.
         // (Actually, shouldn't we reject '345a' as an error?)
         template<char first_digit, char ...c>
         static auto constexpr
-        simplify_helper(utils::char_pack<first_digit, c...> digits)
+        simplify(utils::char_pack<first_digit, c...> digits)
         -> std::integral_constant<int, char_pack_to_int(digits) >
         { return {}; }
-
-        template<typename AST>
-        static auto constexpr
-        simplify(AST ast)
-        { return simplifier:: simplify_helper(ast); }
     };
 
     template<typename AST>
