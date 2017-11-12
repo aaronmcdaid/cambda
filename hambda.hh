@@ -324,7 +324,7 @@ namespace hambda {
 
 
 
-    template<typename ...T>
+    template<typename T, typename = void /* for void_t */>
     struct simplifier;
 
 
@@ -338,21 +338,24 @@ namespace hambda {
 
     // all digits
     template<char first_digit, char ...c>
-    struct simplifier <utils::char_pack<first_digit, c...>>
+    struct simplifier   < utils::char_pack<first_digit, c...>
+                        , utils::void_t<std::enable_if_t<
+                            first_digit >= '0' && first_digit <= '9'
+                          >>>
     {
         static auto constexpr
         simplify(utils::char_pack<first_digit, c...> digits)
-        -> std::integral_constant<int, utils::char_pack_to_int(decltype(digits){}) // gcc requires decltype(x){} here . That's strange
-        >
-        { return {}; (void)digits; }
+        { return std::integral_constant<int, utils::char_pack_to_int(digits)>{}; }
     };
 
 
-    template<>
-    struct simplifier < decltype("id"_charpack) >
+    template<typename FuncName>
+    struct simplifier   < FuncName
+                        , utils::void_t<std::enable_if_t<
+                                utils::type<FuncName>
+                             == utils::type<decltype("id"_charpack)>
+                          >>>
     {
-        //static auto constexpr
-        //simplify(utils::char_pack<'i','d'>) -> id { return {}; }
         struct gather_args_later
         {
             template<typename ...T>
