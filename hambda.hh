@@ -335,6 +335,13 @@ namespace hambda {
         template<typename Func, typename ...Args>
         static auto constexpr
         simplify_priority_overload(utils::priority_tag<2>, grouped_t<'(', types_t<Func, Args...> >)
+#if 0
+        ->decltype(
+                simplifier::simplify_and_apply
+                        ( Func{} // find the function to call
+                        , simplifier::simplify(Args{})...  // pass the arguments
+                        ))
+#endif
         {
             return
                 simplifier::simplify_and_apply
