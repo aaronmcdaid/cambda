@@ -288,6 +288,14 @@ namespace hambda {
 
     struct simplifier
     {
+        // This will SFINAE away unless all characters are digits,
+        // as 'char_pack_to_int' will give us a substitution failure.
+        // (Actually, shouldn't we reject '345a' as an error?)
+        template<char first_digit, char ...c>
+        static auto constexpr
+        simplify(utils::char_pack<first_digit, c...> digits)
+        -> std::integral_constant<int, char_pack_to_int(digits) >
+        { return {}; }
         struct addition
         {
             template<int I, int J>
@@ -299,11 +307,11 @@ namespace hambda {
             { return{}; }
         };
 
+
         static auto constexpr
-        simplify(decltype( "+"_charpack ))
-        {
-            return simplifier::addition{};
-        }
+        simplify(decltype( "/"_charpack ))
+        -> simplifier::addition
+        { return {}; }
 
         template<int I, int J>
         static auto constexpr
@@ -348,16 +356,8 @@ namespace hambda {
         template<typename ...T>
         static auto constexpr
         simplify(T && ...t)
-        { return simplifier:: simplify_priority_overload(utils::priority_tag<9>{}, std::forward<T>(t)...); }
-
-        // This will SFINAE away unless all characters are digits,
-        // as 'char_pack_to_int' will give us a substitution failure.
-        // (Actually, shouldn't we reject '345a' as an error?)
-        template<char first_digit, char ...c>
-        static auto constexpr
-        simplify(utils::char_pack<first_digit, c...> digits)
-        -> std::integral_constant<int, char_pack_to_int(digits) >
-        { return {}; }
+        ->decltype(simplifier:: simplify_priority_overload(utils::priority_tag<9>{}, std::forward<T>(t)...)  )
+        {   return simplifier:: simplify_priority_overload(utils::priority_tag<9>{}, std::forward<T>(t)...); }
     };
 
     template<typename AST>
