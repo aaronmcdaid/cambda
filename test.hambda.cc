@@ -18,4 +18,7 @@ int main() {
             , 111
             ) ^ []()
             { return simplify(parse_ast("(+ (+ (+ 90 9) 0) (+ 5 7))"_charpack)); };
+
+    constexpr int i= simplify(parse_ast("(+ (+ (+ 90 9) 0) (+ 5 7))"_charpack));
+    static_assert(i==111 ,"");
 }
