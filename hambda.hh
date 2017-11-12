@@ -4,6 +4,7 @@ namespace hambda {
     bool constexpr is_opener        (char c) { return c=='(' || c=='[' || c=='{'; }
     bool constexpr is_closer        (char c) { return c==')' || c==']' || c=='}'; }
     bool constexpr is_grouper       (char c) { return is_opener(c) || is_closer(c); }
+    bool constexpr is_digit_constexpr (char c) { return c >= '0' && c <= '9'; }
     char constexpr opener_to_closer (char c) { switch(c) {
                                                     break; case '(': return ')';
                                                     break; case '[': return ']';
@@ -340,7 +341,7 @@ namespace hambda {
     template<char first_digit, char ...c>
     struct simplifier   < utils::char_pack<first_digit, c...>
                         , utils::void_t<std::enable_if_t<
-                            first_digit >= '0' && first_digit <= '9'
+                            is_digit_constexpr(first_digit)
                           >>>
     {
         static auto constexpr
@@ -352,7 +353,7 @@ namespace hambda {
     template<typename FuncName>
     struct simplifier   < FuncName
                         , utils::void_t<std::enable_if_t<
-                                !( FuncName::at(0) >= '0' && FuncName::at(0) <= '9' )
+                                !( is_digit_constexpr(FuncName::at(0)) )
                           >>>
     {
         struct gather_args_later
