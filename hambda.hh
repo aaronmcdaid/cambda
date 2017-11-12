@@ -300,26 +300,18 @@ namespace hambda {
         };
 
         static auto constexpr
-        simplify_helper(utils::char_pack<'+'>)
+        simplify_helper(decltype( "+"_charpack ))
         {
             return simplifier::addition{};
         }
 
-#if 0
-        template<typename Unknown>
-        constexpr static
-        char const *
-        simplify_elper(Unknown)
-        { return __PRETTY_FUNCTION__; }
-#endif
-
-        template<typename F, typename ...T>
+        template<typename Func, typename ...Args>
         static auto constexpr
-        simplify_helper(grouped_t<'(', types_t<F, T...> >)
+        simplify_helper(grouped_t<'(', types_t<Func, Args...> >)
         {
             return
-                simplifier::simplify(F{}) // find the function to call
-                ( simplifier::simplify(T{})... ); // pass the arguments
+                simplifier::simplify(Func{}) // find the function to call
+                ( simplifier::simplify(Args{})... ); // pass the arguments
         }
 
         // This will SFINAE away unless all characters are digits,
