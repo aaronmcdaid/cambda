@@ -335,22 +335,6 @@ namespace hambda {
         -> std::integral_constant<int, utils::char_pack_to_int(decltype(digits){}) // gcc requires decltype(x){} here . That's strange
         >
         { return {}; (void)digits; }
-        struct addition
-        {
-            template<int I, int J>
-            constexpr auto
-            operator()  ( std::integral_constant<int, I>
-                        , std::integral_constant<int, J>
-                        )
-            -> std::integral_constant<int, I+J>
-            { return{}; }
-        };
-
-
-        static auto constexpr
-        simplify(decltype( "/"_charpack ))
-        -> simplifier::addition
-        { return {}; }
 
 
         template<typename Func, typename ...Args>
