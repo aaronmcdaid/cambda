@@ -321,30 +321,42 @@ namespace hambda {
 
     };
 
-    struct simplifier
+
+
+    template<typename ...T>
+    struct simplifier;
+
+
+
+    template<typename ...T>
+    constexpr auto
+    call_the_simplifier(T ...t)
+    { return simplifier<T...>::simplify(t...); }
+
+
+
+    // all digits
+    template<char first_digit, char ...c>
+    struct simplifier <utils::char_pack<first_digit, c...>>
     {
-
-
-
-        // This will SFINAE away unless all characters are digits,
-        // as 'char_pack_to_int' will give us a substitution failure.
-        // (Actually, shouldn't we reject '345a' as an error?)
-        template<char first_digit, char ...c>
         static auto constexpr
         simplify(utils::char_pack<first_digit, c...> digits)
         -> std::integral_constant<int, utils::char_pack_to_int(decltype(digits){}) // gcc requires decltype(x){} here . That's strange
         >
         { return {}; (void)digits; }
+    };
 
 
-        template<typename Func, typename ...Args>
+    template<typename Func, typename ...Args>
+    struct simplifier < grouped_t<'(', types_t<Func, Args...   >>>
+    {
         static auto constexpr
         simplify(grouped_t<'(', types_t<Func, Args...> >)
         {
             return
                 starter_lib::apply_after_simplification
                         ( Func{} // find the function to call
-                        , simplifier::simplify(Args{})...  // pass the arguments
+                        , call_the_simplifier(Args{})...  // pass the arguments
                         );
         }
     };
@@ -352,5 +364,5 @@ namespace hambda {
     template<typename AST>
     auto constexpr
     simplify(AST ast)
-    {   return simplifier::simplify(ast); }
+    {   return simplifier<AST>::simplify(ast); }
 }
