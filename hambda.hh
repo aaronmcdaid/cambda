@@ -346,14 +346,7 @@ namespace hambda {
 
         template<typename Func, typename ...Args>
         static auto constexpr
-        simplify_priority_overload(utils::priority_tag<2>, grouped_t<'(', types_t<Func, Args...> >)
-#if 0
-        ->decltype(
-                simplifier::apply_after_simplification
-                        ( Func{} // find the function to call
-                        , simplifier::simplify(Args{})...  // pass the arguments
-                        ))
-#endif
+        simplify(grouped_t<'(', types_t<Func, Args...> >)
         {
             return
                 simplifier::apply_after_simplification
@@ -361,23 +354,6 @@ namespace hambda {
                         , simplifier::simplify(Args{})...  // pass the arguments
                         );
         }
-
-        /*
-        template<typename Func, typename ...Args>
-        static auto constexpr
-        simplify_priority_overload(utils::priority_tag<1>, grouped_t<'(', types_t<Func, Args...> >)
-        {
-            return
-                simplifier::simplify(Func{}) // find the function to call
-                ( simplifier::simplify(Args{})... ); // pass the arguments
-        }
-        */
-
-        template<typename ...T>
-        static auto constexpr
-        simplify(T && ...t)
-        ->decltype(simplifier:: simplify_priority_overload(utils::priority_tag<9>{}, std::forward<T>(t)...)  )
-        {   return simplifier:: simplify_priority_overload(utils::priority_tag<9>{}, std::forward<T>(t)...); }
     };
 
     template<typename AST>
