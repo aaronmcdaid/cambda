@@ -322,13 +322,13 @@ namespace hambda {
                 ( simplifier::simplify(T{})... ); // pass the arguments
         }
 
-        template<char c>
+        // This will SFINAE away unless all characters are digits,
+        // as 'char_pack_to_int' will give us a substitution failure.
+        // (Actually, shouldn't we reject '345a' as an error?)
+        template<char first_digit, char ...c>
         static auto constexpr
-        simplify_helper(utils::char_pack<c>)
-        ->
-            std::enable_if_t< c >= '0' && c <= '9'
-                            , std::integral_constant<int, c-'0'>
-                            >
+        simplify_helper(utils::char_pack<first_digit, c...> digits)
+        -> std::integral_constant<int, char_pack_to_int(digits) >
         { return {}; }
 
         template<typename AST>

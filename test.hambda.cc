@@ -6,21 +6,9 @@ using hambda::operator"" _ex;
 
 using namespace hambda;
 
-constexpr
-int char_pack_to_int(utils::char_pack<>, int prefix_already_processed)
-{ return prefix_already_processed; }
-
-template<char next_digit, char ... c>
-constexpr
-int char_pack_to_int(utils::char_pack<next_digit, c...>, int prefix_already_processed = 0)
-{
-    static_assert( next_digit >= '0' && next_digit <= '9' ,"");
-    return  char_pack_to_int(utils::char_pack<c...>{}, 10*prefix_already_processed + (next_digit-'0'));
-}
-
 int main() {
     constexpr
-    auto ex0 = "(+ (+ (+ 9 9) 0) (+ 5 7))"_ex; // closers don't seem to match
+    auto ex0 = "(+ (+ (+ 90 9) 0) (+ 5 7))"_ex; // closers don't seem to match
 
     std::cout << char_pack_to_int( "345789"_ex ) << '\n';
     static_assert(345789 ==char_pack_to_int( "345789"_ex ) ,"");
