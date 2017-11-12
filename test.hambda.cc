@@ -27,8 +27,8 @@ int main() {
             ) ^ []()
             { return simplify(parse_ast("(- (+ (+ 90 9) 0) (+ 5 7))"_charpack)); };
 
-    TEST_ME ( "one (small) application of 'id'"
+    TEST_ME ( "heavily nested 'id', especially in function position"
             , 87
             ) ^ []()
-            { return simplify(parse_ast("(- (+ (+ (id 90) 9) 0) (+ 5 7))"_charpack)); };
+            { return simplify(parse_ast("((((((id id) id) id) id) -) ((id +) ((((id id) (id id)) +) (id 90) 9) 0) (+ 5 7))"_charpack)); };
 }
