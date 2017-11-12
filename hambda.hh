@@ -363,12 +363,50 @@ namespace hambda {
         -> typename utils::reverse_pack<char, utils::char_pack<c...> >::type
         { return {}; }
 
+        constexpr char apostrophe = '\'';
+
+        template<typename T> // T is always a char_pack
+        struct squash_consecutive_apostrophes_struct;
+
+        // base case, the empty string
+        template<>
+        struct squash_consecutive_apostrophes_struct<utils::char_pack< >>
+        { using type = utils::char_pack<>; };
+
+        template<char ...c>
+        struct squash_consecutive_apostrophes_struct<utils::char_pack< apostrophe,apostrophe, c... >>
+        {
+            using recursive_type = typename squash_consecutive_apostrophes_struct< utils::char_pack<c...> >::type;
+            using type = typename utils::concat_nontype_pack< char
+                                                            , utils::char_pack<apostrophe>
+                                                            //, utils::char_pack<c...>
+                                                            , recursive_type
+                                                            > :: type;
+        };
+
+        template<char next, char ...c>
+        struct squash_consecutive_apostrophes_struct<utils::char_pack< next, c... >>
+        {
+            static_assert(next != apostrophe ,"");
+            using recursive_type = typename squash_consecutive_apostrophes_struct< utils::char_pack<c...> >::type;
+            using type = typename utils::concat_nontype_pack< char
+                                                            , utils::char_pack<next>
+                                                            //, utils::char_pack<c...>
+                                                            , recursive_type
+                                                            > :: type;
+        };
+
+        template<char ...c>
+        static auto constexpr
+        squash_consecutive_apostrophes(utils::char_pack<c...>)
+        -> typename squash_consecutive_apostrophes_struct<utils::char_pack<c...>> :: type
+        { return {}; }
 
         template<char ...c>
         static auto constexpr
         parse_string_literal(utils::char_pack<'\'', c...> crpk)
         {
-            return reverse(drop_leading_apostrophe( reverse (drop_leading_apostrophe(crpk) )));
+            return squash_consecutive_apostrophes( reverse(drop_leading_apostrophe( reverse (drop_leading_apostrophe(crpk) ))));
         }
     }
 
