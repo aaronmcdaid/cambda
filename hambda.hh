@@ -351,9 +351,10 @@ namespace hambda {
 
     template<typename FuncName>
     struct simplifier   < FuncName
-                        , utils::void_t<std::enable_if_t<
-                                utils::type<FuncName>
-                             == utils::type<decltype("id"_charpack)>
+                        , utils::void_t<std::enable_if_t< false
+                             || utils::type<FuncName> == utils::type<decltype("id"_charpack)>
+                             || utils::type<FuncName> == utils::type<decltype("+"_charpack)>
+                             || utils::type<FuncName> == utils::type<decltype("-"_charpack)>
                           >>>
     {
         struct gather_args_later
@@ -361,41 +362,11 @@ namespace hambda {
             template<typename ...T>
             auto constexpr
             operator()  ( T && ...t)
-            { return starter_lib::apply_after_simplification( "id"_charpack , std::forward<T>(t) ... ); }
+            { return starter_lib::apply_after_simplification( FuncName{} , std::forward<T>(t) ... ); }
         };
 
         static auto constexpr
-        simplify(decltype("id"_charpack)) -> gather_args_later { return {}; }
-    };
-
-    template<>
-    struct simplifier < decltype("+"_charpack) >
-    {
-        struct gather_args_later
-        {
-            template<typename ...T>
-            auto constexpr
-            operator()  ( T && ...t)
-            { return starter_lib::apply_after_simplification( "+"_charpack , std::forward<T>(t) ... ); }
-        };
-
-        static auto constexpr
-        simplify(decltype("+"_charpack)) -> gather_args_later { return {}; }
-    };
-
-    template<>
-    struct simplifier < decltype("-"_charpack) >
-    {
-        struct gather_args_later
-        {
-            template<typename ...T>
-            auto constexpr
-            operator()  ( T && ...t)
-            { return starter_lib::apply_after_simplification( "-"_charpack , std::forward<T>(t) ... ); }
-        };
-
-        static auto constexpr
-        simplify(utils::char_pack<'-'>) -> gather_args_later { return {}; }
+        simplify(FuncName) -> gather_args_later { return {}; }
     };
 
 
