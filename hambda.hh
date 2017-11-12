@@ -328,10 +328,10 @@ namespace hambda {
 
 
 
-    template<typename ...T>
+    template<typename T>
     constexpr auto
-    call_the_simplifier(T ...t)
-    { return simplifier<T...>::simplify(t...); }
+    call_the_simplifier(T t)
+    { return simplifier<T>::simplify(t); }
 
 
 
@@ -378,21 +378,21 @@ namespace hambda {
     };
 
     template<>
-    struct simplifier <utils::char_pack<'i', 'd'>>
+    struct simplifier < decltype("id"_charpack) >
     {
         static auto constexpr
         simplify(utils::char_pack<'i','d'>) -> id { return {}; }
     };
 
     template<>
-    struct simplifier <utils::char_pack<'+'>>
+    struct simplifier < decltype("+"_charpack) >
     {
         static auto constexpr
         simplify(utils::char_pack<'+'>) -> addition { return {}; }
     };
 
     template<>
-    struct simplifier <utils::char_pack<'-'>>
+    struct simplifier < decltype("-"_charpack) >
     {
         static auto constexpr
         simplify(utils::char_pack<'-'>) -> subtraction { return {}; }
