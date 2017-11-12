@@ -350,6 +350,27 @@ namespace hambda {
         { return std::integral_constant<int, utils::char_pack_to_int(digits)>{}; }
     };
 
+    namespace detail {
+        template<char ...c>
+        static auto constexpr
+        drop_leading_apostrophe(utils::char_pack<'\'', c...>)
+        -> utils::char_pack<c...>
+        { return {}; }
+
+        template<char ...c>
+        static auto constexpr
+        reverse(utils::char_pack<c...>)
+        -> typename utils::reverse_pack<char, utils::char_pack<c...> >::type
+        { return {}; }
+
+
+        template<char ...c>
+        static auto constexpr
+        parse_string_literal(utils::char_pack<'\'', c...> crpk)
+        {
+            return reverse(drop_leading_apostrophe( reverse (drop_leading_apostrophe(crpk) )));
+        }
+    }
 
     template<typename StringLiteral>
     struct simplifier   < StringLiteral
@@ -358,8 +379,8 @@ namespace hambda {
                           >>>
     {
         static auto constexpr
-        simplify(StringLiteral)
-        { return StringLiteral{}; }
+        simplify(StringLiteral sl)
+        { return detail::parse_string_literal(sl); }
     };
 
 
