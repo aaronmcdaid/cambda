@@ -286,8 +286,7 @@ namespace hambda {
         return x{};
     }
 
-    struct simplifier
-    {
+    struct starter_lib {
 
 
         // id :: a -> a
@@ -298,6 +297,33 @@ namespace hambda {
                             )
         -> T
         { return t; }
+
+
+        template<int I, int J>
+        static auto constexpr
+        apply_after_simplification  ( decltype( "+"_charpack )
+                            , std::integral_constant<int,I>
+                            , std::integral_constant<int,J>
+                            )
+        -> std::integral_constant<int, I+J>
+        { return {}; }
+
+
+        template<int I, int J>
+        static auto constexpr
+        apply_after_simplification  ( decltype( "-"_charpack )
+                            , std::integral_constant<int,I>
+                            , std::integral_constant<int,J>
+                            )
+        -> std::integral_constant<int, I-J>
+        { return {}; }
+
+
+    };
+
+    struct simplifier
+    {
+
 
 
         // This will SFINAE away unless all characters are digits,
@@ -326,30 +352,13 @@ namespace hambda {
         -> simplifier::addition
         { return {}; }
 
-        template<int I, int J>
-        static auto constexpr
-        apply_after_simplification  ( decltype( "+"_charpack )
-                            , std::integral_constant<int,I>
-                            , std::integral_constant<int,J>
-                            )
-        -> std::integral_constant<int, I+J>
-        { return {}; }
-
-        template<int I, int J>
-        static auto constexpr
-        apply_after_simplification  ( decltype( "-"_charpack )
-                            , std::integral_constant<int,I>
-                            , std::integral_constant<int,J>
-                            )
-        -> std::integral_constant<int, I-J>
-        { return {}; }
 
         template<typename Func, typename ...Args>
         static auto constexpr
         simplify(grouped_t<'(', types_t<Func, Args...> >)
         {
             return
-                simplifier::apply_after_simplification
+                starter_lib::apply_after_simplification
                         ( Func{} // find the function to call
                         , simplifier::simplify(Args{})...  // pass the arguments
                         );
