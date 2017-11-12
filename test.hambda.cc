@@ -31,4 +31,6 @@ int main() {
             , 87
             ) ^ []()
             { return simplify(parse_ast("((((((id id) id) id) id) -) ((id +) ((((id id) (id id)) +) (id 90) 9) 0) (+ 5 7))"_charpack)); };
+
+    std::cout << toString( simplify(parse_ast( "(+ (+ (+ 90 9) 0) (+ 5 7))"_charpack))   ,0) << '\n';
 }

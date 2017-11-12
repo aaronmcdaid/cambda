@@ -98,6 +98,17 @@ namespace hambda {
     // a few toString overloads just to print the output after parsing to help debugging
 
     constexpr int indent_each_time = 4;
+
+    template<int I>
+    std::string
+    toString( std::integral_constant<int, I> i, int indent = 0)
+    {
+        std::ostringstream oss;
+        oss << i;
+        (void)indent;
+        return oss.str();
+    }
+
     template<char ... c>
     std::string
     toString( utils::char_pack<c...> s, int indent = 0)
