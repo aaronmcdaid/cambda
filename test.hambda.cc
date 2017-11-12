@@ -2,16 +2,16 @@
 #include "../module-TEST_ME/TEST_ME.hh"
 #include "../module-bits.and.pieces/PP.hh"
 
-using hambda::operator"" _ex;
+using hambda::operator"" _charpack;
 
 using namespace hambda;
 
 int main() {
     constexpr
-    auto ex0 = "(+ (+ (+ 90 9) 0) (+ 5 7))"_ex; // closers don't seem to match
+    auto ex0 = "(+ (+ (+ 90 9) 0) (+ 5 7))"_charpack; // closers don't seem to match
 
-    std::cout << char_pack_to_int( "345789"_ex ) << '\n';
-    static_assert(345789 ==char_pack_to_int( "345789"_ex ) ,"");
+    std::cout << char_pack_to_int( "345789"_charpack ) << '\n';
+    static_assert(345789 ==char_pack_to_int( "345789"_charpack ) ,"");
 
     using r = utils:: reverse_pack<char, utils:: char_pack<'a','b','c'>> :: type;
     std::cout << r{}.c_str0() << '\n';
@@ -26,10 +26,10 @@ int main() {
     TEST_ME ( "char_pack_to_int"
             , 345789.0
             ) ^ []()
-            { return char_pack_to_int( "345789"_ex ); };
+            { return char_pack_to_int( "345789"_charpack ); };
 
     TEST_ME ( "recursive addition"
             , 111
             ) ^ []()
-            { return simplify(parse_ast("(+ (+ (+ 90 9) 0) (+ 5 7))"_ex)); };
+            { return simplify(parse_ast("(+ (+ (+ 90 9) 0) (+ 5 7))"_charpack)); };
 }

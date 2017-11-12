@@ -38,7 +38,7 @@ namespace hambda {
 
     template<typename T, T ... chars>
     constexpr auto
-    operator"" _ex () {
+    operator"" _charpack () {
         utils:: char_pack<chars...> chrpck;
         return chrpck;
     }
