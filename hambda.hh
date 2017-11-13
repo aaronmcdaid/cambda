@@ -332,14 +332,12 @@ namespace hambda {
         { return {}; }
 
 
-        template<int I, int J>
         auto constexpr
         apply_after_simplification  ( decltype( "-"_charpack )
-                            , std::integral_constant<int,I>
-                            , std::integral_constant<int,J>
+                            , int i
+                            , int j
                             )
-        -> std::integral_constant<int, I-J>
-        { return {}; }
+        -> int { return i-j;}
 
 
         template<char ...c>

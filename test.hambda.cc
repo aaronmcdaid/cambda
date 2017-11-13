@@ -120,12 +120,13 @@ int main() {
             ) ^ []()
             {
                 auto result = simplify(parse_ast("(- seven 5)"_charpack)
-                        , combine_libraries(starter_lib_v,
-                            wrap_any__calls_using__std_integral_constant(
-                            user_supplied_library_withvalue{}
-                            )
-                            )
-                        );
+                  , wrap_any__calls_using__std_integral_constant
+                    (
+                        combine_libraries
+                        (   starter_lib_v
+                        ,   user_supplied_library_withvalue{}
+                        )
+                    ));
                 return result.value; // .value proves that the wrapper has successfully 'upgraded' the results
             };
 
