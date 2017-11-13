@@ -686,19 +686,23 @@ namespace hambda {
         static_assert(std::is_empty<Lib>{} ,"");
 
         //First, the 'normal' overload that just forwards things through
-        template< typename Name, typename ...T>
+        template< typename Name
+                , typename ...T
+                , typename id = utils::id_t
+                >
         auto constexpr
         apply_after_simplification_overload(Name, T && ...t)
-        ->decltype(Lib{}.apply_after_simplification(Name{}, std::forward<T>(t)...)  )
-        {   return Lib{}.apply_after_simplification(Name{}, std::forward<T>(t)...); }
+        ->decltype(id{}(Lib{}).apply_after_simplification(Name{}, std::forward<T>(t)...)  )
+        {   return id{}(Lib{}).apply_after_simplification(Name{}, std::forward<T>(t)...); }
 
         // Now, a special overload for when all the arguments are std::integral_constant.
         // We compute everything in the template arguments
         template< typename Name
                 , int ...I
                 , class...
-                , typename PlainResultType = decltype( Lib{}.apply_after_simplification(Name{}, std::integral_constant<int, I>{}...) )
-                , PlainResultType Result = Lib{}.apply_after_simplification(Name{}, std::integral_constant<int, I>{}...)
+                , typename id = utils::id_t
+                , typename PlainResultType = decltype( id{}(Lib{}).apply_after_simplification(Name{}, std::integral_constant<int, I>{}...) )
+                , PlainResultType Result = id{}(Lib{}).apply_after_simplification(Name{}, std::integral_constant<int, I>{}...)
                 >
         auto constexpr
         apply_after_simplification_overload(Name , std::integral_constant<int, I> ... )
