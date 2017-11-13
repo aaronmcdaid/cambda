@@ -408,6 +408,7 @@ namespace hambda {
         template<typename ...T>
         auto constexpr
         apply_after_simplification  ( T ...t)
+        ->decltype(library_combiner::apply_after_simplification_helper(std::move(t)...))
         {   return library_combiner::apply_after_simplification_helper(std::move(t)...); }
 
 
