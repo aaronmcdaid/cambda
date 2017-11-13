@@ -494,6 +494,36 @@ namespace hambda {
         { return detail::parse_string_literal(sl); }
     };
 
+    namespace detail
+    {
+        /* has_get_simple_named_value */
+
+
+        template<typename Name, typename Lib>
+        static auto constexpr
+        has_get_simple_named_value_helper(utils::priority_tag<2>)
+        -> decltype( std::declval<Lib&>().get_simple_named_value(std::declval<Name&>())
+            , std:: true_type{})
+        { return {}; }
+
+        template<typename Name, typename Lib>
+        static auto constexpr
+        has_get_simple_named_value_helper(utils::priority_tag<1>)
+        -> std:: false_type
+        { return {}; }
+
+        template<typename Name, typename Lib>
+        static auto constexpr
+        has_get_simple_named_value()
+        -> decltype(auto)
+        { return detail:: has_get_simple_named_value_helper<Name,Lib>(utils::priority_tag<9>{}); }
+
+        template<typename Name, typename Lib>
+        bool constexpr
+        has_get_simple_named_value_v =
+            detail:: has_get_simple_named_value<Name,Lib>();
+
+    }
 
     // simplifier for names (functions only, for now)
     template<typename Name, typename Lib>
