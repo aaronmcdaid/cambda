@@ -358,14 +358,13 @@ namespace hambda {
     struct extra_lib_with_multiplication {
         constexpr extra_lib_with_multiplication(){} // a default constructor, just because clang requires them for constexpr objects
 
-        template<int I, int J>
         auto constexpr
         apply_after_simplification  ( decltype( "*"_charpack )
-                            , std::integral_constant<int,I>
-                            , std::integral_constant<int,J>
+                            , int i
+                            , int j
                             )
-        -> std::integral_constant<int, I*J>
-        { return {}; }
+        -> int
+        { return i*j; }
 
         auto constexpr
         get_simple_named_value  ( decltype( "three"_charpack ) )
