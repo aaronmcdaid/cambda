@@ -29,14 +29,14 @@ using namespace hambda;
 struct user_supplied_library {
     constexpr user_supplied_library(){} // a default constructor, just because clang requires them for constexpr objects
 
-    template<int I, int J>
     auto constexpr
     apply_after_simplification  ( decltype( "%"_charpack )
-                        , std::integral_constant<int,I>
-                        , std::integral_constant<int,J>
+                        , int i
+                        , int j
                         )
-    -> std::integral_constant<int, I % J>
-    { return {}; }
+    -> int
+    { return i%j; }
+
 };
 
 int main() {
