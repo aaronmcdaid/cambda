@@ -95,6 +95,9 @@ int main() {
         -> int
         { return i%j; }
 
+        auto constexpr
+        get_simple_named_value  ( decltype( "seven"_charpack ) )
+        { return std::integral_constant<int, 7>{}; }
     };
 
 
@@ -109,10 +112,10 @@ int main() {
             };
 
     TEST_ME ( "wrap a user-supplied library"
-            , 3
+            , 2
             ) ^ []()
             {
-                auto result = simplify(parse_ast("(% 103 5)"_charpack)
+                auto result = simplify(parse_ast("(% seven 5)"_charpack)
                         , combine_libraries(starter_lib_v,
                             wrap_any__calls_using__std_integral_constant(
                             user_supplied_library{}
