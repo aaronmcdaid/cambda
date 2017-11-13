@@ -352,9 +352,9 @@ namespace hambda {
 
 
     };
-    constexpr starter_lib starter_lib_v;
 
     struct extra_lib_with_multiplication {
+        constexpr extra_lib_with_multiplication(){} // a default constructor, just because clang requires them for constexpr objects
 
         template<int I, int J>
         auto constexpr
@@ -438,7 +438,17 @@ namespace hambda {
         {   return library_combiner::get_simple_named_value_overload(name); }
     };
 
-    using combined_lib = library_combiner<starter_lib, extra_lib_with_multiplication>;
+    template< typename Lib1
+            , typename Lib2
+            >
+    constexpr auto
+    combine_libraries(Lib1 lib1, Lib2 lib2)
+    -> library_combiner<Lib1,Lib2>
+    { return {lib1,lib2}; }
+
+    constexpr starter_lib starter_lib_v;
+    constexpr extra_lib_with_multiplication extra_lib_with_multiplication_v;
+    constexpr auto combined_lib_v = combine_libraries(starter_lib_v, extra_lib_with_multiplication_v);
 
 
 
