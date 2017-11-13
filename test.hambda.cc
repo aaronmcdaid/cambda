@@ -26,19 +26,6 @@ namespace utils { // 'utils' namespace, in order to use ADL
 
 using namespace hambda;
 
-struct user_supplied_library {
-    constexpr user_supplied_library(){} // a default constructor, just because clang requires them for constexpr objects
-
-    auto constexpr
-    apply_after_simplification  ( decltype( "%"_charpack )
-                        , int i
-                        , int j
-                        )
-    -> int
-    { return i%j; }
-
-};
-
 int main() {
     std::cout << toString( parse_ast( "(+ (+ (+ 90 9) 0) (+ 5 7))"_charpack)   ,0) << '\n';
 
@@ -99,6 +86,17 @@ int main() {
                 constexpr auto result = simplify(parse_ast("(* 6 (+ 7 three))"_charpack), combined_lib_v);
                 return result;
             };
+
+    struct user_supplied_library {
+        constexpr user_supplied_library(){} // a default constructor, just because clang requires them for constexpr objects
+
+        auto constexpr
+        apply_after_simplification  ( decltype( "%"_charpack ) , int i , int j)
+        -> int
+        { return i%j; }
+
+    };
+
 
     TEST_ME ( "user-supplied library"
             , 1
