@@ -363,6 +363,11 @@ namespace hambda {
         -> std::integral_constant<int, I*J>
         { return {}; }
 
+        auto constexpr
+        get_simple_named_value  ( decltype( "three"_charpack ) )
+        {
+            return std::integral_constant<int, 3>{};
+        }
     };
     struct combined_lib
     {
