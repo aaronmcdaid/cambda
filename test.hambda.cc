@@ -167,11 +167,11 @@ int main() {
 
 
     TEST_ME ( "very simple \"...\"_cambda, with one binding"
-            , 40
+            , 45
             ) ^ []()
             {
                 int forty = 40;
-                return "forty"_cambda ["forty"_binding = forty] ();
+                return "(+ 5 forty)"_cambda ["forty"_binding = forty] ();
             };
 
 }
