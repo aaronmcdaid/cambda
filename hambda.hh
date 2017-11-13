@@ -380,6 +380,14 @@ namespace hambda {
         starter_lib lib1;
         extra_lib_with_multiplication lib2;
 
+        /*
+         * Two types of call must be forwarded, 'apply_after_simplification_helper'
+         * and 'get_simple_named_value'. The relevant call must appear in
+         * exactly one of the two libraries.
+         */
+
+
+        // First, apply_after_simplification_helper
         template<typename ...T>
         auto constexpr
         apply_after_simplification_helper  ( T ...t)
@@ -396,6 +404,29 @@ namespace hambda {
         auto constexpr
         apply_after_simplification  ( T ...t)
         {   return combined_lib::apply_after_simplification_helper(std::move(t)...); }
+
+
+        /* Second, 'get_simple_named_value'
+         * Define two helper overloads, one for each sub-library.
+         * Then forward the call
+         */
+        template<typename T>
+        auto constexpr
+        get_simple_named_value_overload  ( T&& t)
+        ->decltype(lib1.get_simple_named_value(std::forward<T>(t))  )
+        {   return lib1.get_simple_named_value(std::forward<T>(t)); }
+
+        template<typename T>
+        auto constexpr
+        get_simple_named_value_overload  ( T&& t)
+        ->decltype(lib2.get_simple_named_value(std::forward<T>(t))  )
+        {   return lib2.get_simple_named_value(std::forward<T>(t)); }
+
+        template<char ... c>
+        auto constexpr
+        get_simple_named_value  ( utils::char_pack<c...> name)
+        ->decltype(combined_lib::get_simple_named_value_overload(name))
+        {   return combined_lib::get_simple_named_value_overload(name); }
     };
 
 
