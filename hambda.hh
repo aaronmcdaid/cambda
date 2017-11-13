@@ -351,6 +351,10 @@ namespace hambda {
         { return {}; }
 
 
+        auto constexpr
+        get_simple_named_value  ( decltype( "one.hundred"_charpack ) )
+        { return std::integral_constant<int, 100>{}; }
+
     };
 
     struct extra_lib_with_multiplication {
