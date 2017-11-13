@@ -202,4 +202,11 @@ int main() {
                 return "(max 1 2 3 17 8 9 0)"_cambda [ "max"_binding = [](auto ... x){ return std::max(std::initializer_list<int>{x...});} ] ();
             };
 
+    TEST_ME ( "cambda-lambda"
+            , 225
+            ) ^ []()
+            {
+                return "(/)"_cambda () (15);
+            };
+
 }
