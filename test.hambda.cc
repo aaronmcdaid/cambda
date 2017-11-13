@@ -174,4 +174,15 @@ int main() {
                 return "(+ 5 forty)"_cambda ["forty"_binding = forty] ();
             };
 
+    TEST_ME ( "multiple bindings [] []"
+            , 90
+            ) ^ []()
+            {
+                int forty = 40;
+                int fifty = 50;
+                (void)fifty;
+                return "(+ forty fifty)"_cambda ["forty"_binding = forty]["fifty"_binding = fifty]
+                ();
+            };
+
 }
