@@ -665,4 +665,38 @@ namespace hambda {
     auto constexpr
     simplify(AST ast, Lib l)
     {   return call_the_simplifier(ast, l); }
+
+
+    template<typename Lib>
+    struct wrapper_for__calls_using__std_integral_constant
+    {
+
+        // this wrapper only really works for libraries without any state
+        static_assert(std::is_empty<Lib>{} ,"");
+
+        template< typename Name, typename ...T>
+        auto constexpr
+        apply_after_simplification_overload(Name, T ...t)
+        ->decltype(Lib{}.apply_after_simplification(Name{}, std::move(t)...)  )
+        {   return Lib{}.apply_after_simplification(Name{}, std::move(t)...); }
+
+        template< typename Name, int ...I>
+        auto constexpr
+        apply_after_simplification_overload(Name , std::integral_constant<int, I> ... i)
+        {
+            constexpr int result = Lib{}.apply_after_simplification(Name{}, i...);
+            return std::integral_constant<int, result>{};
+        }
+
+        template< typename ...T>
+        auto constexpr
+        apply_after_simplification( T ...t)
+        ->decltype(this->apply_after_simplification_overload(std::move(t)...)  )
+        {   return this->apply_after_simplification_overload(std::move(t)...); }
+    };
+
+    template<typename Lib>
+    auto constexpr
+    wrap_any__calls_using__std_integral_constant(Lib)
+    { return wrapper_for__calls_using__std_integral_constant<Lib>{}; }
 }

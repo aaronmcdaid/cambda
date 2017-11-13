@@ -109,4 +109,18 @@ int main() {
                         );
                 return result;
             };
+
+    TEST_ME ( "wrap a user-supplied library"
+            , 1
+            ) ^ []()
+            {
+                constexpr auto result = simplify(parse_ast("(% 100 3)"_charpack)
+                        , combine_libraries(starter_lib_v,
+                            wrap_any__calls_using__std_integral_constant(
+                            user_supplied_library{}
+                            )
+                            )
+                        );
+                return result.value;
+            };
 }
