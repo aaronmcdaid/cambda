@@ -732,4 +732,35 @@ namespace hambda {
     auto constexpr
     wrap_any__calls_using__std_integral_constant(Lib)
     { return wrapper_for__calls_using__std_integral_constant<Lib>{}; }
+
+    template<typename T, char ...c>
+    struct binded_name_with_valueOrReference
+    {
+        // NOTE: T might be a &-reference type
+        T m_x;
+
+        static_assert(!std::is_rvalue_reference<T>{}, "");
+
+        auto constexpr
+        get_simple_named_value  ( utils::char_pack<c...> )
+        -> T
+        { return m_x; }
+    };
+
+    template<char ...c>
+    struct binding_name
+    {
+        template<typename V>
+        auto constexpr
+        operator=(V && v)
+        ->decltype(auto)
+        { return binded_name_with_valueOrReference<V, c...>{std::forward<V>(v)}; }
+    };
+
+    template<typename T, T ... chars>
+    constexpr auto
+    operator"" _binding () {
+        return binding_name<chars...>{};
+    }
+
 }

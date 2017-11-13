@@ -164,4 +164,18 @@ int main() {
                 return foo * (&result == &foo); // .value proves that the wrapper has successfully 'upgraded' the results
             };
 
+
+    TEST_ME ( "user-supplied library with a reference"
+            , 1337
+            ) ^ []()
+            {
+                int foo = 1337;
+                "foo"_binding = foo;
+                auto & result = simplify(parse_ast("foo"_charpack)
+                        ,
+                "foo"_binding = foo
+                        );
+                return foo * (&result == &foo); // .value proves that the wrapper has successfully 'upgraded' the results
+            };
+
 }
