@@ -371,10 +371,12 @@ namespace hambda {
         { return std::integral_constant<int, 4>{}; }
     };
 
-    struct combined_lib
+    template< typename Lib1
+            , typename Lib2 >
+    struct library_combiner
     {
-        starter_lib lib1;
-        extra_lib_with_multiplication lib2;
+        Lib1 lib1;
+        Lib2 lib2;
 
         /*
          * Two types of call must be forwarded, 'apply_after_simplification_helper'
@@ -403,7 +405,7 @@ namespace hambda {
         template<typename ...T>
         auto constexpr
         apply_after_simplification  ( T ...t)
-        {   return combined_lib::apply_after_simplification_helper(std::move(t)...); }
+        {   return library_combiner::apply_after_simplification_helper(std::move(t)...); }
 
 
         /* Second, 'get_simple_named_value'
@@ -429,9 +431,11 @@ namespace hambda {
         template<char ... c>
         auto constexpr
         get_simple_named_value  ( utils::char_pack<c...> name)
-        ->decltype(combined_lib::get_simple_named_value_overload(name))
-        {   return combined_lib::get_simple_named_value_overload(name); }
+        ->decltype(library_combiner::get_simple_named_value_overload(name))
+        {   return library_combiner::get_simple_named_value_overload(name); }
     };
+
+    using combined_lib = library_combiner<starter_lib, extra_lib_with_multiplication>;
 
 
 
