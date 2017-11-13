@@ -87,13 +87,17 @@ int main() {
                 return result;
             };
 
-    struct user_supplied_library {
-        constexpr user_supplied_library(){} // a default constructor, just because clang requires them for constexpr objects
+    struct user_supplied_library_withfunc {
+        constexpr user_supplied_library_withfunc(){} // a default constructor, just because clang requires them for constexpr objects
 
         auto constexpr
         apply_after_simplification  ( decltype( "%"_charpack ) , int i , int j)
         -> int
         { return i%j; }
+    };
+
+    struct user_supplied_library_withvalue {
+        constexpr user_supplied_library_withvalue(){} // a default constructor, just because clang requires them for constexpr objects
 
         auto constexpr
         get_simple_named_value  ( decltype( "seven"_charpack ) )
@@ -102,11 +106,11 @@ int main() {
 
 
     TEST_ME ( "user-supplied library"
-            , 1
+            , 10
             ) ^ []()
             {
-                constexpr auto result = simplify(parse_ast("(% 100 3)"_charpack)
-                        , combine_libraries(starter_lib_v, user_supplied_library{})
+                constexpr auto result = simplify(parse_ast("(% one.hundred 30)"_charpack)
+                        , combine_libraries(starter_lib_v, user_supplied_library_withfunc{})
                         );
                 return result;
             };
@@ -115,10 +119,10 @@ int main() {
             , 2
             ) ^ []()
             {
-                auto result = simplify(parse_ast("(% seven 5)"_charpack)
+                auto result = simplify(parse_ast("(- seven 5)"_charpack)
                         , combine_libraries(starter_lib_v,
                             wrap_any__calls_using__std_integral_constant(
-                            user_supplied_library{}
+                            user_supplied_library_withvalue{}
                             )
                             )
                         );
