@@ -350,6 +350,10 @@ namespace hambda {
         { return {}; }
 
 
+        auto constexpr
+        get_simple_named_value  ( decltype( "six"_charpack ) )
+        { return std::integral_constant<int, 6>{}; }
+
 
     };
     struct extra_lib_with_multiplication {
