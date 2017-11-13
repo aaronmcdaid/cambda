@@ -748,6 +748,19 @@ namespace hambda {
         { return m_x; }
     };
 
+    template< typename T1
+            , char ...c1
+            , typename T2
+            , char ...c2 >
+    auto constexpr
+    operator,   (   binded_name_with_valueOrReference<T1, c1...> beforeComma
+                ,   binded_name_with_valueOrReference<T2, c2...> afterComma)
+    {
+        (void) beforeComma;
+        (void) afterComma;
+        return combine_libraries(beforeComma, afterComma);
+    }
+
     template<char ...c>
     struct binding_name
     {

@@ -185,4 +185,12 @@ int main() {
                 ();
             };
 
+    TEST_ME ( "multiple bindings, using comma operator"
+            , 90
+            ) ^ []()
+            {
+                return "(+ forty fifty)"_cambda [ "forty"_binding = 40, "fifty"_binding = 50 ]
+                ();
+            };
+
 }
