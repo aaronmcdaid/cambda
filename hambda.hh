@@ -365,9 +365,11 @@ namespace hambda {
 
         auto constexpr
         get_simple_named_value  ( decltype( "three"_charpack ) )
-        {
-            return std::integral_constant<int, 3>{};
-        }
+        { return std::integral_constant<int, 3>{}; }
+
+        auto constexpr
+        get_simple_named_value  ( decltype( "four"_charpack ) )
+        { return std::integral_constant<int, 4>{}; }
     };
     struct combined_lib
     {
@@ -526,16 +528,13 @@ namespace hambda {
     }
 
     // simplifier for simple names, that directly appear in the library
-    template<typename Lib>
-    struct simplifier   < decltype("three"_charpack)
+    template<typename Name, typename Lib>
+    struct simplifier   < Name
                         , Lib
                         , utils::void_t<std::enable_if_t<
-                                    true
-                                    // detail::has_get_simple_named_value_v<decltype("three"_charpack), Lib>
-                                //&& !( is_digit_constexpr(Name::at(0)) ) && !( '\'' ==            Name::at(0)  )
+                                    detail::has_get_simple_named_value_v<Name, Lib>
                           >>>
     {
-        using Name = decltype("three"_charpack);
         static_assert(!is_grouper(Name::at(0)) ,"");
         struct gather_args_later
         {
@@ -549,8 +548,8 @@ namespace hambda {
         };
 
         static_assert( detail::has_get_simple_named_value_v<Name, Lib> ,"");
-        static_assert( detail::has_get_simple_named_value_v<decltype("three"_charpack), Lib> ,"");
-        static_assert(!detail::has_get_simple_named_value_v<decltype("four"_charpack), Lib> ,"");
+        static_assert(!is_digit_constexpr(Name::at(0))  ,"");
+        static_assert(!( '\'' ==          Name::at(0))  ,"");
 
         static auto constexpr
         simplify(Name name, Lib lib) -> auto
@@ -580,7 +579,7 @@ namespace hambda {
         };
 
         static auto constexpr
-        simplify(Name f, Lib lib) -> gather_args_later { return {std::move(f), lib}; }
+        simplify(Name f, Lib lib) -> gather_args_later { return {std::move(f), std::move(lib)}; }
     };
 
 
