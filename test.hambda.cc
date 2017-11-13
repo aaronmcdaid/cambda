@@ -78,4 +78,12 @@ int main() {
     std::cout << simplify(parse_ast( "'''e''''o'"_charpack)) << '\n';
     std::cout << simplify(parse_ast( "three"_charpack), extra_lib_with_multiplication{}) << '\n';
     std::cout << simplify(parse_ast( "four"_charpack), extra_lib_with_multiplication{}) << '\n';
+
+    TEST_ME ( "a 'constexpr' test."
+            , 60
+            ) ^ []()
+            {
+                constexpr auto result = simplify(parse_ast("(* 6 (+ 7 three))"_charpack), combined_lib{});
+                return result;
+            };
 }
