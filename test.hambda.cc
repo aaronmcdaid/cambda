@@ -128,4 +128,40 @@ int main() {
                         );
                 return result.value; // .value proves that the wrapper has successfully 'upgraded' the results
             };
+
+    struct user_supplied_library_with_a_reference {
+        int & m_my_reference;
+
+        auto constexpr
+        get_simple_named_value  ( decltype( "foo"_charpack ) )
+        -> int &
+        { return m_my_reference; }
+
+        auto constexpr
+        apply_after_simplification  ( decltype( "assign"_charpack )
+                            , int & target
+                            , int   source
+                            )
+        -> int &
+        {
+            target = source;
+            return target;
+        }
+
+    };
+
+    TEST_ME ( "user-supplied library with a reference"
+            , 35
+            ) ^ []()
+            {
+                int foo = 1337;
+                auto & result = simplify(parse_ast("(assign foo 35)"_charpack)
+                        ,
+                        //combine_libraries(starter_lib_v,
+                            user_supplied_library_with_a_reference{foo}
+                            //)
+                        );
+                return foo * (&result == &foo); // .value proves that the wrapper has successfully 'upgraded' the results
+            };
+
 }
