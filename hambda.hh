@@ -773,6 +773,17 @@ namespace hambda {
         operator() ()
         -> decltype(auto)
         { return simplify(m_ast, lib); }
+
+        template<typename Binding>
+        constexpr auto
+        operator[] (Binding binding_to_insert) &&
+        -> decltype(auto)
+        {
+            auto new_library = combine_libraries(lib, binding_to_insert);
+            (void)new_library;
+            return cambda<AST, decltype(new_library)>{m_ast, new_library};
+            //return *this;
+        }
     };
 
     template<typename T, T ... chars>

@@ -165,12 +165,12 @@ int main() {
             };
 
 
-    TEST_ME ( " \"...\"_cambda"
-            , 42
+    TEST_ME ( "very simple \"...\"_cambda, with one binding"
+            , 40
             ) ^ []()
             {
-                constexpr auto fortytwo = "(+ 40 2)"_cambda ();
-                return fortytwo;
+                int forty = 40;
+                return "forty"_cambda ["forty"_binding = forty] ();
             };
 
 }
