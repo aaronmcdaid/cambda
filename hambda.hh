@@ -696,7 +696,7 @@ namespace hambda {
                 , typename id = utils::id_t
                 >
         auto constexpr
-        apply_after_simplification_overload(Name, T && ...t)
+        apply_after_simplification_overload(utils::priority_tag<1>, Name, T && ...t)
         ->decltype(id{}(Lib{}).apply_after_simplification(Name{}, std::forward<T>(t)...)  )
         {   return id{}(Lib{}).apply_after_simplification(Name{}, std::forward<T>(t)...); }
 
@@ -710,15 +710,15 @@ namespace hambda {
                 , PlainResultType Result = id{}(Lib{}).apply_after_simplification(Name{}, std::integral_constant<int, I>{}...)
                 >
         auto constexpr
-        apply_after_simplification_overload(Name , std::integral_constant<int, I> ... )
+        apply_after_simplification_overload(utils::priority_tag<2>, Name , std::integral_constant<int, I> ... )
         -> std::integral_constant<PlainResultType, Result>
         { return {}; }
 
         template< typename ...T>
         auto constexpr
         apply_after_simplification( T ...t)
-        ->decltype(this->apply_after_simplification_overload(std::move(t)...)  )
-        {   return this->apply_after_simplification_overload(std::move(t)...); }
+        ->decltype(this->apply_after_simplification_overload(utils::priority_tag<9>{}, std::move(t)...)  )
+        {   return this->apply_after_simplification_overload(utils::priority_tag<9>{}, std::move(t)...); }
 
         template< typename Name
                 , typename id = utils::id_t>
