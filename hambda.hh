@@ -350,11 +350,6 @@ namespace hambda {
         { return {}; }
 
 
-        auto constexpr
-        get_simple_named_value  ( decltype( "six"_charpack ) )
-        { return std::integral_constant<int, 6>{}; }
-
-
     };
     struct extra_lib_with_multiplication {
 
@@ -375,6 +370,7 @@ namespace hambda {
         get_simple_named_value  ( decltype( "four"_charpack ) )
         { return std::integral_constant<int, 4>{}; }
     };
+
     struct combined_lib
     {
         starter_lib lib1;
@@ -388,17 +384,21 @@ namespace hambda {
 
 
         // First, apply_after_simplification_helper
-        template<typename ...T>
+        template< typename ...T
+                , typename id = utils:: id_t
+                >
         auto constexpr
         apply_after_simplification_helper  ( T ...t)
-        ->decltype(lib1.apply_after_simplification(std::move(t)...)  )
-        {   return lib1.apply_after_simplification(std::move(t)...); }
+        ->decltype(id{}(lib1).apply_after_simplification(std::move(t)...)  )
+        {   return id{}(lib1).apply_after_simplification(std::move(t)...); }
 
-        template<typename ...T>
+        template< typename ...T
+                , typename id = utils:: id_t
+                >
         auto constexpr
         apply_after_simplification_helper  ( T ...t)
-        ->decltype(lib2.apply_after_simplification(std::move(t)...)  )
-        {   return lib2.apply_after_simplification(std::move(t)...); }
+        ->decltype(id{}(lib2).apply_after_simplification(std::move(t)...)  )
+        {   return id{}(lib2).apply_after_simplification(std::move(t)...); }
 
         template<typename ...T>
         auto constexpr
@@ -410,17 +410,21 @@ namespace hambda {
          * Define two helper overloads, one for each sub-library.
          * Then forward the call
          */
-        template<typename T>
+        template<typename T
+                , typename id = utils:: id_t
+                >
         auto constexpr
         get_simple_named_value_overload  ( T&& t)
-        ->decltype(lib1.get_simple_named_value(std::forward<T>(t))  )
-        {   return lib1.get_simple_named_value(std::forward<T>(t)); }
+        ->decltype(id{}(lib1).get_simple_named_value(std::forward<T>(t))  )
+        {   return id{}(lib1).get_simple_named_value(std::forward<T>(t)); }
 
-        template<typename T>
+        template<typename T
+                , typename id = utils:: id_t
+                >
         auto constexpr
         get_simple_named_value_overload  ( T&& t)
-        ->decltype(lib2.get_simple_named_value(std::forward<T>(t))  )
-        {   return lib2.get_simple_named_value(std::forward<T>(t)); }
+        ->decltype(id{}(lib2).get_simple_named_value(std::forward<T>(t))  )
+        {   return id{}(lib2).get_simple_named_value(std::forward<T>(t)); }
 
         template<char ... c>
         auto constexpr
