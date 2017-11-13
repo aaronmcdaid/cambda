@@ -39,7 +39,7 @@ int main() {
             ) ^ []()
             { return simplify(parse_ast("(+ (+ (+ 90 9) 0) (+ 5 7))"_charpack)); };
 
-    constexpr int i= simplify(parse_ast("(+ (+ (+ 90 9) 0) (+ 5 7))"_charpack));
+    constexpr auto i= simplify(parse_ast("(+ (+ (+ 90 9) 0) (+ 5 7))"_charpack));
     static_assert(i==111 ,"");
 
     TEST_ME ( "recursive addition"
