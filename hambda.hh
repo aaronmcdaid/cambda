@@ -564,6 +564,7 @@ namespace hambda {
                         , utils::void_t<std::enable_if_t<
                                 !( is_digit_constexpr(Name::at(0)) )
                              && !( '\'' ==            Name::at(0)  )
+                             && ! detail::has_get_simple_named_value_v<Name, Lib>
                           >>>
     {
         static_assert(!is_grouper(Name::at(0)) ,"");
