@@ -763,4 +763,24 @@ namespace hambda {
         return binding_name<chars...>{};
     }
 
+    template<typename AST, typename Lib>
+    struct cambda
+    {
+        AST m_ast;
+        Lib lib;
+
+        constexpr auto
+        operator() ()
+        -> decltype(auto)
+        { return simplify(m_ast, lib); }
+    };
+
+    template<typename T, T ... chars>
+    constexpr auto
+    operator"" _cambda ()
+    {
+        auto ast = parse_ast(utils:: char_pack<chars...>{});
+        return cambda<decltype(ast), starter_lib> {ast, starter_lib_v};
+    }
+
 }
