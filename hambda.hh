@@ -309,6 +309,7 @@ namespace hambda {
     }
 
     struct starter_lib {
+        constexpr starter_lib(){} // a default constructor, just because clang requires them for constexpr objects
 
 
         // id :: a -> a
@@ -351,6 +352,8 @@ namespace hambda {
 
 
     };
+    constexpr starter_lib starter_lib_v;
+
     struct extra_lib_with_multiplication {
 
         template<int I, int J>
@@ -646,7 +649,7 @@ namespace hambda {
     template<typename AST>
     auto constexpr
     simplify(AST ast)
-    {   return call_the_simplifier(ast, starter_lib{}); }
+    {   return call_the_simplifier(ast, starter_lib_v); }
 
     template<typename AST, typename Lib>
     auto constexpr
