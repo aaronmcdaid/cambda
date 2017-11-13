@@ -466,6 +466,7 @@ namespace hambda {
     template<typename T, typename Lib>
     constexpr auto
     call_the_simplifier(T t, Lib l)
+    ->decltype(auto)
     { return simplifier<T, Lib>::simplify(t, l); }
 
 
@@ -612,7 +613,7 @@ namespace hambda {
         static_assert(!( '\'' ==          Name::at(0))  ,"");
 
         static auto constexpr
-        simplify(Name name, Lib lib) -> auto
+        simplify(Name name, Lib lib) -> decltype(auto)
         { return lib.get_simple_named_value(name); }
     };
 
@@ -635,6 +636,7 @@ namespace hambda {
             template<typename ...T>
             auto constexpr
             operator()  ( T && ...t)
+            ->decltype(auto)
             { return m_lib.apply_after_simplification( m_f , std::forward<T>(t) ... ); }
         };
 
@@ -651,6 +653,7 @@ namespace hambda {
     {
         static auto constexpr
         simplify(grouped_t<'(', types_t<Func, Args...> >, Lib lib)
+        ->decltype(auto)
         {
             return
             call_the_simplifier(Func{}, lib)
@@ -663,11 +666,13 @@ namespace hambda {
     template<typename AST>
     auto constexpr
     simplify(AST ast)
+    ->decltype(auto)
     {   return call_the_simplifier(ast, starter_lib_v); }
 
     template<typename AST, typename Lib>
     auto constexpr
     simplify(AST ast, Lib l)
+    ->decltype(auto)
     {   return call_the_simplifier(ast, l); }
 
 
