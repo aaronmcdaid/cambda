@@ -2,6 +2,8 @@
 #include "../module-TEST_ME/TEST_ME.hh"
 #include "../module-bits.and.pieces/PP.hh"
 
+#include<algorithm>
+
 using hambda::operator"" _charpack;
 
 namespace utils { // 'utils' namespace, in order to use ADL
@@ -191,6 +193,13 @@ int main() {
             {
                 return "(+ forty fifty)"_cambda [ "forty"_binding = 40, "fifty"_binding = 50 ]
                 ();
+            };
+
+    TEST_ME ( "binding to a C++-lambda"
+            , 17
+            ) ^ []()
+            {
+                return "(max 1 2 3 17 8 9 0)"_cambda [ "max"_binding = [](auto ... x){ return std::max(std::initializer_list<int>{x...});} ] ();
             };
 
 }
