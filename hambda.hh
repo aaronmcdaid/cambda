@@ -707,6 +707,8 @@ namespace hambda {
                 , class...
                 , typename id = utils::id_t
                 , typename PlainResultType = decltype( id{}(Lib{}).apply_after_simplification(Name{}, std::integral_constant<int, I>{}...) )
+                , std::enable_if_t<!std::is_same<PlainResultType, void>{} >* =nullptr
+                , std::enable_if_t< (sizeof(PlainResultType)>0)           >* =nullptr // so it's worth putting inside integral constant
                 , PlainResultType Result = id{}(Lib{}).apply_after_simplification(Name{}, std::integral_constant<int, I>{}...)
                 >
         auto constexpr
