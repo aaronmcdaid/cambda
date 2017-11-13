@@ -706,6 +706,13 @@ namespace hambda {
         apply_after_simplification( T ...t)
         ->decltype(this->apply_after_simplification_overload(std::move(t)...)  )
         {   return this->apply_after_simplification_overload(std::move(t)...); }
+
+        template< typename Name
+                , typename id = utils::id_t>
+        auto constexpr
+        get_simple_named_value  ( Name name)
+        ->decltype(id{}(Lib{}).get_simple_named_value(name))
+        {   return id{}(Lib{}).get_simple_named_value(name); }
     };
 
     template<typename Lib>
