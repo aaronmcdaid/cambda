@@ -360,7 +360,7 @@ namespace hambda {
                             , std::integral_constant<int,I>
                             , std::integral_constant<int,J>
                             )
-        -> std::integral_constant<int, I+J>
+        -> std::integral_constant<int, I*J>
         { return {}; }
 
     };
