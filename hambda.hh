@@ -313,7 +313,7 @@ namespace hambda {
 
         // id :: a -> a
         template<typename T>
-        static auto constexpr
+        auto constexpr
         apply_after_simplification  ( decltype( "id"_charpack )
                             , T t
                             )
@@ -322,7 +322,7 @@ namespace hambda {
 
 
         template<int I, int J>
-        static auto constexpr
+        auto constexpr
         apply_after_simplification  ( decltype( "+"_charpack )
                             , std::integral_constant<int,I>
                             , std::integral_constant<int,J>
@@ -332,7 +332,7 @@ namespace hambda {
 
 
         template<int I, int J>
-        static auto constexpr
+        auto constexpr
         apply_after_simplification  ( decltype( "-"_charpack )
                             , std::integral_constant<int,I>
                             , std::integral_constant<int,J>
@@ -342,7 +342,7 @@ namespace hambda {
 
 
         template<char ...c>
-        static auto constexpr
+        auto constexpr
         apply_after_simplification  ( decltype( "length"_charpack )
                             , utils::char_pack<c...>
                             )
@@ -355,7 +355,7 @@ namespace hambda {
     struct extra_lib_with_multiplication {
 
         template<int I, int J>
-        static auto constexpr
+        auto constexpr
         apply_after_simplification  ( decltype( "*"_charpack )
                             , std::integral_constant<int,I>
                             , std::integral_constant<int,J>
@@ -366,27 +366,25 @@ namespace hambda {
     };
     struct combined_lib
     {
-#if 1
-        using lib1 = starter_lib;
-        using lib2 = extra_lib_with_multiplication;
+        starter_lib lib1;
+        extra_lib_with_multiplication lib2;
 
         template<typename ...T>
-        static auto constexpr
+        auto constexpr
         apply_after_simplification_helper  ( T ...t)
-        ->decltype(lib1::apply_after_simplification(std::move(t)...)  )
-        {   return lib1::apply_after_simplification(std::move(t)...); }
+        ->decltype(lib1.apply_after_simplification(std::move(t)...)  )
+        {   return lib1.apply_after_simplification(std::move(t)...); }
 
         template<typename ...T>
-        static auto constexpr
+        auto constexpr
         apply_after_simplification_helper  ( T ...t)
-        ->decltype(lib2::apply_after_simplification(std::move(t)...)  )
-        {   return lib2::apply_after_simplification(std::move(t)...); }
+        ->decltype(lib2.apply_after_simplification(std::move(t)...)  )
+        {   return lib2.apply_after_simplification(std::move(t)...); }
 
         template<typename ...T>
-        static auto constexpr
+        auto constexpr
         apply_after_simplification  ( T ...t)
         {   return combined_lib::apply_after_simplification_helper(std::move(t)...); }
-#endif
     };
 
 
@@ -503,15 +501,16 @@ namespace hambda {
         struct gather_args_later
         {
             FuncName m_f;
+            Lib m_lib;
 
             template<typename ...T>
             auto constexpr
             operator()  ( T && ...t)
-            { return Lib::apply_after_simplification( m_f , std::forward<T>(t) ... ); }
+            { return m_lib.apply_after_simplification( m_f , std::forward<T>(t) ... ); }
         };
 
         static auto constexpr
-        simplify(FuncName f, Lib) -> gather_args_later { return {std::move(f)}; }
+        simplify(FuncName f, Lib lib) -> gather_args_later { return {std::move(f), lib}; }
     };
 
 
@@ -521,12 +520,12 @@ namespace hambda {
                         >
     {
         static auto constexpr
-        simplify(grouped_t<'(', types_t<Func, Args...> >, Lib)
+        simplify(grouped_t<'(', types_t<Func, Args...> >, Lib lib)
         {
             return
-            call_the_simplifier(Func{}, Lib{})
+            call_the_simplifier(Func{}, lib)
                 (
-                    call_the_simplifier(Args{}, Lib{})...  // pass the arguments
+                    call_the_simplifier(Args{}, lib)...  // pass the arguments
                 );
         }
     };
