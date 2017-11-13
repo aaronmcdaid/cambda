@@ -76,4 +76,5 @@ int main() {
 
     std::cout << simplify(parse_ast( "(+ (+ (+ 90 9) 0) (+ 5 7))"_charpack)) << '\n';
     std::cout << simplify(parse_ast( "'''e''''o'"_charpack)) << '\n';
+    std::cout << simplify(parse_ast( "three"_charpack), extra_lib_with_multiplication{}) << '\n';
 }

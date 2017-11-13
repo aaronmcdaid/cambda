@@ -525,6 +525,38 @@ namespace hambda {
 
     }
 
+    // simplifier for simple names, that directly appear in the library
+    template<typename Lib>
+    struct simplifier   < decltype("three"_charpack)
+                        , Lib
+                        , utils::void_t<std::enable_if_t<
+                                    true
+                                    // detail::has_get_simple_named_value_v<decltype("three"_charpack), Lib>
+                                //&& !( is_digit_constexpr(Name::at(0)) ) && !( '\'' ==            Name::at(0)  )
+                          >>>
+    {
+        using Name = decltype("three"_charpack);
+        static_assert(!is_grouper(Name::at(0)) ,"");
+        struct gather_args_later
+        {
+            Name m_f;
+            Lib m_lib;
+
+            template<typename ...T>
+            auto constexpr
+            operator()  ( T && ...t)
+            { return m_lib.apply_after_simplification( m_f , std::forward<T>(t) ... ); }
+        };
+
+        static_assert( detail::has_get_simple_named_value_v<Name, Lib> ,"");
+        static_assert( detail::has_get_simple_named_value_v<decltype("three"_charpack), Lib> ,"");
+        static_assert(!detail::has_get_simple_named_value_v<decltype("four"_charpack), Lib> ,"");
+
+        static auto constexpr
+        simplify(Name name, Lib lib) -> auto
+        { return lib.get_simple_named_value(name); }
+    };
+
     // simplifier for names (functions only, for now)
     template<typename Name, typename Lib>
     struct simplifier   < Name
