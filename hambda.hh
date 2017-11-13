@@ -403,7 +403,7 @@ namespace hambda {
 
 
 
-    // all digits
+    // simplifier for all digits
     template<char first_digit, char ...c, typename Lib>
     struct simplifier   < utils::char_pack<first_digit, c...>
                         , Lib
@@ -476,6 +476,7 @@ namespace hambda {
         }
     }
 
+    // simplifier for string literals
     template<typename StringLiteral, typename Lib>
     struct simplifier   < StringLiteral
                         , Lib
@@ -489,18 +490,19 @@ namespace hambda {
     };
 
 
-    template<typename FuncName, typename Lib>
-    struct simplifier   < FuncName
+    // simplifier for names (functions only, for now)
+    template<typename Name, typename Lib>
+    struct simplifier   < Name
                         , Lib
                         , utils::void_t<std::enable_if_t<
-                                !( is_digit_constexpr(FuncName::at(0)) )
-                             && !( '\'' ==            FuncName::at(0)  )
+                                !( is_digit_constexpr(Name::at(0)) )
+                             && !( '\'' ==            Name::at(0)  )
                           >>>
     {
-        static_assert(!is_grouper(FuncName::at(0)) ,"");
+        static_assert(!is_grouper(Name::at(0)) ,"");
         struct gather_args_later
         {
-            FuncName m_f;
+            Name m_f;
             Lib m_lib;
 
             template<typename ...T>
@@ -510,10 +512,11 @@ namespace hambda {
         };
 
         static auto constexpr
-        simplify(FuncName f, Lib lib) -> gather_args_later { return {std::move(f), lib}; }
+        simplify(Name f, Lib lib) -> gather_args_later { return {std::move(f), lib}; }
     };
 
 
+    // simplifier to apply '('
     template<typename Func, typename ...Args, typename Lib>
     struct simplifier   < grouped_t<'(', types_t<Func, Args...   >>
                         , Lib
