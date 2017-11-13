@@ -111,16 +111,16 @@ int main() {
             };
 
     TEST_ME ( "wrap a user-supplied library"
-            , 1
+            , 3
             ) ^ []()
             {
-                constexpr auto result = simplify(parse_ast("(% 100 3)"_charpack)
+                auto result = simplify(parse_ast("(% 103 5)"_charpack)
                         , combine_libraries(starter_lib_v,
                             wrap_any__calls_using__std_integral_constant(
                             user_supplied_library{}
                             )
                             )
                         );
-                return result.value;
+                return result.value; // .value proves that the wrapper has successfully 'upgraded' the results
             };
 }
