@@ -670,23 +670,36 @@ namespace hambda {
     template<typename Lib>
     struct wrapper_for__calls_using__std_integral_constant
     {
+        /* wrapper_for__calls_using__std_integral_constant
+         * ===============================================
+         *
+         * The second overload is where the action is. It's where an expression is
+         * 'upgraded' to an std::integral_constant if the int can be computed
+         * as a constant expression
+         */
 
         // this wrapper only really works for libraries without any state
         static_assert(std::is_empty<Lib>{} ,"");
 
+        //First, the 'normal' overload that just forwards things through
         template< typename Name, typename ...T>
         auto constexpr
-        apply_after_simplification_overload(Name, T ...t)
-        ->decltype(Lib{}.apply_after_simplification(Name{}, std::move(t)...)  )
-        {   return Lib{}.apply_after_simplification(Name{}, std::move(t)...); }
+        apply_after_simplification_overload(Name, T && ...t)
+        ->decltype(Lib{}.apply_after_simplification(Name{}, std::forward<T>(t)...)  )
+        {   return Lib{}.apply_after_simplification(Name{}, std::forward<T>(t)...); }
 
-        template< typename Name, int ...I>
+        // Now, a special overload for when all the arguments are std::integral_constant.
+        // We compute everything in the template arguments
+        template< typename Name
+                , int ...I
+                , class...
+                , typename PlainResultType = decltype( Lib{}.apply_after_simplification(Name{}, std::integral_constant<int, I>{}...) )
+                , PlainResultType Result = Lib{}.apply_after_simplification(Name{}, std::integral_constant<int, I>{}...)
+                >
         auto constexpr
-        apply_after_simplification_overload(Name , std::integral_constant<int, I> ... i)
-        {
-            constexpr int result = Lib{}.apply_after_simplification(Name{}, i...);
-            return std::integral_constant<int, result>{};
-        }
+        apply_after_simplification_overload(Name , std::integral_constant<int, I> ... )
+        -> std::integral_constant<PlainResultType, Result>
+        { return {}; }
 
         template< typename ...T>
         auto constexpr
