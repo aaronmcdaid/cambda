@@ -324,26 +324,30 @@ namespace hambda {
 
         // First, apply_after_simplification_helper
         template< typename ...T
+                , typename LibToForward
                 , typename id = utils:: id_t
                 >
         auto constexpr
-        apply_after_simplification_helper  ( T && ...t)
-        ->decltype(id{}(lib1).apply_after_simplification(std::forward<T>(t)...)  )
-        {   return id{}(lib1).apply_after_simplification(std::forward<T>(t)...); }
+        apply_after_simplification_helper  (LibToForward l2f, T && ...t)
+        ->decltype(id{}(lib1).apply_after_simplification(l2f, std::forward<T>(t)...)  )
+        {   return id{}(lib1).apply_after_simplification(l2f, std::forward<T>(t)...); }
 
         template< typename ...T
+                , typename LibToForward
                 , typename id = utils:: id_t
                 >
         auto constexpr
-        apply_after_simplification_helper  ( T && ...t)
-        ->decltype(id{}(lib2).apply_after_simplification(std::forward<T>(t)...)  )
-        {   return id{}(lib2).apply_after_simplification(std::forward<T>(t)...); }
+        apply_after_simplification_helper  (LibToForward l2f, T && ...t)
+        ->decltype(id{}(lib2).apply_after_simplification(l2f, std::forward<T>(t)...)  )
+        {   return id{}(lib2).apply_after_simplification(l2f, std::forward<T>(t)...); }
 
-        template<typename ...T>
+        template< typename ...T
+                , typename LibToForward
+                >
         auto constexpr
-        apply_after_simplification  ( T && ...t)
-        ->decltype(library_combiner::apply_after_simplification_helper(std::forward<T>(t)...))
-        {   return library_combiner::apply_after_simplification_helper(std::forward<T>(t)...); }
+        apply_after_simplification  (LibToForward l2f, T && ...t)
+        ->decltype(library_combiner::apply_after_simplification_helper(l2f, std::forward<T>(t)...))
+        {   return library_combiner::apply_after_simplification_helper(l2f, std::forward<T>(t)...); }
 
 
         /* Second, 'get_simple_named_value'
@@ -525,16 +529,6 @@ namespace hambda {
                           >>>
     {
         static_assert(!is_grouper(Name::at(0)) ,"");
-        struct gather_args_later
-        {
-            Name m_f;
-            Lib m_lib;
-
-            template<typename ...T>
-            auto constexpr
-            operator()  ( T && ...t)
-            { return m_lib.apply_after_simplification( m_f , std::forward<T>(t) ... ); }
-        };
 
         static_assert( detail::has_get_simple_named_value_v<Name, Lib> ,"");
         static_assert(!is_digit_constexpr(Name::at(0))  ,"");
@@ -565,7 +559,7 @@ namespace hambda {
             auto constexpr
             operator()  ( T && ...t)
             ->decltype(auto)
-            { return m_lib.apply_after_simplification( m_f , std::forward<T>(t) ... ); }
+            { return m_lib.apply_after_simplification(m_lib, m_f , std::forward<T>(t) ... ); }
         };
 
         static auto constexpr
@@ -630,35 +624,39 @@ namespace hambda {
 
         //First, the 'normal' overload that just forwards things through
         template< typename Name
+                , typename LibToForward
                 , typename ...T
                 , typename id = utils::id_t
                 >
         auto constexpr
-        apply_after_simplification_overload(utils::priority_tag<1>, Name, T && ...t)
-        ->decltype(id{}(Lib{}).apply_after_simplification(Name{}, std::forward<T>(t)...)  )
-        {   return id{}(Lib{}).apply_after_simplification(Name{}, std::forward<T>(t)...); }
+        apply_after_simplification_overload(utils::priority_tag<1>, LibToForward l2f, Name, T && ...t)
+        ->decltype(id{}(Lib{}).apply_after_simplification(l2f, Name{}, std::forward<T>(t)...)  )
+        {   return id{}(Lib{}).apply_after_simplification(l2f, Name{}, std::forward<T>(t)...); }
 
         // Now, a special overload for when all the arguments are std::integral_constant.
         // We compute everything in the template arguments
         template< typename Name
+                , typename LibToForward
                 , int ...I
                 , class...
                 , typename id = utils::id_t
-                , typename PlainResultType = decltype( id{}(Lib{}).apply_after_simplification(Name{}, std::integral_constant<int, I>{}...) )
+                , typename PlainResultType = decltype( id{}(Lib{}).apply_after_simplification(LibToForward{}, Name{}, std::integral_constant<int, I>{}...) )
                 , std::enable_if_t<!std::is_same<PlainResultType, void>{} >* =nullptr
                 , std::enable_if_t< (sizeof(PlainResultType)>0)           >* =nullptr // so it's worth putting inside integral constant
-                , PlainResultType Result = id{}(Lib{}).apply_after_simplification(Name{}, std::integral_constant<int, I>{}...)
+                , PlainResultType Result = id{}(Lib{}).apply_after_simplification(LibToForward{}, Name{}, std::integral_constant<int, I>{}...)
                 >
         auto constexpr
-        apply_after_simplification_overload(utils::priority_tag<2>, Name , std::integral_constant<int, I> ... )
+        apply_after_simplification_overload(utils::priority_tag<2>, LibToForward, Name , std::integral_constant<int, I> ... )
         -> std::integral_constant<PlainResultType, Result>
         { return {}; }
 
-        template< typename ...T>
+        template< typename ...T
+                , typename LibToForward
+                >
         auto constexpr
-        apply_after_simplification( T && ...t)
-        ->decltype(this->apply_after_simplification_overload(utils::priority_tag<9>{}, std::forward<T>(t)...)  )
-        {   return this->apply_after_simplification_overload(utils::priority_tag<9>{}, std::forward<T>(t)...); }
+        apply_after_simplification(LibToForward l2f, T && ...t)
+        ->decltype(this->apply_after_simplification_overload(utils::priority_tag<9>{}, l2f, std::forward<T>(t)...)  )
+        {   return this->apply_after_simplification_overload(utils::priority_tag<9>{}, l2f, std::forward<T>(t)...); }
 
         template< typename Name
                 , typename id = utils::id_t>
@@ -744,17 +742,20 @@ namespace hambda {
 
 
         // id :: a -> a
-        template<typename T>
+        template<typename T
+                , typename LibToForward
+                >
         auto constexpr
-        apply_after_simplification  ( decltype( "id"_charpack )
+        apply_after_simplification  (LibToForward, decltype( "id"_charpack )
                             , T t
                             )
         -> T
         { return std::move(t); }
 
 
+        template< typename LibToForward>
         auto constexpr
-        apply_after_simplification  ( decltype( "+"_charpack )
+        apply_after_simplification  (LibToForward, decltype( "+"_charpack )
                             , int i
                             , int j
                             )
@@ -762,15 +763,17 @@ namespace hambda {
         { return i+j; }
 
 
+        template< typename LibToForward>
         auto constexpr
-        apply_after_simplification  ( decltype( "-"_charpack )
+        apply_after_simplification  (LibToForward, decltype( "-"_charpack )
                             , int i
                             , int j
                             )
         -> int { return i-j;}
 
+        template< typename LibToForward>
         auto constexpr
-        apply_after_simplification  ( decltype( "*"_charpack )
+        apply_after_simplification  (LibToForward, decltype( "*"_charpack )
                             , int i
                             , int j
                             )
@@ -778,36 +781,40 @@ namespace hambda {
         { return i*j; }
 
 
-        template<char ...c>
+        template< typename LibToForward
+                , char ...c>
         auto constexpr
-        apply_after_simplification  ( decltype( "length"_charpack )
+        apply_after_simplification  (LibToForward, decltype( "length"_charpack )
                             , utils::char_pack<c...>
                             )
         -> std::integral_constant<int, sizeof...(c)>
         { return {}; }
 
 
-        template<char ... binding_chars, typename QuotedExpression>
+        template< char ... binding_chars
+                , typename LibToForward
+                , typename QuotedExpression>
         auto constexpr
-        apply_after_simplification  ( decltype( "lambda"_charpack )
+        apply_after_simplification  (LibToForward l2f, decltype( "lambda"_charpack )
                                     , hambda::grouped_t<'[', types_t<utils::char_pack<binding_chars...>>>
                                     , hambda::grouped_t<'[', types_t<QuotedExpression>>
                                     )
         // TODO: trailing return type
         {
-            return [](auto x) -> int{
+            return [&](auto x) -> int{
                 (void)x;
-                return hambda::simplify(
-                        QuotedExpression{}
-                        , starter_lib{} );
+                return hambda::simplify
+                        (   QuotedExpression{}
+                        ,   l2f         );
                 return x*x;
             };
         }
 
         template< typename T
+                , typename LibToForward
                 , typename S >
         auto constexpr
-        apply_after_simplification  ( decltype( "assign"_charpack )
+        apply_after_simplification  (LibToForward, decltype( "assign"_charpack )
                             , T & target
                             , S   source
                             )
