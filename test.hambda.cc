@@ -216,4 +216,22 @@ int main() {
                 constexpr auto result = "((lambda [] [1234]))"_cambda  ();
                 return result;
             };
+
+    struct test2500
+    {
+        constexpr static int
+        foo() {
+            int r = 50;
+            auto result = "{r assign ((lambda [] [{r * r}]))}"_cambda[ "r"_binding = r] ();
+            return result;
+        }
+    };
+
+    TEST_ME ( "no-arg lambda with constexpr and assign and stuff"
+            , 2500
+            ) ^ []()
+            {
+                constexpr auto result = test2500::foo();
+                return result;
+            };
 }
