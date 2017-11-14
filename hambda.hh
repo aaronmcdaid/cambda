@@ -623,13 +623,15 @@ namespace hambda {
                         , Lib
                         >
     {
+        template< typename id = utils:: id_t>
         static auto constexpr
         simplify(grouped_t<'{', types_t<Arg1, Func, Arg2> >, Lib lib)
-        ->decltype(auto)
+        ->decltype(simplifier       < grouped_t<'(', types_t<Func, Arg1, Arg2>> , Lib>
+                        :: simplify ( grouped_t<'(', types_t<Func, Arg1, Arg2>> {} , id{}(lib))
+                )
         {
-            return
-            simplifier      < grouped_t<'(', types_t<Func, Arg1, Arg2>> , Lib>
-                :: simplify ( grouped_t<'(', types_t<Func, Arg1, Arg2>> {} , lib)
+            return simplifier       < grouped_t<'(', types_t<Func, Arg1, Arg2>> , Lib>
+                        :: simplify ( grouped_t<'(', types_t<Func, Arg1, Arg2>> {} ,      lib )
                 ;
         }
     };
