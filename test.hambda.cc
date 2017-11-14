@@ -1,6 +1,5 @@
 #include "hambda.hh"
 #include "../module-TEST_ME/TEST_ME.hh"
-#include "../module-bits.and.pieces/PP.hh"
 
 #include<algorithm>
 
@@ -47,53 +46,34 @@ int main() {
     //std::cout << toString( parse_ast( "(+ (+ (+ 90 9) 0) (+ 5 7))"_charpack)   ,0) << '\n';
 
     TEST_ME ( "char_pack_to_int"
-            , 345789.0
+            , 345789
             ) ^ []()
-            { return char_pack_to_int( "345789"_charpack ); };
+            { return "345789"_cambda (); };
 
-    TEST_ME ( "recursive addition"
-            , 111
-            ) ^ []()
-            { return simplify(parse_ast("(+ (+ (+ 90 9) 0) (+ 5 7))"_charpack)); };
-
-    TEST_ME ( "recursive addition"
+    TEST_ME ( "addition and subtraction"
             , 87
             ) ^ []()
-            { return simplify(parse_ast("(- (+ (+ 90 9) 0) (+ 5 7))"_charpack)); };
+            { return "(- (+ (+ 90 9) 0) (+ 5 7))"_cambda(); };
 
     TEST_ME ( "heavily nested 'id', especially in function position"
             , 87
             ) ^ []()
-            { return simplify(parse_ast("((((((id id) id) id) id) -) ((id +) ((((id id) (id id)) +) (id 90) 9) 0) (+ 5 7))"_charpack)); };
+            { return "((((((id id) id) id) id) -) ((id +) ((((id id) (id id)) +) (id 90) 9) 0) (+ 5 7))"_cambda(); };
 
-    TEST_ME ( "string literals"
+    TEST_ME ( "string literal, simple"
             , std::string("helloworld")
             ) ^ []()
             { return simplify(parse_ast("'helloworld'"_charpack)); };
 
-    TEST_ME ( "string literals"
-            , 3  // yes '''''''' is equivalent to "'''"
+    TEST_ME ( "string literal, with nested quotes, length function"
+            , 3  // yes, '''''''' is equivalent to "'''"
             ) ^ []()
             { return simplify(parse_ast("(length '''''''')"_charpack)); };
 
-    TEST_ME ( "string literals"
+    TEST_ME ( "string literal, with nested quotes and spaces"
             , std::string(" ' ' ' ")  // yes ' '' '' '' ' is equivalent to " ' ' ' "
             ) ^ []()
             { return simplify(parse_ast("' '' '' '' '"_charpack)); };
-
-    TEST_ME ( "extra_lib for '*'"
-            , 60
-            ) ^ []()
-            { return simplify(parse_ast("(* 6 (+ 7 3))"_charpack)); };
-
-
-    TEST_ME ( "a 'constexpr' test."
-            , 60
-            ) ^ []()
-            {
-                constexpr auto result = simplify(parse_ast("(* 6 (+ 7 3))"_charpack));
-                return result;
-            };
 
     TEST_ME ( "user-supplied library with a reference"
             , 35
@@ -101,22 +81,7 @@ int main() {
             {
                 int foo = 1337;
                 auto && result = "(assign foo 35)"_cambda[ "foo"_binding = foo]();
-                return foo * (&result == &foo);
-            };
-
-
-    TEST_ME ( "wrapped, to get integral_constant out again"
-            , 60
-            ) ^ []()
-            { return "(* 6 (+ 7 3))"_cambda (); };
-
-
-    TEST_ME ( "very simple \"...\"_cambda, with one binding"
-            , 45
-            ) ^ []()
-            {
-                int forty = 40;
-                return "(+ 5 forty)"_cambda ["forty"_binding = forty] ();
+                return foo * (&result == &foo); // to confirm the address of the object is what we think it is
             };
 
     TEST_ME ( "multiple bindings [] []"
@@ -152,16 +117,14 @@ int main() {
                 return "(lambda [x y z] [(+ (* x y) z)])"_cambda  () (15, 3, 5);
             };
 
-    TEST_ME ( "[1 2 3]"
-            //, 225
+    TEST_ME ( "[1 2 3], a quoted object"
             , utils::type< hambda::grouped_t<'[', types_t<decltype("1"_charpack), decltype("2"_charpack), decltype("3"_charpack)>> >
             ) ^ []()
             {
                 return utils:: as_type( "[1 2 3]"_cambda () );
             };
 
-    TEST_ME ( "[]"
-            //, 225
+    TEST_ME ( "[], an empty quoted object"
             , utils::type< hambda::grouped_t<'[', types_t<>> >
             ) ^ []()
             {
@@ -201,7 +164,7 @@ int main() {
                 return result;
             };
 
-    TEST_ME ( "{10 * {2 + 2}}"
+    TEST_ME ( "{10 * {2 + 2}}" // testing {} for infix notation
             , 40
             ) ^ []()
             {
@@ -235,7 +198,7 @@ int main() {
         }
     };
 
-    TEST_ME ( "no-arg lambda with constexpr and assign and stuff"
+    TEST_ME ( "no-arg lambda with constexpr and assign and stuff, on 'double' instead of 'int'"
             , 0.25
             ) ^ []()
             {
