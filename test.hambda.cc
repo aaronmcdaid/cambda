@@ -222,7 +222,7 @@ int main() {
         constexpr static double
         foo() {
             double r = 0.5;
-            auto result = "{r assign ((lambda [] [{r * r}]))}"_cambda[ "r"_binding = r] ();
+            auto result = "{(id r) assign ((lambda [] [{r * r}]))}"_cambda[ "r"_binding = r] ();
             return result;
         }
     };
