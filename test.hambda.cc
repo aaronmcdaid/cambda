@@ -253,4 +253,24 @@ int main() {
                 return result;
             };
 
+    struct test__for_each_ref__by_squaring_elements_in_place
+    {
+        constexpr auto static
+        run()
+        {
+                int test_data[] {5,6,7};
+                "(range_based_for test_data (lambda [r] [(assign r (* r r))]))"_cambda
+                    ["test_data"_binding = test_data]
+                    ();
+                return test_data[0]+test_data[1]+test_data[2];
+        }
+    };
+
+    TEST_ME ( "range_based_for"
+            , 5*5 + 6*6 + 7*7
+            ) ^ []()
+            {
+                constexpr auto result = test__for_each_ref__by_squaring_elements_in_place::run();
+                return result;
+            };
 }

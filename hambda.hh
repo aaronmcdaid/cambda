@@ -783,6 +783,25 @@ namespace hambda {
         constexpr starter_lib(){} // a default constructor, just because clang requires them for constexpr objects
 
 
+        // range_based_for
+        template< typename LibToForward
+                , typename Data
+                , typename Func
+                >
+        auto constexpr
+        apply_after_simplification  (   LibToForward &&, decltype( "range_based_for"_charpack )
+                                    ,   Data && data
+                                    ,   Func && func
+                                    )
+        -> int
+        {
+            int count = 0;
+            for(auto && x : data)
+                std::forward<Func>(func) (std::forward<decltype(x)>(x));
+            return count;
+        }
+
+
         // id :: a -> a
         template<typename T
                 , typename LibToForward
