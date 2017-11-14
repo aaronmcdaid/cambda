@@ -29,7 +29,8 @@ namespace utils { // 'utils' namespace, in order to use ADL
 using namespace hambda;
 
 int main() {
-    std::cout << toString( parse_ast( "(+ (+ (+ 90 9) 0) (+ 5 7))"_charpack)   ,0) << '\n';
+    // toString gives a nicely-indented breakdown of the parsed object
+    //std::cout << toString( parse_ast( "(+ (+ (+ 90 9) 0) (+ 5 7))"_charpack)   ,0) << '\n';
 
     TEST_ME ( "char_pack_to_int"
             , 345789.0
@@ -40,9 +41,6 @@ int main() {
             , 111
             ) ^ []()
             { return simplify(parse_ast("(+ (+ (+ 90 9) 0) (+ 5 7))"_charpack)); };
-
-    constexpr auto i= simplify(parse_ast("(+ (+ (+ 90 9) 0) (+ 5 7))"_charpack));
-    static_assert(i==111 ,"");
 
     TEST_ME ( "recursive addition"
             , 87
@@ -64,8 +62,6 @@ int main() {
             ) ^ []()
             { return simplify(parse_ast("(length '''''''')"_charpack)); };
 
-    static_assert(3 == simplify(parse_ast("(length '''''''')"_charpack)) ,"");
-
     TEST_ME ( "string literals"
             , std::string(" ' ' ' ")  // yes ' '' '' '' ' is equivalent to " ' ' ' "
             ) ^ []()
@@ -76,8 +72,6 @@ int main() {
             ) ^ []()
             { return simplify(parse_ast("(* 6 (+ 7 3))"_charpack)); };
 
-    std::cout << simplify(parse_ast( "(+ (+ (+ 90 9) 0) (+ 5 7))"_charpack)) << '\n';
-    std::cout << simplify(parse_ast( "'''e''''o'"_charpack)) << '\n';
 
     TEST_ME ( "a 'constexpr' test."
             , 60
@@ -87,16 +81,6 @@ int main() {
                 return result;
             };
 
-    struct user_supplied_library_with_a_reference {
-        int & m_my_reference;
-
-        auto constexpr
-        get_simple_named_value  ( decltype( "foo"_charpack ) )
-        -> int &
-        { return m_my_reference; }
-
-    };
-
     TEST_ME ( "user-supplied library with a reference"
             , 35
             ) ^ []()
@@ -105,6 +89,12 @@ int main() {
                 auto && result = "(assign foo 35)"_cambda[ "foo"_binding = foo]();
                 return foo * (&result == &foo);
             };
+
+
+    TEST_ME ( "wrapped, to get integral_constant out again"
+            , 60
+            ) ^ []()
+            { return "(* 6 (+ 7 3))"_cambda (); };
 
 
     TEST_ME ( "very simple \"...\"_cambda, with one binding"
