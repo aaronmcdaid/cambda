@@ -308,76 +308,6 @@ namespace hambda {
         return x{};
     }
 
-    struct starter_lib {
-        constexpr starter_lib(){} // a default constructor, just because clang requires them for constexpr objects
-
-
-        // id :: a -> a
-        template<typename T>
-        auto constexpr
-        apply_after_simplification  ( decltype( "id"_charpack )
-                            , T t
-                            )
-        -> T
-        { return std::move(t); }
-
-
-        auto constexpr
-        apply_after_simplification  ( decltype( "+"_charpack )
-                            , int i
-                            , int j
-                            )
-        -> int
-        { return i+j; }
-
-
-        auto constexpr
-        apply_after_simplification  ( decltype( "-"_charpack )
-                            , int i
-                            , int j
-                            )
-        -> int { return i-j;}
-
-        auto constexpr
-        apply_after_simplification  ( decltype( "*"_charpack )
-                            , int i
-                            , int j
-                            )
-        -> int
-        { return i*j; }
-
-
-        template<char ...c>
-        auto constexpr
-        apply_after_simplification  ( decltype( "length"_charpack )
-                            , utils::char_pack<c...>
-                            )
-        -> std::integral_constant<int, sizeof...(c)>
-        { return {}; }
-
-
-        template<char ... binding_chars, typename ...U>
-        auto constexpr
-        apply_after_simplification  ( decltype( "lambda"_charpack )
-                                    , hambda::grouped_t<'[', types_t<utils::char_pack<binding_chars...>>>
-                                    , hambda::grouped_t<'[', types_t<U...>>
-                                    )
-        // TODO: trailing return type
-        {
-            return [](auto x) { return x*x; };
-        }
-
-        template< typename T
-                , typename S >
-        auto constexpr
-        apply_after_simplification  ( decltype( "assign"_charpack )
-                            , T & target
-                            , S   source
-                            )
-        ->decltype(target = source  )
-        {   return target = source; }
-    };
-
     template< typename Lib1
             , typename Lib2 >
     struct library_combiner
@@ -451,7 +381,6 @@ namespace hambda {
     -> library_combiner<Lib1,Lib2>
     { return {lib1,lib2}; }
 
-    constexpr starter_lib starter_lib_v;
 
 
 
@@ -677,18 +606,11 @@ namespace hambda {
         }
     };
 
-    template<typename AST>
-    auto constexpr
-    simplify(AST ast)
-    ->decltype(auto)
-    {   return call_the_simplifier(ast, starter_lib_v); }
-
     template<typename AST, typename Lib>
     auto constexpr
     simplify(AST ast, Lib l)
     ->decltype(auto)
     {   return call_the_simplifier(ast, l); }
-
 
     template<typename Lib>
     struct wrapper_for__calls_using__std_integral_constant
@@ -816,6 +738,85 @@ namespace hambda {
             //return *this;
         }
     };
+
+    struct starter_lib {
+        constexpr starter_lib(){} // a default constructor, just because clang requires them for constexpr objects
+
+
+        // id :: a -> a
+        template<typename T>
+        auto constexpr
+        apply_after_simplification  ( decltype( "id"_charpack )
+                            , T t
+                            )
+        -> T
+        { return std::move(t); }
+
+
+        auto constexpr
+        apply_after_simplification  ( decltype( "+"_charpack )
+                            , int i
+                            , int j
+                            )
+        -> int
+        { return i+j; }
+
+
+        auto constexpr
+        apply_after_simplification  ( decltype( "-"_charpack )
+                            , int i
+                            , int j
+                            )
+        -> int { return i-j;}
+
+        auto constexpr
+        apply_after_simplification  ( decltype( "*"_charpack )
+                            , int i
+                            , int j
+                            )
+        -> int
+        { return i*j; }
+
+
+        template<char ...c>
+        auto constexpr
+        apply_after_simplification  ( decltype( "length"_charpack )
+                            , utils::char_pack<c...>
+                            )
+        -> std::integral_constant<int, sizeof...(c)>
+        { return {}; }
+
+
+        template<char ... binding_chars, typename ...U>
+        auto constexpr
+        apply_after_simplification  ( decltype( "lambda"_charpack )
+                                    , hambda::grouped_t<'[', types_t<utils::char_pack<binding_chars...>>>
+                                    , hambda::grouped_t<'[', types_t<U...>>
+                                    )
+        // TODO: trailing return type
+        {
+            return [](auto x) { return x*x; };
+        }
+
+        template< typename T
+                , typename S >
+        auto constexpr
+        apply_after_simplification  ( decltype( "assign"_charpack )
+                            , T & target
+                            , S   source
+                            )
+        ->decltype(target = source  )
+        {   return target = source; }
+    };
+
+
+    constexpr starter_lib starter_lib_v;
+
+    template<typename AST>
+    auto constexpr
+    simplify(AST ast)
+    ->decltype(auto)
+    {   return simplify(ast, starter_lib_v); }
 
     template<typename T, T ... chars>
     constexpr auto
