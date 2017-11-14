@@ -377,6 +377,13 @@ namespace hambda {
         {   return library_combiner::get_simple_named_value_overload(name); }
     };
 
+
+    template< typename Lib1 >
+    constexpr auto
+    combine_libraries(Lib1 lib1)
+    -> Lib1
+    { return lib1; }
+
     template< typename Lib1
             , typename Lib2
             >
