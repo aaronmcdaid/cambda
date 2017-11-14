@@ -160,4 +160,12 @@ int main() {
                 return as_type( "[1 2 3]"_cambda () );
             };
 
+    TEST_ME ( "lambda with assign"
+            , 500
+            ) ^ []()
+            {
+                int foo = 100;
+                return "(lambda [w] [(assign w (* 5 w))])"_cambda  () (foo);
+            };
+
 }
