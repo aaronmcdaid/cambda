@@ -152,4 +152,12 @@ int main() {
                 return "(lambda)"_cambda () (15);
             };
 
+    TEST_ME ( "[1 2 3]"
+            //, 225
+            , utils::type< hambda::grouped_t<'[', types_t<decltype("1"_charpack), decltype("2"_charpack), decltype("3"_charpack)>> >
+            ) ^ []()
+            {
+                return as_type( "[1 2 3]"_cambda () );
+            };
+
 }
