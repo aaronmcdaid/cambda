@@ -234,4 +234,15 @@ int main() {
                 constexpr auto result = test0_25::foo();
                 return result;
             };
+
+
+    TEST_ME ( "type_as_string"
+            , std::string("double")
+            ) ^ []()
+            {
+                double v;
+                auto result = "(type_as_string v)"_cambda[ "v"_binding = v] ();
+                return result;
+            };
+
 }
