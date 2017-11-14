@@ -1,4 +1,160 @@
-#include "../module-bits.and.pieces/utils.hh"
+/*
+ * cambda - Write lambdas in C++ within an embedded Lisp-like language. Header-only. Very 'constexpr'-friendly. The c in cambda stands for constexpr.
+ *
+ * https://github.com/aaronmcdaid/cambda
+ */
+
+#include<utility>
+#include<string>
+
+using std::size_t;
+
+
+namespace utils {
+
+
+template<int i>
+struct priority_tag;
+template<int i>
+struct priority_tag : public priority_tag<i-1> {};
+template<>
+struct priority_tag<0> {};
+
+
+template<char ... chars>
+struct char_pack {
+    constexpr static char   c_str0_[] =  {chars..., '\0'};
+
+    constexpr static size_t size()      { return sizeof...(chars); }
+    constexpr static char   const   (&c_str0(void)) [size()+1]     { return c_str0_; }
+    constexpr static char   at(size_t i)        { return c_str0_[i]; }
+    /*
+    template<typename ...C>
+    constexpr static size_t find_first_of(C ... targets) {
+        for(size_t i=0; i<   1+ size(); ++i) {
+            if( !utils:: and_all( at(i) != targets ... ))
+                return i;
+        }
+        return -1;
+    }
+    template<size_t l>
+    constexpr static auto   substr(void) {
+        return
+        make_a_pack_and_apply_it<l, size_t>([](auto ... idxs) {
+            return utils:: char_pack< char_pack:: at(idxs) ... >{};
+        });
+    }
+    template<size_t b, size_t e>
+    constexpr static auto   substr(void) {
+        static_assert( e>=b ,"");
+        return
+        make_a_pack_and_apply_it<e-b, size_t>([](auto ... idxs) {
+            return utils:: char_pack< char_pack:: at(b+idxs) ... >{};
+        });
+    }
+    */
+};
+template<char ... chars>
+constexpr char   char_pack<chars...>:: c_str0_[];
+
+constexpr
+int char_pack_to_int(utils::char_pack<>, int prefix_already_processed)
+{ return prefix_already_processed; }
+
+template<char next_digit, char ... c>
+constexpr auto
+char_pack_to_int(utils::char_pack<next_digit, c...>, int prefix_already_processed = 0)
+-> std::enable_if_t< (next_digit >= '0' && next_digit <= '9'),int>
+{
+    static_assert( next_digit >= '0' && next_digit <= '9' ,"");
+    return  char_pack_to_int(utils::char_pack<c...>{}, 10*prefix_already_processed + (next_digit-'0'));
+}
+
+
+/* id_t
+ * ====
+ *
+ * useful to convert some errors into SFINAE. For example, if you have a
+ * trailing return type
+ *      -> decltype(x.foo())
+ * where the type of 'x' is not deduced, then you will get a hard error
+ * instead of SFINAE. If this is undesirable, and you want this method
+ * to dissappear if 'x' does not have a 'foo' method, then you can do
+ * this instead:
+ *      template< typename id = utils:: id_t >
+ *      auto bar()
+ *      -> decltype( id{}(x) .foo())
+ *      {
+ *      ...
+ *      }
+ * You replace 'x' with 'id{}(x)' (which is essentially a no-op), and
+ * put 'id' in template arguments with the suitable default.
+ *
+ */
+
+struct id_t
+{
+    template<typename T>
+    constexpr T
+    operator() (T&& t)
+    { return t; }
+};
+
+
+namespace impl {
+    template<typename ...T>
+    struct voider { using type = void; };
+}
+
+template<typename ...T>
+using void_t = typename impl:: voider<T...>:: type;
+
+
+template< typename T
+        , typename L
+        , typename R>
+struct concat_nontype_pack;
+
+template< typename T
+        , T ... left
+        , T ... right
+        , template<T...> class tmplt
+        >
+struct concat_nontype_pack  < T
+                        , tmplt<left...>
+                        , tmplt<right...>>
+{   using type = tmplt<left..., right...>; };
+
+
+
+
+template< typename T
+        , typename Pack >
+struct reverse_pack;
+
+template< typename T
+        , template<T...> class tmplt >
+struct reverse_pack<T, tmplt<> >
+{ using type = tmplt<>; };
+
+template< typename T
+        , template<T...> class tmplt
+        , T first
+        , T ... c>
+struct reverse_pack<T, tmplt<first,c...>>
+{
+    using tail_reversed = typename reverse_pack<T, tmplt<c...> > :: type;
+    using type = typename utils:: concat_nontype_pack  < T, tail_reversed , tmplt<first> >::type;
+};
+
+
+
+
+}
+
+
+
+
 namespace cambda {
     bool constexpr is_whitespace    (char c) { return c==' ' || c=='\t' || c=='\n'; }
     bool constexpr is_opener        (char c) { return c=='(' || c=='[' || c=='{'; }
@@ -813,15 +969,6 @@ namespace cambda {
                             , T&& t)
         -> T
         { return std::forward<T>(t); }
-
-
-        template<typename T
-                , typename LibToForward
-                >
-        auto constexpr
-        apply_after_simplification  (LibToForward, decltype( "type_as_string"_charpack )
-                            , T&& t)
-        { return utils::type_as_string(std::forward<T>(t)); }
 
 
         template< typename LibToForward

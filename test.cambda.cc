@@ -1,42 +1,11 @@
 #include "cambda.hh"
 
-using cambda::operator"" _charpack;
+#include <vector>
+#include <iostream>
 
-namespace utils { // 'utils' namespace, in order to use ADL
+using cambda::operator"" _cambda;
+using cambda::operator"" _binding;
 
-    template<char ...c>
-    std::ostream & operator<<(std::ostream &o, utils::char_pack<c...> str)
-    {
-        o << str.c_str0();
-        return o;
-    }
-
-    template<typename ...T>
-    std::ostream & operator<<(std::ostream &o, cambda::grouped_t<'[', T...> quoted)
-    {
-        o << toString(quoted);
-        return o;
-    }
-
-    template<typename T>
-    std::ostream & operator<<(std::ostream &o, just_a_type<T> a_type)
-    {
-        o << type_as_string(a_type);
-        return o;
-    }
-
-    template<char ...c>
-    static constexpr auto
-    operator==(std::string const & l, utils::char_pack<c...> r)
-    { return l == r.c_str0(); }
-
-    template<char ...c>
-    static constexpr auto
-    operator==(utils::char_pack<c...> l, std::string const & r)
-    { return r == l.c_str0(); }
-}
-
-using namespace cambda;
 
 constexpr auto cambda_lambda = "(lambda [x] [{x * x}])"_cambda();
 constexpr auto squared_cambda = cambda_lambda(15);
