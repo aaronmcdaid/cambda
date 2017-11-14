@@ -756,7 +756,7 @@ namespace hambda {
     }
 
     template<typename AST, typename Lib>
-    struct cambda
+    struct cambda_object_from_the_string_literal
     {
         AST m_ast;
         Lib lib;
@@ -776,7 +776,7 @@ namespace hambda {
         {
             auto new_library = combine_libraries(lib, binding_to_insert);
             (void)new_library;
-            return cambda<AST, decltype(new_library)>{m_ast, new_library};
+            return cambda_object_from_the_string_literal<AST, decltype(new_library)>{m_ast, new_library};
             //return *this;
         }
     };
@@ -948,7 +948,7 @@ namespace hambda {
     operator"" _cambda ()
     {
         auto ast = parse_ast(utils:: char_pack<chars...>{});
-        return cambda<decltype(ast), starter_lib> {ast, starter_lib_v};
+        return ::hambda::cambda_object_from_the_string_literal<decltype(ast), starter_lib> {ast, starter_lib_v};
     }
 
 }
