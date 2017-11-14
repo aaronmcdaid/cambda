@@ -185,4 +185,11 @@ int main() {
                 return result;
             };
 
+    TEST_ME ( "{10 * {2 + 2}}"
+            , 40
+            ) ^ []()
+            {
+                constexpr auto result = "{10 * {2 + 2}}"_cambda  ();
+                return result;
+            };
 }

@@ -610,6 +610,26 @@ namespace hambda {
         }
     };
 
+    // simplifier to apply '{', i.e. swap the first two of three arguments
+    template< typename Arg1
+            , typename Func
+            , typename Arg2
+            , typename Lib>
+    struct simplifier   < grouped_t<'{', types_t<Arg1, Func, Arg2>   >
+                        , Lib
+                        >
+    {
+        static auto constexpr
+        simplify(grouped_t<'{', types_t<Arg1, Func, Arg2> >, Lib lib)
+        ->decltype(auto)
+        {
+            return
+            simplifier      < grouped_t<'(', types_t<Func, Arg1, Arg2>> , Lib>
+                :: simplify ( grouped_t<'(', types_t<Func, Arg1, Arg2>> {} , lib)
+                ;
+        }
+    };
+
     template<typename AST, typename Lib>
     auto constexpr
     simplify(AST ast, Lib l)
