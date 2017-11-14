@@ -208,4 +208,12 @@ int main() {
                 constexpr auto result = "{16 & (lambda [w] [(* w w)]) }"_cambda  ();
                 return result;
             };
+
+    TEST_ME ( "no-arg lambda"
+            , 1234
+            ) ^ []()
+            {
+                constexpr auto result = "((lambda [] [1234]))"_cambda  ();
+                return result;
+            };
 }

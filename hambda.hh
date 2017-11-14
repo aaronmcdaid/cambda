@@ -869,6 +869,7 @@ namespace hambda {
         ->decltype(lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {l2f}  )
         {   return lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {l2f}; }
 
+
         template< typename T
                 , typename LibToForward
                 , typename S >
