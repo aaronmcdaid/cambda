@@ -415,8 +415,8 @@ namespace hambda {
     template<typename T, typename Lib>
     constexpr auto
     call_the_simplifier(T t, Lib l)
-    ->decltype(auto)
-    { return simplifier<T, Lib>::simplify(t, l); }
+    ->decltype(simplifier<T, Lib>::simplify(t, l)  )
+    {   return simplifier<T, Lib>::simplify(t, l); }
 
 
 
@@ -572,11 +572,13 @@ namespace hambda {
             Name m_f;
             Lib m_lib;
 
-            template<typename ...T>
+            template<typename ...T
+                    , typename id = utils::id_t
+                    >
             auto constexpr
             operator()  ( T && ...t)
-            ->decltype(auto)
-            { return m_lib.apply_after_simplification(m_lib, m_f , std::forward<T>(t) ... ); }
+            ->decltype(id{}(m_lib).apply_after_simplification(m_lib, m_f , std::forward<T>(t) ... )  )
+            {   return id{}(m_lib).apply_after_simplification(m_lib, m_f , std::forward<T>(t) ... ); }
         };
 
         static auto constexpr
@@ -635,7 +637,7 @@ namespace hambda {
     template<typename AST, typename Lib>
     auto constexpr
     simplify(AST ast, Lib l)
-    ->decltype(auto)
+    ->decltype(call_the_simplifier(ast, l)  )
     {   return call_the_simplifier(ast, l); }
 
     template<typename Lib>
@@ -757,10 +759,13 @@ namespace hambda {
         AST m_ast;
         Lib lib;
 
+        template< typename id = utils:: id_t>
         constexpr auto
         operator() ()
-        -> decltype(auto)
-        { return simplify(m_ast, lib); }
+        ->decltype(::hambda:: simplify(id{}(m_ast), lib))
+        {
+            return ::hambda:: simplify(     m_ast , lib);
+        }
 
         template<typename Binding>
         constexpr auto
