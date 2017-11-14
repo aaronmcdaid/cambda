@@ -1,5 +1,5 @@
 #include "../module-bits.and.pieces/utils.hh"
-namespace hambda {
+namespace cambda {
     bool constexpr is_whitespace    (char c) { return c==' ' || c=='\t' || c=='\n'; }
     bool constexpr is_opener        (char c) { return c=='(' || c=='[' || c=='{'; }
     bool constexpr is_closer        (char c) { return c==')' || c==']' || c=='}'; }
@@ -218,7 +218,7 @@ namespace hambda {
 
     // Simplest case is an empty list:
     template<>
-    struct parse_many_things<hambda::types_t<>, void>
+    struct parse_many_things<cambda::types_t<>, void>
     {
         using me = types_t<>;
         using rest = types_t<>;
@@ -764,9 +764,9 @@ namespace hambda {
         template< typename id = utils:: id_t>
         constexpr auto
         operator() ()
-        ->decltype(::hambda:: simplify(id{}(m_ast), lib))
+        ->decltype(::cambda:: simplify(id{}(m_ast), lib))
         {
-            return ::hambda:: simplify(     m_ast , lib);
+            return ::cambda:: simplify(     m_ast , lib);
         }
 
         template<typename Binding>
@@ -883,16 +883,16 @@ namespace hambda {
             template< typename ...T>
             constexpr auto
             operator() (T && ... x) const
-            ->decltype(hambda::simplify
+            ->decltype(cambda::simplify
                         (   QuotedExpression{}
-                        , hambda::combine_libraries   (   m_lib
+                        , cambda::combine_libraries   (   m_lib
                                                 ,   char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...
                                                 )))
             {
                 static_assert(sizeof...(x) == sizeof...(BindingName) ,"");
-                return hambda::simplify
+                return cambda::simplify
                         (   QuotedExpression{}
-                        , hambda::combine_libraries   (   m_lib
+                        , cambda::combine_libraries   (   m_lib
                                                 ,   char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...
                                                 ));
             };
@@ -903,8 +903,8 @@ namespace hambda {
                 , typename QuotedExpression>
         auto constexpr
         apply_after_simplification  (LibToForward l2f, decltype( "lambda"_charpack )
-                                    , hambda::grouped_t<'[', types_t<BindingName...>>
-                                    , hambda::grouped_t<'[', types_t<QuotedExpression>>
+                                    , cambda::grouped_t<'[', types_t<BindingName...>>
+                                    , cambda::grouped_t<'[', types_t<QuotedExpression>>
                                     )
         ->decltype(lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {l2f}  )
         {   return lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {l2f}; }
@@ -948,7 +948,7 @@ namespace hambda {
     operator"" _cambda ()
     {
         auto ast = parse_ast(utils:: char_pack<chars...>{});
-        return ::hambda::cambda_object_from_the_string_literal<decltype(ast), starter_lib> {ast, starter_lib_v};
+        return ::cambda::cambda_object_from_the_string_literal<decltype(ast), starter_lib> {ast, starter_lib_v};
     }
 
 }

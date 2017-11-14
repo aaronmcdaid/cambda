@@ -1,9 +1,9 @@
-#include "hambda.hh"
+#include "cambda.hh"
 #include "../module-TEST_ME/TEST_ME.hh"
 
 #include<algorithm>
 
-using hambda::operator"" _charpack;
+using cambda::operator"" _charpack;
 
 namespace utils { // 'utils' namespace, in order to use ADL
 
@@ -15,7 +15,7 @@ namespace utils { // 'utils' namespace, in order to use ADL
     }
 
     template<typename ...T>
-    std::ostream & operator<<(std::ostream &o, hambda::grouped_t<'[', T...> quoted)
+    std::ostream & operator<<(std::ostream &o, cambda::grouped_t<'[', T...> quoted)
     {
         o << toString(quoted);
         return o;
@@ -39,7 +39,7 @@ namespace utils { // 'utils' namespace, in order to use ADL
     { return r == l.c_str0(); }
 }
 
-using namespace hambda;
+using namespace cambda;
 
 int main() {
     // toString gives a nicely-indented breakdown of the parsed object
@@ -118,14 +118,14 @@ int main() {
             };
 
     TEST_ME ( "[1 2 3], a quoted object"
-            , utils::type< hambda::grouped_t<'[', types_t<decltype("1"_charpack), decltype("2"_charpack), decltype("3"_charpack)>> >
+            , utils::type< cambda::grouped_t<'[', types_t<decltype("1"_charpack), decltype("2"_charpack), decltype("3"_charpack)>> >
             ) ^ []()
             {
                 return utils:: as_type( "[1 2 3]"_cambda () );
             };
 
     TEST_ME ( "[], an empty quoted object"
-            , utils::type< hambda::grouped_t<'[', types_t<>> >
+            , utils::type< cambda::grouped_t<'[', types_t<>> >
             ) ^ []()
             {
                 return utils:: as_type( "[]"_cambda () );
