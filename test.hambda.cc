@@ -15,6 +15,20 @@ namespace utils { // 'utils' namespace, in order to use ADL
         return o;
     }
 
+    template<typename ...T>
+    std::ostream & operator<<(std::ostream &o, hambda::grouped_t<'[', T...> quoted)
+    {
+        o << toString(quoted);
+        return o;
+    }
+
+    template<typename T>
+    std::ostream & operator<<(std::ostream &o, just_a_type<T> a_type)
+    {
+        o << type_as_string(a_type);
+        return o;
+    }
+
     template<char ...c>
     static constexpr auto
     operator==(std::string const & l, utils::char_pack<c...> r)
