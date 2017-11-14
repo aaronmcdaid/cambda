@@ -338,6 +338,14 @@ namespace hambda {
                             )
         -> int { return i-j;}
 
+        auto constexpr
+        apply_after_simplification  ( decltype( "*"_charpack )
+                            , int i
+                            , int j
+                            )
+        -> int
+        { return i*j; }
+
 
         template<char ...c>
         auto constexpr
@@ -348,11 +356,6 @@ namespace hambda {
         { return {}; }
 
 
-        auto constexpr
-        get_simple_named_value  ( decltype( "one.hundred"_charpack ) )
-        { return std::integral_constant<int, 100>{}; }
-
-
         template<char ...c>
         auto constexpr
         apply_after_simplification  ( decltype( "/"_charpack )
@@ -360,26 +363,6 @@ namespace hambda {
         {
             return [](auto x) { return x*x; };
         }
-    };
-
-    struct extra_lib_with_multiplication {
-        constexpr extra_lib_with_multiplication(){} // a default constructor, just because clang requires them for constexpr objects
-
-        auto constexpr
-        apply_after_simplification  ( decltype( "*"_charpack )
-                            , int i
-                            , int j
-                            )
-        -> int
-        { return i*j; }
-
-        auto constexpr
-        get_simple_named_value  ( decltype( "three"_charpack ) )
-        { return std::integral_constant<int, 3>{}; }
-
-        auto constexpr
-        get_simple_named_value  ( decltype( "four"_charpack ) )
-        { return std::integral_constant<int, 4>{}; }
     };
 
     template< typename Lib1
@@ -456,8 +439,6 @@ namespace hambda {
     { return {lib1,lib2}; }
 
     constexpr starter_lib starter_lib_v;
-    constexpr extra_lib_with_multiplication extra_lib_with_multiplication_v;
-    constexpr auto combined_lib_v = combine_libraries(starter_lib_v, extra_lib_with_multiplication_v);
 
 
 

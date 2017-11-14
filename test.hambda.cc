@@ -74,18 +74,16 @@ int main() {
     TEST_ME ( "extra_lib for '*'"
             , 60
             ) ^ []()
-            { return simplify(parse_ast("(* 6 (+ 7 three))"_charpack), combined_lib_v); };
+            { return simplify(parse_ast("(* 6 (+ 7 3))"_charpack)); };
 
     std::cout << simplify(parse_ast( "(+ (+ (+ 90 9) 0) (+ 5 7))"_charpack)) << '\n';
     std::cout << simplify(parse_ast( "'''e''''o'"_charpack)) << '\n';
-    std::cout << simplify(parse_ast( "three"_charpack), extra_lib_with_multiplication{}) << '\n';
-    std::cout << simplify(parse_ast( "four"_charpack), extra_lib_with_multiplication{}) << '\n';
 
     TEST_ME ( "a 'constexpr' test."
             , 60
             ) ^ []()
             {
-                constexpr auto result = simplify(parse_ast("(* 6 (+ 7 three))"_charpack), combined_lib_v);
+                constexpr auto result = simplify(parse_ast("(* 6 (+ 7 3))"_charpack));
                 return result;
             };
 
@@ -105,32 +103,6 @@ int main() {
         get_simple_named_value  ( decltype( "seven"_charpack ) )
         { return std::integral_constant<int, 7>{}; }
     };
-
-
-    TEST_ME ( "user-supplied library"
-            , 10
-            ) ^ []()
-            {
-                constexpr auto result = simplify(parse_ast("(% one.hundred 30)"_charpack)
-                        , combine_libraries(starter_lib_v, user_supplied_library_withfunc{})
-                        );
-                return result;
-            };
-
-    TEST_ME ( "wrap a user-supplied library"
-            , 2
-            ) ^ []()
-            {
-                auto result = simplify(parse_ast("(- seven 5)"_charpack)
-                  , wrap_any__calls_using__std_integral_constant
-                    (
-                        combine_libraries
-                        (   starter_lib_v
-                        ,   user_supplied_library_withvalue{}
-                        )
-                    ));
-                return result.value; // .value proves that the wrapper has successfully 'upgraded' the results
-            };
 
     struct user_supplied_library_with_a_reference {
         int & m_my_reference;
@@ -164,7 +136,7 @@ int main() {
                             user_supplied_library_with_a_reference{foo}
                             //)
                         );
-                return foo * (&result == &foo); // .value proves that the wrapper has successfully 'upgraded' the results
+                return foo * (&result == &foo);
             };
 
 
