@@ -597,13 +597,13 @@ namespace hambda {
 
 
     // simplifier to apply '[', i.e. just quote it
-    template<typename Func, typename ...Args, typename Lib>
-    struct simplifier   < grouped_t<'[', types_t<Func, Args...   >>
+    template<typename ...Args, typename Lib>
+    struct simplifier   < grouped_t<'[', types_t<Args...   >>
                         , Lib
                         >
     {
         static auto constexpr
-        simplify(grouped_t<'[', types_t<Func, Args...> > quoted, Lib )
+        simplify(grouped_t<'[', types_t<Args...> > quoted, Lib )
         ->decltype(auto)
         {
             return quoted;

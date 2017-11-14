@@ -157,7 +157,15 @@ int main() {
             , utils::type< hambda::grouped_t<'[', types_t<decltype("1"_charpack), decltype("2"_charpack), decltype("3"_charpack)>> >
             ) ^ []()
             {
-                return as_type( "[1 2 3]"_cambda () );
+                return utils:: as_type( "[1 2 3]"_cambda () );
+            };
+
+    TEST_ME ( "[]"
+            //, 225
+            , utils::type< hambda::grouped_t<'[', types_t<>> >
+            ) ^ []()
+            {
+                return utils:: as_type( "[]"_cambda () );
             };
 
     TEST_ME ( "lambda with assign"
