@@ -384,23 +384,23 @@ namespace hambda {
                 , typename id = utils:: id_t
                 >
         auto constexpr
-        apply_after_simplification_helper  ( T ...t)
-        ->decltype(id{}(lib1).apply_after_simplification(std::move(t)...)  )
-        {   return id{}(lib1).apply_after_simplification(std::move(t)...); }
+        apply_after_simplification_helper  ( T && ...t)
+        ->decltype(id{}(lib1).apply_after_simplification(std::forward<T>(t)...)  )
+        {   return id{}(lib1).apply_after_simplification(std::forward<T>(t)...); }
 
         template< typename ...T
                 , typename id = utils:: id_t
                 >
         auto constexpr
-        apply_after_simplification_helper  ( T ...t)
-        ->decltype(id{}(lib2).apply_after_simplification(std::move(t)...)  )
-        {   return id{}(lib2).apply_after_simplification(std::move(t)...); }
+        apply_after_simplification_helper  ( T && ...t)
+        ->decltype(id{}(lib2).apply_after_simplification(std::forward<T>(t)...)  )
+        {   return id{}(lib2).apply_after_simplification(std::forward<T>(t)...); }
 
         template<typename ...T>
         auto constexpr
-        apply_after_simplification  ( T ...t)
-        ->decltype(library_combiner::apply_after_simplification_helper(std::move(t)...))
-        {   return library_combiner::apply_after_simplification_helper(std::move(t)...); }
+        apply_after_simplification  ( T && ...t)
+        ->decltype(library_combiner::apply_after_simplification_helper(std::forward<T>(t)...))
+        {   return library_combiner::apply_after_simplification_helper(std::forward<T>(t)...); }
 
 
         /* Second, 'get_simple_named_value'
@@ -706,9 +706,9 @@ namespace hambda {
 
         template< typename ...T>
         auto constexpr
-        apply_after_simplification( T ...t)
-        ->decltype(this->apply_after_simplification_overload(utils::priority_tag<9>{}, std::move(t)...)  )
-        {   return this->apply_after_simplification_overload(utils::priority_tag<9>{}, std::move(t)...); }
+        apply_after_simplification( T && ...t)
+        ->decltype(this->apply_after_simplification_overload(utils::priority_tag<9>{}, std::forward<T>(t)...)  )
+        {   return this->apply_after_simplification_overload(utils::priority_tag<9>{}, std::forward<T>(t)...); }
 
         template< typename Name
                 , typename id = utils::id_t>
