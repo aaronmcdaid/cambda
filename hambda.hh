@@ -794,6 +794,15 @@ namespace hambda {
         { return std::forward<T>(t); }
 
 
+        template<typename T
+                , typename LibToForward
+                >
+        auto constexpr
+        apply_after_simplification  (LibToForward, decltype( "type_as_string"_charpack )
+                            , T&& t)
+        { return utils::type_as_string(std::forward<T>(t)); }
+
+
         template< typename LibToForward
                 , typename Ti
                 , typename Tj >
