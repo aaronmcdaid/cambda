@@ -816,7 +816,7 @@ namespace hambda {
                                     )
         // TODO: trailing return type
         {
-            return [&](auto && ... x) -> int{
+            return [&](auto && ... x) {
                 static_assert(sizeof...(x) == sizeof...(BindingName) ,"");
                 return hambda::simplify
                         (   QuotedExpression{}
