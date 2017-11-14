@@ -707,6 +707,11 @@ namespace hambda {
         ->decltype(auto)
         { return binded_name_with_valueOrReference<V, c...>{std::forward<V>(v)}; }
     };
+    template<char ...c>
+    auto
+    char_pack__to__binding_name(utils::char_pack<c...>)
+    -> binding_name<c...>
+    {return {};}
 
     template<typename T, T ... chars>
     constexpr auto
@@ -791,25 +796,25 @@ namespace hambda {
         { return {}; }
 
 
-        template< char ... binding_chars
+        template< typename ...BindingName
                 , typename LibToForward
                 , typename QuotedExpression>
         auto constexpr
         apply_after_simplification  (LibToForward l2f, decltype( "lambda"_charpack )
-                                    , hambda::grouped_t<'[', types_t<utils::char_pack<binding_chars...>>>
+                                    , hambda::grouped_t<'[', types_t<BindingName...>>
                                     , hambda::grouped_t<'[', types_t<QuotedExpression>>
                                     )
         // TODO: trailing return type
         {
-            return [&](auto && x) -> int{
+            return [&](auto && ... x) -> int{
+                static_assert(sizeof...(x) == sizeof...(BindingName) ,"");
                 return hambda::simplify
                         (   QuotedExpression{}
                         ,
                             combine_libraries   (   l2f
-                                                , binding_name<binding_chars...>{} = std::forward<decltype(x)>(x)
+                                                , char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...
                                                 )
                         );
-                return x*x;
             };
         }
 
