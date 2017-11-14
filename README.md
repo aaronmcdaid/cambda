@@ -28,12 +28,13 @@ static_assert(squared_cambda == 225 ,"");
 ## Basics
 
 This uses the *string-literal-operator-template* extension, but otherwise I believe it's standard C++14.
-That extension is'nt strictly necessary, we can build a preprocessor macro to work around it.
-This has been tested on `clang version 3.8.0`, `g++ (GCC) 7.2.0` and `g++ (GCC) 5.5.0`, please give me feedback for other compilers.
+That extension isn't strictly necessary, we can build a preprocessor macro to work around it (*TODO* explain this!).
+This has been tested on `clang version 3.8.0`, `g++ (GCC) 7.2.0` and `g++ (GCC) 5.5.0`.
 I suggest passing the `-Wno-gnu-string-literal-operator-template` argument to these compilers to suppress a warning that you
 might get about the fact this is an extension.
 
-`_cambda` is a user-defined string literal which parses a string. It must always be followed by `()` in order to "simplify" (i.e. "evaluate") the code.
+`_cambda` is a user-defined string literal operator which parses a string to a (very complicated) type that is unique for each string.
+It must always be followed by `()` in order to "simplify" (i.e. "evaluate") the code.
 If you've never seen Lisp before, the main thing is that functions are called by putting the function name *after* the parenthesis.
 In C++, we write `foo(5, 3.14)`, but in Lisp we write `(foo 5 3.14)`. Note also that whitespace, instead of commas, is used to separated arguments.
 
@@ -45,22 +46,22 @@ In C++, we write `foo(5, 3.14)`, but in Lisp we write `(foo 5 3.14)`. Note also 
     constexpr auto e = "{ {8 * 7} + {6 * 3} }"_cambda();  // Nested application
 ```
 
-Please note that the whitespace is important here. Unlike C++, Lisp is very flexible about what can appear in identifiers.
+Please note that the whitespace is important here. Also, unlike C++, Lisp is very flexible about what can appear in identifiers.
 Symbols such as `+` are equivalent to letters.
-Therefore `"2+2"_cambda()` will try to find a function with the name `2+2`.
-That's we we need `(* 8 7)` and `{8 * 7}` instead of `(*8 7)` or `{8*7}`.
+Therefore `"2+2"_cambda()` will try to find a value or function with the name `2+2`.
+That's why we need `(* 8 7)` and `{8 * 7}` instead of `(*8 7)` or `{8*7}`.
 
 ## Extra bindings
 
 The 'standard library' is currently very very small. You can add your own bindings, names or functions, by
-use `[ ]` after the `_cambda` and just before the `()` as follows:
+using `[ ]` between the `_cambda` and the `()`:
 
 ```
 constexpr auto four_squared = "{x * x}"_cambda ["x"_binding = 4] ();
 ```
 
 We can't make the next example `constexpr` in C++14, but it might work in future
-standards.
+standards as support is improved for lambdas in `constexpr` contexts.
 
 ```
 std::vector<int> v{2,3,4};
@@ -111,9 +112,11 @@ constexpr auto static
 run()
 {
         int test_data[] {5,6,7};
+
         "(range_based_for test_data (lambda [r] [(assign r {r * r})]))"_cambda
             ["test_data"_binding = test_data]
             ();
+
         return test_data[0]+test_data[1]+test_data[2];
 }
 static_assert( run() == 5*5 + 6*6 + 7*7 ,"");
