@@ -801,11 +801,14 @@ namespace hambda {
                                     )
         // TODO: trailing return type
         {
-            return [&](auto x) -> int{
-                (void)x;
+            return [&](auto && x) -> int{
                 return hambda::simplify
                         (   QuotedExpression{}
-                        ,   l2f         );
+                        ,
+                            combine_libraries   (   l2f
+                                                , binding_name<binding_chars...>{} = std::forward<decltype(x)>(x)
+                                                )
+                        );
                 return x*x;
             };
         }
