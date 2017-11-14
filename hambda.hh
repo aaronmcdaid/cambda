@@ -590,16 +590,11 @@ namespace hambda {
                         , Lib
                         >
     {
+        template<typename id = utils::id_t>
         static auto constexpr
         simplify(grouped_t<'(', types_t<Func, Args...> >, Lib lib)
-        ->decltype(auto)
-        {
-            return
-            call_the_simplifier(Func{}, lib)
-                (
-                    call_the_simplifier(Args{}, lib)...  // pass the arguments
-                );
-        }
+        ->decltype(call_the_simplifier(Func{}, id{}(lib)) ( call_the_simplifier(Args{}, lib)...)  )
+        {   return call_the_simplifier(Func{}, id{}(lib)) ( call_the_simplifier(Args{}, lib)...); }
     };
 
 
