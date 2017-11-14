@@ -149,7 +149,7 @@ int main() {
             , 225
             ) ^ []()
             {
-                return "(lambda)"_cambda () (15);
+                return "(lambda [x] [(* 15 15)])"_cambda () (15);
             };
 
     TEST_ME ( "[1 2 3]"

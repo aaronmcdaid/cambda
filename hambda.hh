@@ -356,9 +356,11 @@ namespace hambda {
         { return {}; }
 
 
-        template<char ...c>
+        template<char ... binding_chars, typename ...U>
         auto constexpr
         apply_after_simplification  ( decltype( "lambda"_charpack )
+                                    , hambda::grouped_t<'[', types_t<utils::char_pack<binding_chars...>>>
+                                    , hambda::grouped_t<'[', types_t<U...>>
                                     )
         // TODO: trailing return type
         {
