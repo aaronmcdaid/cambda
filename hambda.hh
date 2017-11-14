@@ -358,7 +358,7 @@ namespace hambda {
 
         template<char ...c>
         auto constexpr
-        apply_after_simplification  ( decltype( "/"_charpack )
+        apply_after_simplification  ( decltype( "lambda"_charpack )
                                     )
         {
             return [](auto x) { return x*x; };

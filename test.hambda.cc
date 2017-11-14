@@ -178,7 +178,7 @@ int main() {
             , 225
             ) ^ []()
             {
-                return "(/)"_cambda () (15);
+                return "(lambda)"_cambda () (15);
             };
 
 }
