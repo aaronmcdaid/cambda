@@ -813,14 +813,17 @@ namespace hambda {
                             )
         -> int { return i-j;}
 
-        template< typename LibToForward>
+        template< typename LibToForward
+                , typename Ti
+                , typename Tj >
         auto constexpr
-        apply_after_simplification  (LibToForward, decltype( "*"_charpack )
-                            , int i
-                            , int j
-                            )
-        -> int
-        { return i*j; }
+        apply_after_simplification
+            ( LibToForward
+            , decltype( "*"_charpack )
+            , Ti && i
+            , Tj && j)
+        ->decltype(std::forward<Ti>(i) * std::forward<Tj>(j) )
+        {   return std::forward<Ti>(i) * std::forward<Tj>(j); }
 
 
         template< typename LibToForward

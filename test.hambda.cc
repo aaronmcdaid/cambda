@@ -217,21 +217,21 @@ int main() {
                 return result;
             };
 
-    struct test2500
+    struct test0_25
     {
-        constexpr static int
+        constexpr static double
         foo() {
-            int r = 50;
+            double r = 0.5;
             auto result = "{r assign ((lambda [] [{r * r}]))}"_cambda[ "r"_binding = r] ();
             return result;
         }
     };
 
     TEST_ME ( "no-arg lambda with constexpr and assign and stuff"
-            , 2500
+            , 0.25
             ) ^ []()
             {
-                constexpr auto result = test2500::foo();
+                constexpr auto result = test0_25::foo();
                 return result;
             };
 }
