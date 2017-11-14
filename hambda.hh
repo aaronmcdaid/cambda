@@ -815,15 +815,19 @@ namespace hambda {
 
             template< typename ...T>
             constexpr auto
-            operator() (T && ... x) const {
+            operator() (T && ... x) const
+            ->decltype(hambda::simplify
+                        (   QuotedExpression{}
+                        ,   combine_libraries   (   m_lib
+                                                ,   char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...
+                                                )))
+            {
                 static_assert(sizeof...(x) == sizeof...(BindingName) ,"");
                 return hambda::simplify
                         (   QuotedExpression{}
-                        ,
-                            combine_libraries   (   m_lib
-                                                , char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...
-                                                )
-                        );
+                        ,   combine_libraries   (   m_lib
+                                                ,   char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...
+                                                ));
             };
         };
 
@@ -835,12 +839,8 @@ namespace hambda {
                                     , hambda::grouped_t<'[', types_t<BindingName...>>
                                     , hambda::grouped_t<'[', types_t<QuotedExpression>>
                                     )
-        // TODO: trailing return type
-        {
-            return
-            lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {l2f};
-
-        }
+        ->decltype(lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {l2f}  )
+        {   return lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {l2f}; }
 
         template< typename T
                 , typename LibToForward
