@@ -386,6 +386,16 @@ namespace hambda {
     { return {lib1,lib2}; }
 
 
+    template< typename Lib1
+            , typename Lib2
+            , typename Lib3
+            , typename ...Libs
+            >
+    constexpr auto
+    combine_libraries(Lib1 lib1, Lib2 lib2, Lib3 lib3, Libs ... libs)
+    -> decltype(auto)
+    {   return combine_libraries(lib1,combine_libraries(lib2,lib3,libs...)); }
+
 
 
     template< typename T

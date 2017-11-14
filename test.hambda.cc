@@ -146,10 +146,10 @@ int main() {
             };
 
     TEST_ME ( "cambda-lambda"
-            , 225
+            , 50
             ) ^ []()
             {
-                return "(lambda [y] [(* y y)])"_cambda  () (15);
+                return "(lambda [x y z] [(+ (* x y) z)])"_cambda  () (15, 3, 5);
             };
 
     TEST_ME ( "[1 2 3]"
