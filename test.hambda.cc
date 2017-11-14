@@ -185,6 +185,14 @@ int main() {
                 return result;
             };
 
+    TEST_ME ( "lambda [w] [(+ w w)]"
+            , 200
+            ) ^ []()
+            {
+                constexpr auto result = "(lambda [w] [(+ w w)])"_cambda  () (100);
+                return result;
+            };
+
     TEST_ME ( "lambda inside"
             , 256
             ) ^ []()
