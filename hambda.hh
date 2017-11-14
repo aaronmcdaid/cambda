@@ -864,14 +864,14 @@ namespace hambda {
             operator() (T && ... x) const
             ->decltype(hambda::simplify
                         (   QuotedExpression{}
-                        ,   combine_libraries   (   m_lib
+                        , hambda::combine_libraries   (   m_lib
                                                 ,   char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...
                                                 )))
             {
                 static_assert(sizeof...(x) == sizeof...(BindingName) ,"");
                 return hambda::simplify
                         (   QuotedExpression{}
-                        ,   combine_libraries   (   m_lib
+                        , hambda::combine_libraries   (   m_lib
                                                 ,   char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...
                                                 ));
             };
