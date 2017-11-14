@@ -1,7 +1,4 @@
 #include "cambda.hh"
-#include "../module-TEST_ME/TEST_ME.hh"
-
-#include<algorithm>
 
 using cambda::operator"" _charpack;
 
@@ -41,199 +38,57 @@ namespace utils { // 'utils' namespace, in order to use ADL
 
 using namespace cambda;
 
+constexpr auto cambda_lambda = "(lambda [x] [{x * x}])"_cambda();
+constexpr auto squared_cambda = cambda_lambda(15);
+static_assert(squared_cambda == 225 ,"");
+
+constexpr auto a = "15"_cambda();            // a is 15
+constexpr auto b = "(+ 8 7)"_cambda();       // Function call. This is addition. b is 15
+constexpr auto c = "(* 8 7)"_cambda();       // Multiplication
+constexpr auto d = "{8 * 7}"_cambda();       // If there are two args, use {} instead of () for infix notation
+constexpr auto e = "{ {8 * 7} + {6 * 3} }"_cambda();  // Nested application
+
+static_assert(a == 15   ,"");
+static_assert(b == 15   ,"");
+static_assert(c == 56   ,"");
+static_assert(d == 56   ,"");
+static_assert(e == 74   ,"");
+
+constexpr auto four_squared = "{x * x}"_cambda ["x"_binding = 4] ();
+static_assert(four_squared == 16   ,"");
+
+std::vector<int> v{2,3,4};
+auto size_of_v = "(size v)"_cambda
+        [   "v"_binding = v
+        ,   "size"_binding =
+                        [](auto && x){return x.size();}
+        ]   //  [] attaches the bindings
+        (); //  () executes
+
+std::initializer_list<int> il{2,3,4};
+
 int main() {
-    // toString gives a nicely-indented breakdown of the parsed object
-    //std::cout << toString( parse_ast( "(+ (+ (+ 90 9) 0) (+ 5 7))"_charpack)   ,0) << '\n';
+    int x=0;
+    "(assign x 1234)"_cambda ["x"_binding = x] ();
+    // x is now equal to 1234
 
-    TEST_ME ( "char_pack_to_int"
-            , 345789
-            ) ^ []()
-            { return "345789"_cambda (); };
+    std:: cout << "x = " << x << " should be 1234" << '\n';
 
-    TEST_ME ( "addition and subtraction"
-            , 87
-            ) ^ []()
-            { return "(- (+ (+ 90 9) 0) (+ 5 7))"_cambda(); };
-
-    TEST_ME ( "heavily nested 'id', especially in function position"
-            , 87
-            ) ^ []()
-            { return "((((((id id) id) id) id) -) ((id +) ((((id id) (id id)) +) (id 90) 9) 0) (+ 5 7))"_cambda(); };
-
-    TEST_ME ( "string literal, simple"
-            , std::string("helloworld")
-            ) ^ []()
-            { return simplify(parse_ast("'helloworld'"_charpack)); };
-
-    TEST_ME ( "string literal, with nested quotes, length function"
-            , 3  // yes, '''''''' is equivalent to "'''"
-            ) ^ []()
-            { return simplify(parse_ast("(length '''''''')"_charpack)); };
-
-    TEST_ME ( "string literal, with nested quotes and spaces"
-            , std::string(" ' ' ' ")  // yes ' '' '' '' ' is equivalent to " ' ' ' "
-            ) ^ []()
-            { return simplify(parse_ast("' '' '' '' '"_charpack)); };
-
-    TEST_ME ( "user-supplied library with a reference"
-            , 35
-            ) ^ []()
-            {
-                int foo = 1337;
-                auto && result = "(assign foo 35)"_cambda[ "foo"_binding = foo]();
-                return foo * (&result == &foo); // to confirm the address of the object is what we think it is
-            };
-
-    TEST_ME ( "multiple bindings [] []"
-            , 90
-            ) ^ []()
-            {
-                int forty = 40;
-                int fifty = 50;
-                (void)fifty;
-                return "(+ forty fifty)"_cambda ["forty"_binding = forty]["fifty"_binding = fifty]
-                ();
-            };
-
-    TEST_ME ( "multiple bindings, using comma operator"
-            , 90
-            ) ^ []()
-            {
-                return "(+ forty fifty)"_cambda [ "forty"_binding = 40, "fifty"_binding = 50 ]
-                ();
-            };
-
-    TEST_ME ( "binding to a C++-lambda"
-            , 17
-            ) ^ []()
-            {
-                return "(max 1 2 3 17 8 9 0)"_cambda [ "max"_binding = [](auto ... x){ return std::max(std::initializer_list<int>{x...});} ] ();
-            };
-
-    TEST_ME ( "cambda-lambda"
-            , 50
-            ) ^ []()
-            {
-                return "(lambda [x y z] [(+ (* x y) z)])"_cambda  () (15, 3, 5);
-            };
-
-    TEST_ME ( "[1 2 3], a quoted object"
-            , utils::type< cambda::grouped_t<'[', types_t<decltype("1"_charpack), decltype("2"_charpack), decltype("3"_charpack)>> >
-            ) ^ []()
-            {
-                return utils:: as_type( "[1 2 3]"_cambda () );
-            };
-
-    TEST_ME ( "[], an empty quoted object"
-            , utils::type< cambda::grouped_t<'[', types_t<>> >
-            ) ^ []()
-            {
-                return utils:: as_type( "[]"_cambda () );
-            };
-
-    TEST_ME ( "lambda with assign"
-            , 500
-            ) ^ []()
-            {
-                int foo = 100;
-                return "(lambda [w] [(assign w (* 5 w))])"_cambda  () (foo);
-            };
-
-    TEST_ME ( "lambda constexpr"
-            , 500
-            ) ^ []()
-            {
-                constexpr int foo = 100;
-                constexpr auto result = "(lambda [w] [(* 5 w)])"_cambda  () (foo);
-                return result;
-            };
-
-    TEST_ME ( "lambda [w] [(+ w w)]"
-            , 200
-            ) ^ []()
-            {
-                constexpr auto result = "(lambda [w] [(+ w w)])"_cambda  () (100);
-                return result;
-            };
-
-    TEST_ME ( "lambda inside"
-            , 256
-            ) ^ []()
-            {
-                constexpr auto result = "( (lambda [w] [(* w w)]) 16 )"_cambda  ();
-                return result;
-            };
-
-    TEST_ME ( "{10 * {2 + 2}}" // testing {} for infix notation
-            , 40
-            ) ^ []()
-            {
-                constexpr auto result = "{10 * {2 + 2}}"_cambda  ();
-                return result;
-            };
-
-    TEST_ME ( "lambda with {} and &"
-            , 256
-            ) ^ []()
-            {
-                constexpr auto result = "{16 & (lambda [w] [(* w w)]) }"_cambda  ();
-                return result;
-            };
-
-    TEST_ME ( "no-arg lambda"
-            , 1234
-            ) ^ []()
-            {
-                constexpr auto result = "((lambda [] [1234]))"_cambda  ();
-                return result;
-            };
-
-    struct test0_25
-    {
-        constexpr static double
-        foo() {
-            double r = 0.5;
-            auto result = "{(id r) assign ((lambda [] [{r * r}]))}"_cambda[ "r"_binding = r] ();
-            return result;
-        }
-    };
-
-    TEST_ME ( "no-arg lambda with constexpr and assign and stuff, on 'double' instead of 'int'"
-            , 0.25
-            ) ^ []()
-            {
-                constexpr auto result = test0_25::foo();
-                return result;
-            };
-
-
-    TEST_ME ( "type_as_string"
-            , std::string("double")
-            ) ^ []()
-            {
-                double v;
-                auto result = "(type_as_string v)"_cambda[ "v"_binding = v] ();
-                return result;
-            };
-
-    struct test__for_each_ref__by_squaring_elements_in_place
-    {
-        constexpr auto static
-        run()
-        {
-                int test_data[] {5,6,7};
-                "(range_based_for test_data (lambda [r] [(assign r {r * r})]))"_cambda
-                    ["test_data"_binding = test_data]
-                    ();
-                return test_data[0]+test_data[1]+test_data[2];
-        }
-    };
-
-    TEST_ME ( "range_based_for"
-            , 5*5 + 6*6 + 7*7
-            ) ^ []()
-            {
-                constexpr auto result = test__for_each_ref__by_squaring_elements_in_place::run();
-                return result;
-            };
+    auto lambda_from_cpp = [](auto x, auto y) { return x+y; }; // cannot be made constexpr
+    constexpr auto lambda_from_cambda = "(lambda [x y] [{x + y}])"_cambda();
+    std::cout << lambda_from_cpp(5,6) << " == " << lambda_from_cambda(5,6) << '\n';
+    //static_assert(11 == lambda_from_cpp(5,6)    ,"");
+    static_assert  (11 == lambda_from_cambda(5,6) ,"");
 }
+
+
+constexpr auto static
+run()
+{
+        int test_data[] {5,6,7};
+        "(range_based_for test_data (lambda [r] [(assign r {r * r})]))"_cambda
+            ["test_data"_binding = test_data]
+            ();
+        return test_data[0]+test_data[1]+test_data[2];
+}
+static_assert( run() == 5*5 + 6*6 + 7*7 ,"");

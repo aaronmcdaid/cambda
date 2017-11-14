@@ -12,7 +12,7 @@ In plain C++, we can write this, but we can't mark them as `constexpr` and there
 ```
 auto cpp_lambda = [](auto x){return x*x;};
 auto squared_cpp = cpp_lambda(15);
-// static_assert(squared_cpp = 225 ,"");
+// static_assert(squared_cpp == 225 ,"");
 ```
 
 With the `cambda` library, we can write this and use `constexpr`
@@ -22,7 +22,7 @@ With the `cambda` library, we can write this and use `constexpr`
 
 constexpr auto cambda_lambda = "(lambda [x] [{x * x}])"_cambda();
 constexpr auto squared_cambda = cambda_lambda(15);
-static_assert(squared_cambda = 225 ,"");
+static_assert(squared_cambda == 225 ,"");
 ```
 
 ## Basics
@@ -40,9 +40,9 @@ In C++, we write `foo(5, 3.14)`, but in Lisp we write `(foo 5 3.14)`. Note also 
 ```
     constexpr auto a = "15"_cambda();            // a is 15
     constexpr auto b = "(+ 8 7)"_cambda();       // Function call. This is addition. b is 15
-    constexpr auto b = "(* 8 7)"_cambda();       // Multiplication
-    constexpr auto b = "{8 * 7}"_cambda();       // If there are two args, use {} instead of () for infix notation
-    constexpr auto b = "{ {8 * 7} + {6 * 3} }"_cambda();  // Nested application
+    constexpr auto c = "(* 8 7)"_cambda();       // Multiplication
+    constexpr auto d = "{8 * 7}"_cambda();       // If there are two args, use {} instead of () for infix notation
+    constexpr auto e = "{ {8 * 7} + {6 * 3} }"_cambda();  // Nested application
 ```
 
 Please note that the whitespace is important here. Unlike C++, Lisp is very flexible about what can appear in identifiers.
@@ -59,6 +59,9 @@ use `[ ]` after the `_cambda` and just before the `()` as follows:
 constexpr auto four_squared = "{x * x}"_cambda ["x"_binding = 4] ();
 ```
 
+We can't make the next example `constexpr` in C++14, but it might work in future
+standards.
+
 ```
 std::vector<int> v{2,3,4};
 auto size_of_v = "(size v)"_cambda
@@ -74,9 +77,13 @@ auto size_of_v = "(size v)"_cambda
 We can assign via `assign`:
 
 ```
-int x;
-"(assign x 1234)"_cambda ["x"_binding = x] ();
-// x is now equal to 1234
+int main() {
+    int x=0;
+    "(assign x 1234)"_cambda ["x"_binding = x] ();
+    // x is now equal to 1234
+
+    std:: cout << "x = " << x << " should be 1234" << '\n';
+}
 ```
 
 ## lambdas
