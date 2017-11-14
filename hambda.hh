@@ -872,6 +872,18 @@ namespace hambda {
                             )
         ->decltype(target = source  )
         {   return target = source; }
+
+        template< typename LibToForward
+                , typename Arg
+                , typename Func
+                >
+        auto constexpr
+        apply_after_simplification  (LibToForward, decltype( "&"_charpack )
+                            , Arg && arg
+                            , Func && func
+                            )
+        ->decltype(std::forward<Func>(func)(std::forward<Arg>(arg))  )
+        {   return std::forward<Func>(func)(std::forward<Arg>(arg)); }
     };
 
 

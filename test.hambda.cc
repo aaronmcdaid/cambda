@@ -192,4 +192,12 @@ int main() {
                 constexpr auto result = "{10 * {2 + 2}}"_cambda  ();
                 return result;
             };
+
+    TEST_ME ( "lambda with {} and &"
+            , 256
+            ) ^ []()
+            {
+                constexpr auto result = "{16 & (lambda [w] [(* w w)]) }"_cambda  ();
+                return result;
+            };
 }
