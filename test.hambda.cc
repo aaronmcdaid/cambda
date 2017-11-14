@@ -87,23 +87,6 @@ int main() {
                 return result;
             };
 
-    struct user_supplied_library_withfunc {
-        constexpr user_supplied_library_withfunc(){} // a default constructor, just because clang requires them for constexpr objects
-
-        auto constexpr
-        apply_after_simplification  ( decltype( "%"_charpack ) , int i , int j)
-        -> int
-        { return i%j; }
-    };
-
-    struct user_supplied_library_withvalue {
-        constexpr user_supplied_library_withvalue(){} // a default constructor, just because clang requires them for constexpr objects
-
-        auto constexpr
-        get_simple_named_value  ( decltype( "seven"_charpack ) )
-        { return std::integral_constant<int, 7>{}; }
-    };
-
     struct user_supplied_library_with_a_reference {
         int & m_my_reference;
 
@@ -112,17 +95,6 @@ int main() {
         -> int &
         { return m_my_reference; }
 
-        auto constexpr
-        apply_after_simplification  ( decltype( "assign"_charpack )
-                            , int & target
-                            , int   source
-                            )
-        -> int &
-        {
-            target = source;
-            return target;
-        }
-
     };
 
     TEST_ME ( "user-supplied library with a reference"
@@ -130,12 +102,7 @@ int main() {
             ) ^ []()
             {
                 int foo = 1337;
-                auto & result = simplify(parse_ast("(assign foo 35)"_charpack)
-                        ,
-                        //combine_libraries(starter_lib_v,
-                            user_supplied_library_with_a_reference{foo}
-                            //)
-                        );
+                auto && result = "(assign foo 35)"_cambda[ "foo"_binding = foo]();
                 return foo * (&result == &foo);
             };
 

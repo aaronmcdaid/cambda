@@ -360,9 +360,20 @@ namespace hambda {
         auto constexpr
         apply_after_simplification  ( decltype( "lambda"_charpack )
                                     )
+        // TODO: trailing return type
         {
             return [](auto x) { return x*x; };
         }
+
+        template< typename T
+                , typename S >
+        auto constexpr
+        apply_after_simplification  ( decltype( "assign"_charpack )
+                            , T & target
+                            , S   source
+                            )
+        ->decltype(target = source  )
+        {   return target = source; }
     };
 
     template< typename Lib1
