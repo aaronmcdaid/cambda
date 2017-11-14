@@ -259,7 +259,7 @@ int main() {
         run()
         {
                 int test_data[] {5,6,7};
-                "(range_based_for test_data (lambda [r] [(assign r (* r r))]))"_cambda
+                "(range_based_for test_data (lambda [r] [(assign r {r * r})]))"_cambda
                     ["test_data"_binding = test_data]
                     ();
                 return test_data[0]+test_data[1]+test_data[2];
