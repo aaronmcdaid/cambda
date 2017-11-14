@@ -168,4 +168,13 @@ int main() {
                 return "(lambda [w] [(assign w (* 5 w))])"_cambda  () (foo);
             };
 
+    TEST_ME ( "lambda constexpr"
+            , 500
+            ) ^ []()
+            {
+                constexpr int foo = 100;
+                constexpr auto result = "(lambda [w] [(* 5 w)])"_cambda  () (foo);
+                return result;
+            };
+
 }

@@ -718,7 +718,7 @@ namespace hambda {
         { return binded_name_with_valueOrReference<V, c...>{std::forward<V>(v)}; }
     };
     template<char ...c>
-    auto
+    auto constexpr
     char_pack__to__binding_name(utils::char_pack<c...>)
     -> binding_name<c...>
     {return {};}
@@ -806,6 +806,27 @@ namespace hambda {
         { return {}; }
 
 
+        template< typename LibToForward
+                , typename QuotedExpression
+                , typename ...BindingName>
+        struct lambda_capturing_struct
+        {
+            LibToForward m_lib;
+
+            template< typename ...T>
+            constexpr auto
+            operator() (T && ... x) const {
+                static_assert(sizeof...(x) == sizeof...(BindingName) ,"");
+                return hambda::simplify
+                        (   QuotedExpression{}
+                        ,
+                            combine_libraries   (   m_lib
+                                                , char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...
+                                                )
+                        );
+            };
+        };
+
         template< typename ...BindingName
                 , typename LibToForward
                 , typename QuotedExpression>
@@ -816,16 +837,9 @@ namespace hambda {
                                     )
         // TODO: trailing return type
         {
-            return [&](auto && ... x) {
-                static_assert(sizeof...(x) == sizeof...(BindingName) ,"");
-                return hambda::simplify
-                        (   QuotedExpression{}
-                        ,
-                            combine_libraries   (   l2f
-                                                , char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...
-                                                )
-                        );
-            };
+            return
+            lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {l2f};
+
         }
 
         template< typename T
