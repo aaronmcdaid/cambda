@@ -787,15 +787,21 @@ namespace hambda {
         { return {}; }
 
 
-        template<char ... binding_chars, typename ...U>
+        template<char ... binding_chars, typename QuotedExpression>
         auto constexpr
         apply_after_simplification  ( decltype( "lambda"_charpack )
                                     , hambda::grouped_t<'[', types_t<utils::char_pack<binding_chars...>>>
-                                    , hambda::grouped_t<'[', types_t<U...>>
+                                    , hambda::grouped_t<'[', types_t<QuotedExpression>>
                                     )
         // TODO: trailing return type
         {
-            return [](auto x) { return x*x; };
+            return [](auto x) -> int{
+                (void)x;
+                return hambda::simplify(
+                        QuotedExpression{}
+                        , starter_lib{} );
+                return x*x;
+            };
         }
 
         template< typename T
