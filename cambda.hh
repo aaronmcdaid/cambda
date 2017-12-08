@@ -10,7 +10,7 @@
 using std::size_t;
 
 
-namespace utils {
+namespace cambda_utils {
 
 
 template<int i>
@@ -60,22 +60,22 @@ template<char ... chars>
 constexpr char   char_pack<chars...>:: c_str0_[];
 
 constexpr
-int char_pack_to_int(utils::char_pack<>, int prefix_already_processed)
+int char_pack_to_int(cambda_utils::char_pack<>, int prefix_already_processed)
 { return prefix_already_processed; }
 
 // this is to deal with literals such as '15c', which should be returned as
 // std::integral_constant<int, 15>{} from the simplifier
 constexpr
-int char_pack_to_int(utils::char_pack<'c'>, int prefix_already_processed)
+int char_pack_to_int(cambda_utils::char_pack<'c'>, int prefix_already_processed)
 { return prefix_already_processed; }
 
 template<char next_digit, char ... c>
 constexpr auto
-char_pack_to_int(utils::char_pack<next_digit, c...>, int prefix_already_processed = 0)
+char_pack_to_int(cambda_utils::char_pack<next_digit, c...>, int prefix_already_processed = 0)
 -> std::enable_if_t< (next_digit >= '0' && next_digit <= '9'),int>
 {
     static_assert( next_digit >= '0' && next_digit <= '9' ,"");
-    return  char_pack_to_int(utils::char_pack<c...>{}, 10*prefix_already_processed + (next_digit-'0'));
+    return  char_pack_to_int(cambda_utils::char_pack<c...>{}, 10*prefix_already_processed + (next_digit-'0'));
 }
 
 
@@ -89,7 +89,7 @@ char_pack_to_int(utils::char_pack<next_digit, c...>, int prefix_already_processe
  * instead of SFINAE. If this is undesirable, and you want this method
  * to dissappear if 'x' does not have a 'foo' method, then you can do
  * this instead:
- *      template< typename id = utils:: id_t >
+ *      template< typename id = cambda_utils:: id_t >
  *      auto bar()
  *      -> decltype( id{}(x) .foo())
  *      {
@@ -152,7 +152,7 @@ template< typename T
 struct reverse_pack<T, tmplt<first,c...>>
 {
     using tail_reversed = typename reverse_pack<T, tmplt<c...> > :: type;
-    using type = typename utils:: concat_nontype_pack  < T, tail_reversed , tmplt<first> >::type;
+    using type = typename cambda_utils:: concat_nontype_pack  < T, tail_reversed , tmplt<first> >::type;
 };
 
 
@@ -226,7 +226,7 @@ namespace cambda {
     template<typename T, T ... chars>
     constexpr auto
     operator"" _charpack ()
-    -> utils:: char_pack<chars...>
+    -> cambda_utils:: char_pack<chars...>
     { return {}; }
 
     template<char c>    using c_char    = std::integral_constant<char, c>;
@@ -286,7 +286,7 @@ namespace cambda {
 
     template<char ... c>
     std::string
-    toString( utils::char_pack<c...> s, int indent = 0)
+    toString( cambda_utils::char_pack<c...> s, int indent = 0)
     {
         (void)indent;
         return s.c_str0();
@@ -345,7 +345,7 @@ namespace cambda {
         template<size_t ... I>
         static auto constexpr
         full_token_helper(std::index_sequence<I...>)
-        -> utils::char_pack< E::at(tk.first+I) ... >
+        -> cambda_utils::char_pack< E::at(tk.first+I) ... >
         { return {}; }
 
         using full_token_here = decltype(full_token_helper(std::make_index_sequence<tk.second-tk.first>{}));
@@ -407,19 +407,19 @@ namespace cambda {
     // but ')' closes the list:
     template<char c, typename ... T>
     struct parse_many_things<types_t<
-            utils::char_pack<c>, T...
+            cambda_utils::char_pack<c>, T...
         >
         , std::enable_if_t<is_closer(c)>
         >
     {
-        using me    = types_t< utils::char_pack<c> >;
+        using me    = types_t< cambda_utils::char_pack<c> >;
         using rest  = types_t<T...>;
     };
 
     // while '('/'{'/'[' open the list. This is more complex:
     template<char o, typename ... T>
     struct parse_many_things<types_t<
-            utils::char_pack<o>, T...
+            cambda_utils::char_pack<o>, T...
         >
         , std::enable_if_t<is_opener(o)>
         >
@@ -490,7 +490,7 @@ namespace cambda {
         // First, apply_after_simplification_helper
         template< typename ...T
                 , typename LibToForward
-                , typename id = utils:: id_t
+                , typename id = cambda_utils:: id_t
                 , typename std::integral_constant<int, __LINE__> * =nullptr
                 >
         auto constexpr
@@ -500,7 +500,7 @@ namespace cambda {
 
         template< typename ...T
                 , typename LibToForward
-                , typename id = utils:: id_t
+                , typename id = cambda_utils:: id_t
                 , typename std::integral_constant<int, __LINE__> * =nullptr
                 >
         auto constexpr
@@ -522,7 +522,7 @@ namespace cambda {
          * Then forward the call
          */
         template<typename T
-                , typename id = utils:: id_t
+                , typename id = cambda_utils:: id_t
                 , typename std::integral_constant<int, __LINE__> * =nullptr
                 >
         auto constexpr
@@ -531,7 +531,7 @@ namespace cambda {
         {   return id{}(lib1).get_simple_named_value(std::forward<T>(t)); }
 
         template<typename T
-                , typename id = utils:: id_t
+                , typename id = cambda_utils:: id_t
                 , typename std::integral_constant<int, __LINE__> * =nullptr
                 >
         auto constexpr
@@ -541,7 +541,7 @@ namespace cambda {
 
         template<char ... c>
         auto constexpr
-        get_simple_named_value  ( utils::char_pack<c...> name)
+        get_simple_named_value  ( cambda_utils::char_pack<c...> name)
         ->decltype(library_combiner::get_simple_named_value_overload(name))
         {   return library_combiner::get_simple_named_value_overload(name); }
     };
@@ -591,43 +591,43 @@ namespace cambda {
 
     // simplifier for all digits
     template<char first_digit, char ...c, typename Lib>
-    struct simplifier   < utils::char_pack<first_digit, c...>
+    struct simplifier   < cambda_utils::char_pack<first_digit, c...>
                         , Lib
-                        , utils::void_t<std::enable_if_t<
+                        , cambda_utils::void_t<std::enable_if_t<
                             is_digit_constexpr(first_digit)
-                            && is_digit_constexpr(utils::char_pack<first_digit, c...> :: last())
+                            && is_digit_constexpr(cambda_utils::char_pack<first_digit, c...> :: last())
                           >>>
     {
         static auto constexpr
-        simplify(utils::char_pack<first_digit, c...> digits, Lib)
-        { return utils::char_pack_to_int(digits); }
+        simplify(cambda_utils::char_pack<first_digit, c...> digits, Lib)
+        { return cambda_utils::char_pack_to_int(digits); }
     };
 
     // simplifier for digits with trailing 'c', for an integral constant
     template<char first_digit, char ...c, typename Lib>
-    struct simplifier   < utils::char_pack<first_digit, c...>
+    struct simplifier   < cambda_utils::char_pack<first_digit, c...>
                         , Lib
-                        , utils::void_t<std::enable_if_t<
+                        , cambda_utils::void_t<std::enable_if_t<
                             is_digit_constexpr(first_digit)
-                            && utils::char_pack<first_digit, c...> :: last() == 'c'
+                            && cambda_utils::char_pack<first_digit, c...> :: last() == 'c'
                           >>>
     {
         static auto constexpr
-        simplify(utils::char_pack<first_digit, c...> digits, Lib)
-        { return std::integral_constant<int, utils::char_pack_to_int(digits)>{}; }
+        simplify(cambda_utils::char_pack<first_digit, c...> digits, Lib)
+        { return std::integral_constant<int, cambda_utils::char_pack_to_int(digits)>{}; }
     };
 
     namespace detail {
         template<char ...c>
         static auto constexpr
-        drop_leading_apostrophe(utils::char_pack<'\'', c...>)
-        -> utils::char_pack<c...>
+        drop_leading_apostrophe(cambda_utils::char_pack<'\'', c...>)
+        -> cambda_utils::char_pack<c...>
         { return {}; }
 
         template<char ...c>
         static auto constexpr
-        reverse(utils::char_pack<c...>)
-        -> typename utils::reverse_pack<char, utils::char_pack<c...> >::type
+        reverse(cambda_utils::char_pack<c...>)
+        -> typename cambda_utils::reverse_pack<char, cambda_utils::char_pack<c...> >::type
         { return {}; }
 
         constexpr char apostrophe = '\'';
@@ -637,41 +637,41 @@ namespace cambda {
 
         // base case, the empty string
         template<>
-        struct squash_consecutive_apostrophes_struct<utils::char_pack< >>
-        { using type = utils::char_pack<>; };
+        struct squash_consecutive_apostrophes_struct<cambda_utils::char_pack< >>
+        { using type = cambda_utils::char_pack<>; };
 
         template<char ...c>
-        struct squash_consecutive_apostrophes_struct<utils::char_pack< apostrophe,apostrophe, c... >>
+        struct squash_consecutive_apostrophes_struct<cambda_utils::char_pack< apostrophe,apostrophe, c... >>
         {
-            using recursive_type = typename squash_consecutive_apostrophes_struct< utils::char_pack<c...> >::type;
-            using type = typename utils::concat_nontype_pack< char
-                                                            , utils::char_pack<apostrophe>
-                                                            //, utils::char_pack<c...>
+            using recursive_type = typename squash_consecutive_apostrophes_struct< cambda_utils::char_pack<c...> >::type;
+            using type = typename cambda_utils::concat_nontype_pack< char
+                                                            , cambda_utils::char_pack<apostrophe>
+                                                            //, cambda_utils::char_pack<c...>
                                                             , recursive_type
                                                             > :: type;
         };
 
         template<char next, char ...c>
-        struct squash_consecutive_apostrophes_struct<utils::char_pack< next, c... >>
+        struct squash_consecutive_apostrophes_struct<cambda_utils::char_pack< next, c... >>
         {
             static_assert(next != apostrophe ,"");
-            using recursive_type = typename squash_consecutive_apostrophes_struct< utils::char_pack<c...> >::type;
-            using type = typename utils::concat_nontype_pack< char
-                                                            , utils::char_pack<next>
-                                                            //, utils::char_pack<c...>
+            using recursive_type = typename squash_consecutive_apostrophes_struct< cambda_utils::char_pack<c...> >::type;
+            using type = typename cambda_utils::concat_nontype_pack< char
+                                                            , cambda_utils::char_pack<next>
+                                                            //, cambda_utils::char_pack<c...>
                                                             , recursive_type
                                                             > :: type;
         };
 
         template<char ...c>
         static auto constexpr
-        squash_consecutive_apostrophes(utils::char_pack<c...>)
-        -> typename squash_consecutive_apostrophes_struct<utils::char_pack<c...>> :: type
+        squash_consecutive_apostrophes(cambda_utils::char_pack<c...>)
+        -> typename squash_consecutive_apostrophes_struct<cambda_utils::char_pack<c...>> :: type
         { return {}; }
 
         template<char ...c>
         static auto constexpr
-        parse_string_literal(utils::char_pack<'\'', c...> crpk)
+        parse_string_literal(cambda_utils::char_pack<'\'', c...> crpk)
         {
             return squash_consecutive_apostrophes( reverse(drop_leading_apostrophe( reverse (drop_leading_apostrophe(crpk) ))));
         }
@@ -681,7 +681,7 @@ namespace cambda {
     template<typename StringLiteral, typename Lib>
     struct simplifier   < StringLiteral
                         , Lib
-                        , utils::void_t<std::enable_if_t<
+                        , cambda_utils::void_t<std::enable_if_t<
                                    '\'' ==            StringLiteral::at(0)
                           >>>
     {
@@ -697,14 +697,14 @@ namespace cambda {
 
         template<typename Name, typename Lib>
         static auto constexpr
-        has_get_simple_named_value_helper(utils::priority_tag<2>)
+        has_get_simple_named_value_helper(cambda_utils::priority_tag<2>)
         -> decltype( std::declval<Lib&>().get_simple_named_value(std::declval<Name&>())
             , std:: true_type{})
         { return {}; }
 
         template<typename Name, typename Lib>
         static auto constexpr
-        has_get_simple_named_value_helper(utils::priority_tag<1>)
+        has_get_simple_named_value_helper(cambda_utils::priority_tag<1>)
         -> std:: false_type
         { return {}; }
 
@@ -712,7 +712,7 @@ namespace cambda {
         static auto constexpr
         has_get_simple_named_value()
         -> decltype(auto)
-        { return detail:: has_get_simple_named_value_helper<Name,Lib>(utils::priority_tag<9>{}); }
+        { return detail:: has_get_simple_named_value_helper<Name,Lib>(cambda_utils::priority_tag<9>{}); }
 
         template<typename Name, typename Lib>
         bool constexpr
@@ -725,7 +725,7 @@ namespace cambda {
     template<typename Name, typename Lib>
     struct simplifier   < Name
                         , Lib
-                        , utils::void_t<std::enable_if_t<
+                        , cambda_utils::void_t<std::enable_if_t<
                                     detail::has_get_simple_named_value_v<Name, Lib>
                           >>>
     {
@@ -744,7 +744,7 @@ namespace cambda {
     template<typename Name, typename Lib>
     struct simplifier   < Name
                         , Lib
-                        , utils::void_t<std::enable_if_t<
+                        , cambda_utils::void_t<std::enable_if_t<
                                 !( is_digit_constexpr(Name::at(0)) )
                              && !( '\'' ==            Name::at(0)  )
                              && ! detail::has_get_simple_named_value_v<Name, Lib>
@@ -757,7 +757,7 @@ namespace cambda {
             Lib m_lib;
 
             template<typename ...T
-                    , typename id = utils::id_t
+                    , typename id = cambda_utils::id_t
                     >
             auto constexpr
             operator()  ( T && ...t)
@@ -776,7 +776,7 @@ namespace cambda {
                         , Lib
                         >
     {
-        template<typename id = utils::id_t>
+        template<typename id = cambda_utils::id_t>
         static auto constexpr
         simplify(grouped_t<'(', types_t<Func, Args...> >, Lib lib)
         ->decltype(call_the_simplifier(Func{}, id{}(lib)) ( call_the_simplifier(Args{}, id{}(lib))...)  )
@@ -807,7 +807,7 @@ namespace cambda {
                         , Lib
                         >
     {
-        template< typename id = utils:: id_t>
+        template< typename id = cambda_utils:: id_t>
         static auto constexpr
         simplify(grouped_t<'{', types_t<Arg1, Func, Arg2> >, Lib lib)
         ->decltype(simplifier       < grouped_t<'(', types_t<Func, Arg1, Arg2>> , Lib>
@@ -846,10 +846,10 @@ namespace cambda {
         template< typename Name
                 , typename LibToForward
                 , typename ...T
-                , typename id = utils::id_t
+                , typename id = cambda_utils::id_t
                 >
         auto constexpr
-        apply_after_simplification_overload(utils::priority_tag<1>, LibToForward l2f, Name, T && ...t)
+        apply_after_simplification_overload(cambda_utils::priority_tag<1>, LibToForward l2f, Name, T && ...t)
         ->decltype(id{}(Lib{}).apply_after_simplification(l2f, Name{}, std::forward<T>(t)...)  )
         {   return id{}(Lib{}).apply_after_simplification(l2f, Name{}, std::forward<T>(t)...); }
 
@@ -859,14 +859,14 @@ namespace cambda {
                 , typename LibToForward
                 , int ...I
                 , class...
-                , typename id = utils::id_t
+                , typename id = cambda_utils::id_t
                 , typename PlainResultType = decltype( id{}(Lib{}).apply_after_simplification(LibToForward{}, Name{}, std::integral_constant<int, I>{}...) )
                 , std::enable_if_t<!std::is_same<PlainResultType, void>{} >* =nullptr
                 , std::enable_if_t< (sizeof(PlainResultType)>0)           >* =nullptr // so it's worth putting inside integral constant
                 , PlainResultType Result = id{}(Lib{}).apply_after_simplification(LibToForward{}, Name{}, std::integral_constant<int, I>{}...)
                 >
         auto constexpr
-        apply_after_simplification_overload(utils::priority_tag<2>, LibToForward, Name , std::integral_constant<int, I> ... )
+        apply_after_simplification_overload(cambda_utils::priority_tag<2>, LibToForward, Name , std::integral_constant<int, I> ... )
         -> std::integral_constant<PlainResultType, Result>
         { return {}; }
 
@@ -875,11 +875,11 @@ namespace cambda {
                 >
         auto constexpr
         apply_after_simplification(LibToForward l2f, T && ...t)
-        ->decltype(this->apply_after_simplification_overload(utils::priority_tag<9>{}, l2f, std::forward<T>(t)...)  )
-        {   return this->apply_after_simplification_overload(utils::priority_tag<9>{}, l2f, std::forward<T>(t)...); }
+        ->decltype(this->apply_after_simplification_overload(cambda_utils::priority_tag<9>{}, l2f, std::forward<T>(t)...)  )
+        {   return this->apply_after_simplification_overload(cambda_utils::priority_tag<9>{}, l2f, std::forward<T>(t)...); }
 
         template< typename Name
-                , typename id = utils::id_t>
+                , typename id = cambda_utils::id_t>
         auto constexpr
         get_simple_named_value  ( Name name)
         ->decltype(id{}(Lib{}).get_simple_named_value(name))
@@ -900,7 +900,7 @@ namespace cambda {
         static_assert(!std::is_rvalue_reference<T>{}, "");
 
         auto constexpr
-        get_simple_named_value  ( utils::char_pack<c...> )
+        get_simple_named_value  ( cambda_utils::char_pack<c...> )
         -> T
         { return m_x; }
     };
@@ -929,7 +929,7 @@ namespace cambda {
     };
     template<char ...c>
     auto constexpr
-    char_pack__to__binding_name(utils::char_pack<c...>)
+    char_pack__to__binding_name(cambda_utils::char_pack<c...>)
     -> binding_name<c...>
     {return {};}
 
@@ -945,7 +945,7 @@ namespace cambda {
         AST m_ast;
         Lib lib;
 
-        template< typename id = utils:: id_t>
+        template< typename id = cambda_utils:: id_t>
         constexpr auto
         operator() ()
         ->decltype(::cambda:: simplify(id{}(m_ast), lib))
@@ -1047,7 +1047,7 @@ namespace cambda {
                 , char ...c>
         auto constexpr
         apply_after_simplification  (LibToForward, decltype( "length"_charpack )
-                            , utils::char_pack<c...>
+                            , cambda_utils::char_pack<c...>
                             )
         -> std::integral_constant<int, sizeof...(c)>
         { return {}; }
@@ -1127,7 +1127,7 @@ namespace cambda {
     constexpr auto
     operator"" _cambda ()
     {
-        auto ast = parse_ast(utils:: char_pack<chars...>{});
+        auto ast = parse_ast(cambda_utils:: char_pack<chars...>{});
         return ::cambda::make_cambda_object_from_the_string_literal(ast, starter_lib_v);
     }
 
