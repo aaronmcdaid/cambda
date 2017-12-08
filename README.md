@@ -30,6 +30,7 @@ static_assert(squared_cambda == 225 ,"");
 This uses the *string-literal-operator-template* extension, but otherwise I believe it's standard C++14.
 That extension isn't strictly necessary, we can build a preprocessor macro to work around it (*TODO* explain this!).
 This has been tested on `clang version 3.8.0`, `g++ (GCC) 7.2.0` and `g++ (GCC) 5.5.0`.
+Using gcc.godbolt.org suggests that clang >= 3.5 and g++ >= 5.1 are sufficient - more testing required.
 I suggest passing the `-Wno-gnu-string-literal-operator-template` argument to these compilers to suppress a warning that you
 might get about the fact this is an extension.
 
