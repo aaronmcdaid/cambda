@@ -23,6 +23,9 @@ static_assert(c == 56   ,"");
 static_assert(d == 56   ,"");
 static_assert(e == 74   ,"");
 
+constexpr auto a_integralconstant = "15c"_cambda();            // a is 15
+static_assert(a_integralconstant.value == 15   ,"");
+
 constexpr auto four_squared = "{x * x}"_cambda ["x"_binding = 4] ();
 static_assert(four_squared == 16   ,"");
 

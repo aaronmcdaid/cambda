@@ -28,6 +28,8 @@ struct char_pack {
     constexpr static size_t size()      { return sizeof...(chars); }
     constexpr static char   const   (&c_str0(void)) [size()+1]     { return c_str0_; }
     constexpr static char   at(size_t i)        { return c_str0_[i]; }
+
+    constexpr static char   last()              { return c_str0_[ size()-1 ]; }
     /*
     template<typename ...C>
     constexpr static size_t find_first_of(C ... targets) {
@@ -59,6 +61,12 @@ constexpr char   char_pack<chars...>:: c_str0_[];
 
 constexpr
 int char_pack_to_int(utils::char_pack<>, int prefix_already_processed)
+{ return prefix_already_processed; }
+
+// this is to deal with literals such as '15c', which should be returned as
+// std::integral_constant<int, 15>{} from the simplifier
+constexpr
+int char_pack_to_int(utils::char_pack<'c'>, int prefix_already_processed)
 { return prefix_already_processed; }
 
 template<char next_digit, char ... c>
@@ -587,6 +595,21 @@ namespace cambda {
                         , Lib
                         , utils::void_t<std::enable_if_t<
                             is_digit_constexpr(first_digit)
+                            && is_digit_constexpr(utils::char_pack<first_digit, c...> :: last())
+                          >>>
+    {
+        static auto constexpr
+        simplify(utils::char_pack<first_digit, c...> digits, Lib)
+        { return utils::char_pack_to_int(digits); }
+    };
+
+    // simplifier for digits with trailing 'c', for an integral constant
+    template<char first_digit, char ...c, typename Lib>
+    struct simplifier   < utils::char_pack<first_digit, c...>
+                        , Lib
+                        , utils::void_t<std::enable_if_t<
+                            is_digit_constexpr(first_digit)
+                            && utils::char_pack<first_digit, c...> :: last() == 'c'
                           >>>
     {
         static auto constexpr
