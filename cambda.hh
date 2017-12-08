@@ -171,7 +171,9 @@ namespace cambda {
 
     template< typename C >
     auto constexpr
-    find_next_token(C, size_t o) {
+    find_next_token(C, size_t o)
+    ->std::pair<size_t,size_t>
+    {
         // first, skip whitespace
         while(C::at(o) != '\0' && is_whitespace(C::at(o)))
             ++o;
@@ -215,10 +217,9 @@ namespace cambda {
 
     template<typename T, T ... chars>
     constexpr auto
-    operator"" _charpack () {
-        utils:: char_pack<chars...> chrpck{};
-        return chrpck;
-    }
+    operator"" _charpack ()
+    -> utils:: char_pack<chars...>
+    { return {}; }
 
     template<char c>    using c_char    = std::integral_constant<char, c>;
     template<int c>     using c_int     = std::integral_constant<int, c>;
