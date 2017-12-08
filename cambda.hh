@@ -936,6 +936,11 @@ namespace cambda {
             //return *this;
         }
     };
+    template<typename AST, typename Lib>
+    auto constexpr
+    make_cambda_object_from_the_string_literal(AST ast, Lib lib)
+    -> cambda_object_from_the_string_literal<AST,Lib>
+    { return {std::move(ast),std::move(lib)}; }
 
     struct starter_lib {
         constexpr starter_lib(){} // a default constructor, just because clang requires them for constexpr objects
@@ -1095,7 +1100,7 @@ namespace cambda {
     operator"" _cambda ()
     {
         auto ast = parse_ast(utils:: char_pack<chars...>{});
-        return ::cambda::cambda_object_from_the_string_literal<decltype(ast), starter_lib> {ast, starter_lib_v};
+        return ::cambda::make_cambda_object_from_the_string_literal(ast, starter_lib_v);
     }
 
 }
