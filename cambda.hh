@@ -482,6 +482,7 @@ namespace cambda {
         template< typename ...T
                 , typename LibToForward
                 , typename id = utils:: id_t
+                , typename std::integral_constant<int, __LINE__> * =nullptr
                 >
         auto constexpr
         apply_after_simplification_helper  (LibToForward l2f, T && ...t)
@@ -491,6 +492,7 @@ namespace cambda {
         template< typename ...T
                 , typename LibToForward
                 , typename id = utils:: id_t
+                , typename std::integral_constant<int, __LINE__> * =nullptr
                 >
         auto constexpr
         apply_after_simplification_helper  (LibToForward l2f, T && ...t)
@@ -512,6 +514,7 @@ namespace cambda {
          */
         template<typename T
                 , typename id = utils:: id_t
+                , typename std::integral_constant<int, __LINE__> * =nullptr
                 >
         auto constexpr
         get_simple_named_value_overload  ( T&& t)
@@ -520,6 +523,7 @@ namespace cambda {
 
         template<typename T
                 , typename id = utils:: id_t
+                , typename std::integral_constant<int, __LINE__> * =nullptr
                 >
         auto constexpr
         get_simple_named_value_overload  ( T&& t)
