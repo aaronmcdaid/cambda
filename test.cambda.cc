@@ -4,6 +4,7 @@
 #include <iostream>
 
 using cambda::operator"" _cambda;
+using cambda::operator"" _charpack;
 using cambda::operator"" _binding;
 
 
@@ -44,6 +45,9 @@ static_assert(42 ==                       "42"_cambda()       ,"");
 static_assert(3.4 ==                        "3.4"_cambda()       ,"");
 static_assert(3.41932 ==                        "3.41932"_cambda()       ,"");
 
+static_assert("(if truec  3.14 'hi')"_cambda() == 3.14 ,"");
+static_assert("(if falsec 3.14 'hi')"_cambda() == "hi"_charpack ,"");
+
 std::vector<int> v{2,3,4};
 auto size_of_v = "(size v)"_cambda
         [   "v"_binding = v
@@ -66,7 +70,6 @@ int main() {
     std::cout << lambda_from_cpp(5,6) << " == " << lambda_from_cambda(5,6) << '\n';
     //static_assert(11 == lambda_from_cpp(5,6)    ,"");
     static_assert  (11 == lambda_from_cambda(5,6) ,"");
-
 }
 
 

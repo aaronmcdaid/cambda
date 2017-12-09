@@ -256,7 +256,6 @@ namespace cambda {
         return std:: make_pair(start, o);
     }
 
-
     template<typename T, T ... chars>
     constexpr auto
     operator"" _charpack ()
@@ -1192,6 +1191,44 @@ namespace cambda {
                         ,   cambda::combine_libraries   (   lib ,   char_pack__to__binding_name(BindingName{}) = std::move(bound_value))
                         );
         }
+
+        template<char ... c>
+        auto constexpr
+        get_simple_named_value  ( decltype( "truec"_charpack ) )
+        ->  std::true_type
+        {   return {}; }
+
+        template<char ... c>
+        auto constexpr
+        get_simple_named_value  ( decltype( "falsec"_charpack ) )
+        ->  std::false_type
+        {   return {}; }
+
+        template< typename LibToForward
+                , typename ForTrue
+                , typename ForFalse
+                >
+        auto constexpr
+        apply_after_simplification  (LibToForward, decltype( "if"_charpack )
+                            , std::true_type
+                            , ForTrue && for_true
+                            , ForFalse && //for_false
+                            )
+        -> ForTrue
+        {   return std::forward<ForTrue>(for_true); }
+
+        template< typename LibToForward
+                , typename ForTrue
+                , typename ForFalse
+                >
+        auto constexpr
+        apply_after_simplification  (LibToForward, decltype( "if"_charpack )
+                            , std::false_type
+                            , ForTrue && //for_true
+                            , ForFalse && for_false
+                            )
+        -> ForFalse
+        {   return std::forward<ForFalse>(for_false); }
     };
 
 
