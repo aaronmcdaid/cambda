@@ -30,7 +30,12 @@ constexpr auto four_squared = "{x * x}"_cambda ["x"_binding = 4] ();
 static_assert(four_squared == 16   ,"");
 
 static_assert(42    == "(let [(* 21 2)])"_cambda ()   ,"");
-static_assert(56088 == "(let [left 123 right 456 (* left right)])"_cambda () ,"");
+static_assert(56088 == R"--(
+                        (let [
+                            left 123
+                            right 456
+                            (* left right) ])
+                            )--"_cambda () ,"");
 
 std::vector<int> v{2,3,4};
 auto size_of_v = "(size v)"_cambda
