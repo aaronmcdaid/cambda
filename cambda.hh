@@ -853,23 +853,6 @@ namespace cambda {
         ->decltype(id{}(Lib{}).apply_after_simplification(l2f, Name{}, std::forward<T>(t)...)  )
         {   return id{}(Lib{}).apply_after_simplification(l2f, Name{}, std::forward<T>(t)...); }
 
-        // Now, a special overload for when all the arguments are std::integral_constant.
-        // We compute everything in the template arguments
-        template< typename Name
-                , typename LibToForward
-                , int ...I
-                , class...
-                , typename id = cambda_utils::id_t
-                , typename PlainResultType = decltype( id{}(Lib{}).apply_after_simplification(LibToForward{}, Name{}, std::integral_constant<int, I>{}...) )
-                , std::enable_if_t<!std::is_same<PlainResultType, void>{} >* =nullptr
-                , std::enable_if_t< (sizeof(PlainResultType)>0)           >* =nullptr // so it's worth putting inside integral constant
-                , PlainResultType Result = id{}(Lib{}).apply_after_simplification(LibToForward{}, Name{}, std::integral_constant<int, I>{}...)
-                >
-        auto constexpr
-        apply_after_simplification_overload(cambda_utils::priority_tag<2>, LibToForward, Name , std::integral_constant<int, I> ... )
-        -> std::integral_constant<PlainResultType, Result>
-        { return {}; }
-
         template< typename ...T
                 , typename LibToForward
                 >
