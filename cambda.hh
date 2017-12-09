@@ -1089,6 +1089,17 @@ namespace cambda {
         ->decltype(lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {l2f}  )
         {   return lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {l2f}; }
 
+        template< typename ...BindingName
+                , typename LibToForward
+                , typename QuotedExpression>
+        auto constexpr
+        apply_after_simplification  (LibToForward l2f, decltype( "/"_charpack )
+                                    , cambda::grouped_t<'[', types_t<BindingName...>>
+                                    , cambda::grouped_t<'[', types_t<QuotedExpression>>
+                                    )
+        ->decltype(lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {l2f}  )
+        {   return lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {l2f}; }
+
 
         template< typename T
                 , typename LibToForward
