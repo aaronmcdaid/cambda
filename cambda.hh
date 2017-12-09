@@ -1156,16 +1156,22 @@ namespace cambda {
         template< typename LibToForward
                 , typename BindingName
                 , typename BoundExpression
-                , typename TheRest
+                , typename ... TheRest
                 >
         auto constexpr
         apply_after_simplification  (LibToForward lib, decltype( "let"_charpack )
-                            , cambda::grouped_t<'[', types_t<BindingName, BoundExpression, TheRest>>
+                            , cambda::grouped_t<'[', types_t<BindingName, BoundExpression, TheRest...>>
                             )
         {
+            static_assert(sizeof...(TheRest) % 2 == 1 ,"A 'let' must always have an odd number of arguments");
             auto bound_value = cambda::simplify(BoundExpression{}, lib);
             return cambda::simplify
-                        (   TheRest{}
+                        (   cambda::grouped_t<'('
+                                    , types_t<cambda_utils::char_pack<'l','e','t'>
+                                             ,cambda::grouped_t<'[', types_t<
+                                                    TheRest...
+                                             >>>
+                                    >{}
                         ,   cambda::combine_libraries   (   lib ,   char_pack__to__binding_name(BindingName{}) = std::move(bound_value))
                         );
         }

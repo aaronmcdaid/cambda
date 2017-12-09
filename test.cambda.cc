@@ -29,6 +29,9 @@ static_assert(a_integralconstant.value == 15   ,"");
 constexpr auto four_squared = "{x * x}"_cambda ["x"_binding = 4] ();
 static_assert(four_squared == 16   ,"");
 
+static_assert(42    == "(let [(* 21 2)])"_cambda ()   ,"");
+static_assert(56088 == "(let [left 123 right 456 (* left right)])"_cambda () ,"");
+
 std::vector<int> v{2,3,4};
 auto size_of_v = "(size v)"_cambda
         [   "v"_binding = v
@@ -38,14 +41,6 @@ auto size_of_v = "(size v)"_cambda
         (); //  () executes
 
 std::initializer_list<int> il{2,3,4};
-
-//constexpr
-    auto static
-test_let_bindings()
-{
-    std::cout << "(let [(* 21 2)])"_cambda () << '\n';
-    std::cout << "(let [x 123 (* x 456)])"_cambda () << '\n';
-}
 
 int main() {
     int x=0;
@@ -60,7 +55,6 @@ int main() {
     //static_assert(11 == lambda_from_cpp(5,6)    ,"");
     static_assert  (11 == lambda_from_cambda(5,6) ,"");
 
-    test_let_bindings();
 }
 
 
