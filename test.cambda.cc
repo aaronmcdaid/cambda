@@ -43,8 +43,8 @@ std::initializer_list<int> il{2,3,4};
     auto static
 test_let_bindings()
 {
-    auto res = "(let [(+ 3 70)])"_cambda ();
-    std::cout << res << '\n';
+    std::cout << "(let [(* 21 2)])"_cambda () << '\n';
+    std::cout << "(let [x 123 (* x 456)])"_cambda () << '\n';
 }
 
 int main() {

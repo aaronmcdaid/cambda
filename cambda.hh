@@ -1134,6 +1134,10 @@ namespace cambda {
         ->decltype(std::forward<Func>(func)(std::forward<Arg>(arg))  )
         {   return std::forward<Func>(func)(std::forward<Arg>(arg)); }
 
+
+        /*
+         * 'let' - this will be complex
+         */
         template< typename LibToForward
                 , typename SingleOne
                 >
@@ -1146,6 +1150,23 @@ namespace cambda {
                         (   SingleOne{}
                             , lib
                         //, cambda::combine_libraries   (   m_lib ,   char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...)
+                        );
+        }
+
+        template< typename LibToForward
+                , typename BindingName
+                , typename BoundExpression
+                , typename TheRest
+                >
+        auto constexpr
+        apply_after_simplification  (LibToForward lib, decltype( "let"_charpack )
+                            , cambda::grouped_t<'[', types_t<BindingName, BoundExpression, TheRest>>
+                            )
+        {
+            auto bound_value = cambda::simplify(BoundExpression{}, lib);
+            return cambda::simplify
+                        (   TheRest{}
+                        ,   cambda::combine_libraries   (   lib ,   char_pack__to__binding_name(BindingName{}) = std::move(bound_value))
                         );
         }
     };
