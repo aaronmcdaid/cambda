@@ -1100,6 +1100,16 @@ namespace cambda {
                             )
         ->decltype(target = source  )
         {   return target = source; }
+        template< typename T
+                , typename LibToForward
+                , typename S >
+        auto constexpr
+        apply_after_simplification  (LibToForward, decltype( "="_charpack )
+                            , T & target
+                            , S   source
+                            )
+        ->decltype(target = source  )
+        {   return target = source; }
 
         template< typename LibToForward
                 , typename Arg
