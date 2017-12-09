@@ -177,6 +177,20 @@ struct reverse_pack<T, tmplt<first,c...>>
 
 
 
+template<char ... cs>
+auto constexpr
+operator==( cambda_utils:: char_pack<cs...>
+          , cambda_utils:: char_pack<cs...> )
+-> std::true_type
+{ return {}; }
+
+template<char ... c1, char ... c2>
+auto constexpr
+operator==( cambda_utils:: char_pack<c1...>
+          , cambda_utils:: char_pack<c2...> )
+-> std::false_type
+{ return {}; }
+
 
 }
 
