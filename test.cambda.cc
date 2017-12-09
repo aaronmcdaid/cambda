@@ -37,6 +37,13 @@ static_assert(56088 == R"--(
                             (* left right) ])
                             )--"_cambda () ,"");
 
+static_assert(std::is_same<std::integral_constant<int,42>, decltype( "42c"_cambda() )>{}  ,"");
+static_assert(std::is_same<int, decltype( "42"_cambda() )>{}  ,"");
+static_assert(std::is_same<double, decltype( "3.4"_cambda() )>{}  ,"");
+static_assert(42 ==                       "42"_cambda()       ,"");
+static_assert(3.4 ==                        "3.4"_cambda()       ,"");
+static_assert(3.41932 ==                        "3.41932"_cambda()       ,"");
+
 std::vector<int> v{2,3,4};
 auto size_of_v = "(size v)"_cambda
         [   "v"_binding = v

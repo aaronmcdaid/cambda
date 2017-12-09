@@ -69,10 +69,30 @@ constexpr
 int char_pack_to_int(cambda_utils::char_pack<'c'>, int prefix_already_processed)
 { return prefix_already_processed; }
 
-template<char next_digit, char ... c>
+template<char one_digit>
+constexpr
+double char_pack_to_int(cambda_utils::char_pack<'.', one_digit>, int prefix_already_processed)
+{
+    return prefix_already_processed + 0.1 * (one_digit-'0');
+}
+
+template<char digit1, char digit2, char ... digits>
+constexpr
+double char_pack_to_int(cambda_utils::char_pack<'.', digit1, digit2, digits...>, int prefix_already_processed)
+{
+    return prefix_already_processed
+                + 0.1 * (digit1-'0')
+                + 0.1 * char_pack_to_int(cambda_utils::char_pack<'.', digit2, digits...>{}, 0)
+                ;
+}
+
+template<char next_digit
+        , char ... c
+        , typename = std::enable_if_t< (next_digit >= '0' && next_digit <= '9') >
+        >
 constexpr auto
 char_pack_to_int(cambda_utils::char_pack<next_digit, c...>, int prefix_already_processed = 0)
--> std::enable_if_t< (next_digit >= '0' && next_digit <= '9'),int>
+//-> std::enable_if_t< (next_digit >= '0' && next_digit <= '9'),double>
 {
     static_assert( next_digit >= '0' && next_digit <= '9' ,"");
     return  char_pack_to_int(cambda_utils::char_pack<c...>{}, 10*prefix_already_processed + (next_digit-'0'));
