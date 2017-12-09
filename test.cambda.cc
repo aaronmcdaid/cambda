@@ -39,6 +39,14 @@ auto size_of_v = "(size v)"_cambda
 
 std::initializer_list<int> il{2,3,4};
 
+//constexpr
+    auto static
+test_let_bindings()
+{
+    auto res = "({[] / [1337]})"_cambda ();
+    std::cout << res << '\n';
+}
+
 int main() {
     int x=0;
     "(assign x 1234)"_cambda ["x"_binding = x] ();
@@ -51,11 +59,13 @@ int main() {
     std::cout << lambda_from_cpp(5,6) << " == " << lambda_from_cambda(5,6) << '\n';
     //static_assert(11 == lambda_from_cpp(5,6)    ,"");
     static_assert  (11 == lambda_from_cambda(5,6) ,"");
+
+    test_let_bindings();
 }
 
 
 constexpr auto static
-run()
+test_range_based_for()
 {
         int test_data[] {5,6,7};
         "(range_based_for test_data (lambda [r] [(assign r {r * r})]))"_cambda
@@ -63,4 +73,4 @@ run()
             ();
         return test_data[0]+test_data[1]+test_data[2];
 }
-static_assert( run() == 5*5 + 6*6 + 7*7 ,"");
+static_assert( test_range_based_for() == 5*5 + 6*6 + 7*7 ,"");
