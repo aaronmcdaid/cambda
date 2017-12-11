@@ -56,6 +56,14 @@ struct char_pack {
     }
     */
 };
+template< typename Stream, char ... c>
+Stream &
+operator<<(Stream &o, cambda_utils::char_pack<c...> s)
+{
+    o << s.c_str0();
+    return o;
+}
+
 template<char ... chars>
 constexpr char   char_pack<chars...>:: c_str0_[];
 
