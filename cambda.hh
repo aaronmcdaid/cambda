@@ -630,11 +630,12 @@ namespace cambda {
 
 
 
-    template<typename T, typename Lib>
+    template<typename T, typename Lib
+            , typename LibNonRef = std::remove_reference_t<Lib> >
     constexpr auto
-    call_the_simplifier(T t, Lib l)
-    ->decltype(simplifier<T, Lib>::simplify(t, l)  )
-    {   return simplifier<T, Lib>::simplify(t, l); }
+    call_the_simplifier(T t, Lib && l)
+    ->decltype(simplifier<T, LibNonRef>::simplify(t, std::forward<Lib>(l))  )
+    {   return simplifier<T, LibNonRef>::simplify(t, std::forward<Lib>(l)); }
 
 
 
@@ -662,7 +663,7 @@ namespace cambda {
                           >>>
     {
         static auto constexpr
-        simplify(cambda_utils::char_pack<first_digit, c...> digits, Lib)
+        simplify(cambda_utils::char_pack<first_digit, c...> digits, Lib const &)
         { return std::integral_constant<int, cambda_utils::char_pack_to_int(digits)>{}; }
     };
 
@@ -735,7 +736,7 @@ namespace cambda {
                           >>>
     {
         static auto constexpr
-        simplify(StringLiteral sl, Lib)
+        simplify(StringLiteral sl, Lib const &)
         { return detail::parse_string_literal(sl); }
     };
 
@@ -789,10 +790,11 @@ namespace cambda {
         static_assert(!is_digit_constexpr(Name::at(0))  ,"");
         static_assert(!( '\'' ==          Name::at(0))  ,"");
 
+        template<typename L>
         static auto constexpr
-        simplify(Name name, Lib lib)
-        ->decltype(lib.get_simple_named_value(name) )
-        {   return lib.get_simple_named_value(name); }
+        simplify(Name name, L && lib)
+        ->decltype(std::forward<L>(lib).get_simple_named_value(name) )
+        {   return std::forward<L>(lib).get_simple_named_value(name); }
     };
 
     // simplifier for names where 'get_simple_named_value' doesn't work.
@@ -820,8 +822,9 @@ namespace cambda {
             {   return  apply_after_simplification(m_lib, m_f , std::forward<T>(t) ... ); }
         };
 
+        template<typename L>
         static auto constexpr
-        simplify(Name f, Lib lib) -> gather_args_later { return {std::move(f), std::move(lib)}; }
+        simplify(Name f, L && lib) -> gather_args_later { return {std::move(f), std::forward<L>(lib)}; }
     };
 
 
@@ -831,11 +834,12 @@ namespace cambda {
                         , Lib
                         >
     {
-        template<typename id = cambda_utils::id_t>
+        template<typename id = cambda_utils::id_t
+                , typename L >
         static auto constexpr
-        simplify(grouped_t<'(', types_t<Func, Args...> >, Lib lib)
-        ->decltype(call_the_simplifier(Func{}, id{}(lib)) ( call_the_simplifier(Args{}, id{}(lib))...)  )
-        {   return call_the_simplifier(Func{},      lib ) ( call_the_simplifier(Args{},      lib) ...); }
+        simplify(grouped_t<'(', types_t<Func, Args...> >, L && lib)
+        ->decltype(call_the_simplifier(Func{}, id{}(std::forward<L>(lib))) ( call_the_simplifier(Args{}, id{}(std::forward<L>(lib)))...)  )
+        {   return call_the_simplifier(Func{},      std::forward<L>(lib) ) ( call_the_simplifier(Args{},      std::forward<L>(lib)) ...); }
     };
 
 
@@ -846,7 +850,7 @@ namespace cambda {
                         >
     {
         static auto constexpr
-        simplify(grouped_t<'[', types_t<Args...> > quoted, Lib )
+        simplify(grouped_t<'[', types_t<Args...> > quoted, Lib const &)
         ->decltype(auto)
         {
             return quoted;
@@ -862,24 +866,25 @@ namespace cambda {
                         , Lib
                         >
     {
-        template< typename id = cambda_utils:: id_t>
+        template< typename id = cambda_utils:: id_t
+                , typename L > // we must perfect forward here to avoid a bug in older gcc (5.5.0) where the while loop wasn't repeating
         static auto constexpr
-        simplify(grouped_t<'{', types_t<Arg1, Func, Arg2> >, Lib lib)
+        simplify(grouped_t<'{', types_t<Arg1, Func, Arg2> >, L && lib)
         ->decltype(simplifier       < grouped_t<'(', types_t<Func, Arg1, Arg2>> , Lib>
-                        :: simplify ( grouped_t<'(', types_t<Func, Arg1, Arg2>> {} , id{}(lib))
+                        :: simplify ( grouped_t<'(', types_t<Func, Arg1, Arg2>> {} , id{}(std::forward<L>(lib)))
                 )
         {
             return simplifier       < grouped_t<'(', types_t<Func, Arg1, Arg2>> , Lib>
-                        :: simplify ( grouped_t<'(', types_t<Func, Arg1, Arg2>> {} ,      lib )
+                        :: simplify ( grouped_t<'(', types_t<Func, Arg1, Arg2>> {} ,      std::forward<L>(lib) )
                 ;
         }
     };
 
     template<typename AST, typename Lib>
     auto constexpr
-    simplify(AST ast, Lib l)
-    ->decltype(call_the_simplifier(ast, l)  )
-    {   return call_the_simplifier(ast, l); }
+    simplify(AST ast, Lib && l)
+    ->decltype(call_the_simplifier(ast, std::forward<Lib>(l))  )
+    {   return call_the_simplifier(ast, std::forward<Lib>(l)); }
 
     template<typename T, char ...c>
     struct binded_name_with_valueOrReference
