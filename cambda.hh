@@ -1212,31 +1212,36 @@ namespace cambda {
         ->  std::false_type
         {   return {}; }
 
-        template< typename LibToForward
-                , typename ForTrue
-                , typename ForFalse
-                >
-        auto constexpr
-        apply_after_simplification  (LibToForward, decltype( "if"_charpack )
-                            , std::true_type
-                            , ForTrue && for_true
-                            , ForFalse && //for_false
-                            )
-        -> ForTrue
-        {   return std::forward<ForTrue>(for_true); }
 
         template< typename LibToForward
-                , typename ForTrue
-                , typename ForFalse
+                , typename QuotedExpressionTrue
+                , typename QuotedExpressionFalse
                 >
         auto constexpr
-        apply_after_simplification  (LibToForward, decltype( "if"_charpack )
-                            , std::false_type
-                            , ForTrue && //for_true
-                            , ForFalse && for_false
+        apply_after_simplification  (LibToForward l2f, decltype( "if"_charpack )
+                            , std::true_type
+                            , cambda::grouped_t<'[', types_t<QuotedExpressionTrue>>
+                            , cambda::grouped_t<'[', types_t<QuotedExpressionFalse>>
                             )
-        -> ForFalse
-        {   return std::forward<ForFalse>(for_false); }
+        {
+                return cambda::simplify
+                        (   QuotedExpressionTrue{} ,l2f);
+        }
+        template< typename LibToForward
+                , typename QuotedExpressionTrue
+                , typename QuotedExpressionFalse
+                >
+        auto constexpr
+        apply_after_simplification  (LibToForward l2f, decltype( "if"_charpack )
+                            , std::false_type
+                            , cambda::grouped_t<'[', types_t<QuotedExpressionTrue>>
+                            , cambda::grouped_t<'[', types_t<QuotedExpressionFalse>>
+                            )
+        {
+                return cambda::simplify
+                        (   QuotedExpressionFalse{} ,l2f);
+        }
+
     };
 
 
