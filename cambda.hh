@@ -1068,6 +1068,19 @@ namespace cambda {
 
 
         template< typename LibToForward
+                , typename Ti
+                , typename Tj >
+        auto constexpr
+        apply_after_simplification
+            ( LibToForward
+            , decltype( "<"_charpack )
+            , Ti && i
+            , Tj && j)
+        ->decltype(std::forward<Ti>(i) < std::forward<Tj>(j) )
+        {   return std::forward<Ti>(i) < std::forward<Tj>(j); }
+
+
+        template< typename LibToForward
                 , char ...c>
         auto constexpr
         apply_after_simplification  (LibToForward, decltype( "length"_charpack )
