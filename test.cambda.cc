@@ -149,7 +149,7 @@ test_while()
 {
     //int x = 10;
     int y = 0;
-    "(while [(< y 10)] [{y = {y + 4}}])"_cambda["y"_binding = y]();
+    "(while [(< y 100)] [{y = {y + 3}}])"_cambda["y"_binding = y]();
     return y;
 }
-static_assert(test_while() == 12 ,"");
+static_assert(test_while() == 102 ,"");
