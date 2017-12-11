@@ -4,8 +4,37 @@
 #include <iostream>
 
 using cambda::operator"" _cambda;
+using cambda::operator"" _cambda_empty_library;
 using cambda::operator"" _charpack;
 using cambda::operator"" _binding;
+
+namespace testing_namespace_empty_library {
+    auto constexpr
+    plus(int a, int b) { return a + b; }
+
+    struct a_lib_with_plus
+    {
+
+        template< typename LibToForward
+                , typename Ti
+                , typename Tj >
+        auto constexpr
+        apply_after_simplification
+            ( LibToForward
+            , decltype( "+"_charpack )
+            , Ti && i
+            , Tj && j)
+        ->decltype(std::forward<Ti>(i) + std::forward<Tj>(j) )
+        {   return std::forward<Ti>(i) + std::forward<Tj>(j); }
+    };
+
+    constexpr auto a = "15"_cambda_empty_library();
+    static_assert(a == 15 ,"");
+    constexpr auto b = "(+ 7 8)"_cambda_empty_library["+"_binding = plus]();
+    static_assert(b == 15 ,"");
+    constexpr auto c = "(+ 7 8)"_cambda_empty_library[a_lib_with_plus{}]();
+    static_assert(c == 15 ,"");
+}
 
 constexpr auto a = "15"_cambda();            // a is 15
 constexpr auto b = "(+ 8 7)"_cambda();       // Function call. This is addition. b is 15

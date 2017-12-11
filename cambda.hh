@@ -949,7 +949,6 @@ namespace cambda {
         -> decltype(auto)
         {
             auto new_library = combine_libraries(lib, binding_to_insert);
-            (void)new_library;
             return cambda_object_from_the_string_literal<AST, decltype(new_library)>{m_ast, new_library};
             //return *this;
         }
@@ -1266,6 +1265,15 @@ namespace cambda {
     {
         auto ast = parse_ast(cambda_utils:: char_pack<chars...>{});
         return ::cambda::make_cambda_object_from_the_string_literal(ast, starter_lib_v);
+    }
+
+    template<typename T, T ... chars>
+    constexpr auto
+    operator"" _cambda_empty_library ()
+    {
+        auto ast = parse_ast(cambda_utils:: char_pack<chars...>{});
+        struct empty {};
+        return ::cambda::make_cambda_object_from_the_string_literal(ast, empty{});
     }
 
 }
