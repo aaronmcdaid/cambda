@@ -519,26 +519,9 @@ namespace cambda {
             , char ... letters
             , typename ...T >
     auto constexpr
-    apply_after_simplification__priority_overload (cambda_utils::priority_tag<2>, Lib && lib, cambda_utils::char_pack<letters...> name, T && ...t)
+    apply_after_simplification (Lib && lib, cambda_utils::char_pack<letters...> name, T && ...t)
     ->decltype(std::forward<Lib>(lib).apply_after_simplification(std::forward<Lib>(lib), name, std::forward<T>(t)...)  )
     {   return std::forward<Lib>(lib).apply_after_simplification(std::forward<Lib>(lib), name, std::forward<T>(t)...); }
-
-    template< typename Lib
-            , char ... letters
-            , typename ...T >
-    auto constexpr
-    apply_after_simplification__priority_overload (cambda_utils::priority_tag<1>, Lib && lib, cambda_utils::char_pack<letters...> name, T && ...t)
-    ->decltype(std::forward<Lib>(lib).get_simple_named_value(name)(std::forward<T>(t)...) ) // TODO: test this particular overload more
-    {   return std::forward<Lib>(lib).get_simple_named_value(name)(std::forward<T>(t)...);}
-
-    template< typename Lib
-            , char ... letters
-            , typename ...T >
-    auto constexpr
-    apply_after_simplification (Lib && lib, cambda_utils::char_pack<letters...> name, T && ...t)
-    ->decltype(apply_after_simplification__priority_overload(cambda_utils::priority_tag<9>{}, std::forward<Lib>(lib), name, std::forward<T>(t)...)  )
-    {   return apply_after_simplification__priority_overload(cambda_utils::priority_tag<9>{}, std::forward<Lib>(lib), name, std::forward<T>(t)...); }
-
 
     template< typename Lib
             , char ... letters >
