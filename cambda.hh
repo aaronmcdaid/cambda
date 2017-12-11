@@ -523,13 +523,6 @@ namespace cambda {
     ->decltype(std::forward<Lib>(lib).apply_after_simplification(std::forward<Lib>(lib), name, std::forward<T>(t)...)  )
     {   return std::forward<Lib>(lib).apply_after_simplification(std::forward<Lib>(lib), name, std::forward<T>(t)...); }
 
-    template< typename Lib
-            , char ... letters >
-    auto constexpr
-    get_simple_named_value(Lib && lib, cambda_utils::char_pack<letters...> name)
-    ->decltype(std::forward<Lib>(lib).get_simple_named_value(name) )
-    {   return std::forward<Lib>(lib).get_simple_named_value(name);}
-
     template< typename Lib1
             , typename Lib2 >
     struct library_combiner : public Lib1, public Lib2
@@ -549,27 +542,25 @@ namespace cambda {
          * Define two helper overloads, one for each sub-library.
          * Then forward the call
          */
-        template<typename T
-                , typename id = cambda_utils:: id_t
+        template< char ... cs
                 , typename std::integral_constant<int, __LINE__> * =nullptr
                 >
         auto constexpr
-        get_simple_named_value_overload  ( T&& t)
-        ->decltype(id{}(this)->Lib1::get_simple_named_value(std::forward<T>(t))  )
-        {   return id{}(this)->Lib1::get_simple_named_value(std::forward<T>(t)); }
+        get_simple_named_value_overload  ( cambda_utils::char_pack<cs...> name)
+        ->decltype(    (this)->Lib1::get_simple_named_value(name)  )
+        {   return     (this)->Lib1::get_simple_named_value(name); }
 
-        template<typename T
-                , typename id = cambda_utils:: id_t
+        template< char ... cs
                 , typename std::integral_constant<int, __LINE__> * =nullptr
                 >
         auto constexpr
-        get_simple_named_value_overload  ( T&& t)
-        ->decltype(id{}(this)->Lib2::get_simple_named_value(std::forward<T>(t))  )
-        {   return id{}(this)->Lib2::get_simple_named_value(std::forward<T>(t)); }
+        get_simple_named_value_overload  ( cambda_utils::char_pack<cs...> name)
+        ->decltype(    (this)->Lib2::get_simple_named_value(name)  )
+        {   return     (this)->Lib2::get_simple_named_value(name); }
 
-        template<char ... c>
+        template<char ... cs>
         auto constexpr
-        get_simple_named_value  ( cambda_utils::char_pack<c...> name)
+        get_simple_named_value  ( cambda_utils::char_pack<cs...> name)
         ->decltype(library_combiner::get_simple_named_value_overload(name))
         {   return library_combiner::get_simple_named_value_overload(name); }
     };
@@ -723,11 +714,14 @@ namespace cambda {
         /* has_get_simple_named_value */
 
 
-        template<typename Name, typename Lib>
+        template< typename Name, typename Lib>
         static auto constexpr
         has_get_simple_named_value_helper(cambda_utils::priority_tag<2>)
-        -> decltype(
-                    get_simple_named_value( std::declval<Lib&>(), std::declval<Name&>())
+        -> decltype(void(
+                        std::declval<Lib&>().
+                    get_simple_named_value(
+                        std::declval<Name&>())
+                    )
                 ,   std:: true_type{}
                 )
         { return {}; }
@@ -766,11 +760,14 @@ namespace cambda {
         static_assert(!( '\'' ==          Name::at(0))  ,"");
 
         static auto constexpr
-        simplify(Name name, Lib lib) -> decltype(auto)
-        { return get_simple_named_value(lib,name); }
+        simplify(Name name, Lib lib)
+        ->decltype(lib.get_simple_named_value(name) )
+        {   return lib.get_simple_named_value(name); }
     };
 
-    // simplifier for names (functions only, for now)
+    // simplifier for names where 'get_simple_named_value' doesn't work.
+    // We can reasonably assume they are functions.
+    // This simplifier will often be called by the following simplifier - the '(' simplifier
     template<typename Name, typename Lib>
     struct simplifier   < Name
                         , Lib
