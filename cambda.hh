@@ -538,6 +538,34 @@ namespace cambda {
         {}
 
 
+        /* First, 'apply_after_simplification'
+         * Define two helper overloads, one for each sub-library.
+         * Then forward the call
+         */
+        template< typename ... T
+                , typename id = cambda_utils::id_t
+                , typename std::integral_constant<int, __LINE__> * =nullptr
+                >
+        auto constexpr
+        apply_after_simplification_overload  ( T && ... t)
+        ->decltype(id{}(this)->Lib1::apply_after_simplification(std::forward<T>(t)...)  )
+        {   return     (this)->Lib1::apply_after_simplification(std::forward<T>(t)...); }
+
+        template< typename ... T
+                , typename id = cambda_utils::id_t
+                , typename std::integral_constant<int, __LINE__> * =nullptr
+                >
+        auto constexpr
+        apply_after_simplification_overload  (T && ... t)
+        ->decltype(id{}(this)->Lib2::apply_after_simplification(std::forward<T>(t)...)  )
+        {   return     (this)->Lib2::apply_after_simplification(std::forward<T>(t)...); }
+
+        template< typename ... T>
+        auto constexpr
+        apply_after_simplification  (T && ... t)
+        ->decltype(library_combiner::apply_after_simplification_overload( std::forward<T>(t)...))
+        {   return library_combiner::apply_after_simplification_overload( std::forward<T>(t)...); }
+
         /* Second, 'get_simple_named_value'
          * Define two helper overloads, one for each sub-library.
          * Then forward the call
