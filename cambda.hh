@@ -783,9 +783,7 @@ namespace cambda {
             Name m_f;
             Lib m_lib;
 
-            template<typename ...T
-                    , typename id = cambda_utils::id_t
-                    >
+            template<typename ...T>
             auto constexpr
             operator()  ( T && ...t)
             ->decltype( apply_after_simplification(m_lib, m_f , std::forward<T>(t) ... )  )
