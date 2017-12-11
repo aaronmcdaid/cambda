@@ -648,7 +648,7 @@ namespace cambda {
                           >>>
     {
         static auto constexpr
-        simplify(cambda_utils::char_pack<first_digit, c...> digits, Lib)
+        simplify(cambda_utils::char_pack<first_digit, c...> digits, Lib const &)
         { return cambda_utils::char_pack_to_int(digits); }
     };
 
@@ -945,11 +945,11 @@ namespace cambda {
 
         template<typename Binding>
         constexpr auto
-        operator[] (Binding binding_to_insert) &&
+        operator[] (Binding binding_to_insert) && // the '&&' is important, allows us to 'move' from this->lib
         -> decltype(auto)
         {
-            auto new_library = combine_libraries(lib, binding_to_insert);
-            return cambda_object_from_the_string_literal<AST, decltype(new_library)>{m_ast, new_library};
+            auto new_library = combine_libraries(std::move(lib), std::move(binding_to_insert));
+            return cambda_object_from_the_string_literal<AST, decltype(new_library)>{m_ast, std::move(new_library)};
             //return *this;
         }
     };
