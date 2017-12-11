@@ -7,16 +7,16 @@ using cambda::operator"" _cambda;
 using cambda::operator"" _charpack;
 using cambda::operator"" _binding;
 
-
-constexpr auto cambda_lambda = "(lambda [x] [{x * x}])"_cambda();
-constexpr auto squared_cambda = cambda_lambda(15);
-static_assert(squared_cambda == 225 ,"");
-
 constexpr auto a = "15"_cambda();            // a is 15
 constexpr auto b = "(+ 8 7)"_cambda();       // Function call. This is addition. b is 15
 constexpr auto c = "(* 8 7)"_cambda();       // Multiplication
 constexpr auto d = "{8 * 7}"_cambda();       // If there are two args, use {} instead of () for infix notation
 constexpr auto e = "{ {8 * 7} + {6 * 3} }"_cambda();  // Nested application
+
+constexpr auto cambda_lambda = "(lambda [x] [{x * x}])"_cambda();
+constexpr auto squared_cambda = cambda_lambda(15);
+static_assert(squared_cambda == 225 ,"");
+
 
 static_assert(a == 15   ,"");
 static_assert(b == 15   ,"");
