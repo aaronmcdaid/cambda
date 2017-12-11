@@ -132,7 +132,7 @@ struct id_t
 {
     template<typename T>
     constexpr T
-    operator() (T&& t)
+    operator() (T&& t) const
     { return t; }
 };
 
