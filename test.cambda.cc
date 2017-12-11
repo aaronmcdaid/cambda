@@ -72,6 +72,17 @@ int main() {
     static_assert  (11 == lambda_from_cambda(5,6) ,"");
 }
 
+constexpr auto static
+test_if_with_side_effects()
+{
+    int x = -1;
+    int y = -1;
+    "(if truec [(assign x 3)] [(assign x 5)])"_cambda["x"_binding = x]();
+    "(if falsec[(assign x 300)] [(assign x 500)])"_cambda["x"_binding = y]();
+    return x + y;
+}
+static_assert(test_if_with_side_effects() == 503 ,"");
+
 
 constexpr auto static
 test_range_based_for()
