@@ -70,6 +70,12 @@ int main() {
     std::cout << lambda_from_cpp(5,6) << " == " << lambda_from_cambda(5,6) << '\n';
     //static_assert(11 == lambda_from_cpp(5,6)    ,"");
     static_assert  (11 == lambda_from_cambda(5,6) ,"");
+
+    auto product =
+    "(mult 3c 4c)"_cambda
+        ["mult"_binding = [](auto x, auto y){return std::integral_constant<int, x.value*y.value>{};}]
+        ();
+    static_assert(product.value == 12 ,"");
 }
 
 constexpr auto static
