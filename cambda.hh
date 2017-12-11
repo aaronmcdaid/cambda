@@ -1253,6 +1253,25 @@ namespace cambda {
                          :  cambda::simplify (   QuotedExpressionFalse{} ,l2f);
         }
 
+
+        /* while
+         */
+        template< typename LibToForward
+                , typename QuotedExpressionCondition
+                , typename QuotedExpressionBody
+                >
+        auto constexpr
+        apply_after_simplification  (LibToForward l2f, decltype( "while"_charpack )
+                            , cambda::grouped_t<'[', types_t<QuotedExpressionCondition>>
+                            , cambda::grouped_t<'[', types_t<QuotedExpressionBody>>
+                            )
+        ->void
+        { (void)l2f;
+            while(cambda::simplify (    QuotedExpressionCondition{} ,l2f))
+                cambda::simplify   (    QuotedExpressionBody{} ,l2f);
+                //cambda::simplify   (    QuotedExpressionBody{} ,l2f);
+        }
+
     };
 
 

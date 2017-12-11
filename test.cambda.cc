@@ -143,3 +143,13 @@ test_range_based_for()
         return test_data[0]+test_data[1]+test_data[2];
 }
 static_assert( test_range_based_for() == 5*5 + 6*6 + 7*7 ,"");
+
+constexpr auto static
+test_while()
+{
+    //int x = 10;
+    int y = 0;
+    "(while [(< y 10)] [{y = {y + 4}}])"_cambda["y"_binding = y]();
+    return y;
+}
+static_assert(test_while() == 12 ,"");
