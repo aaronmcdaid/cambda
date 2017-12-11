@@ -571,19 +571,21 @@ namespace cambda {
          * Then forward the call
          */
         template< char ... cs
+                , typename id = cambda_utils::id_t
                 , typename std::integral_constant<int, __LINE__> * =nullptr
                 >
         auto constexpr
         get_simple_named_value_overload  ( cambda_utils::char_pack<cs...> name)
-        ->decltype(    (this)->Lib1::get_simple_named_value(name)  )
+        ->decltype(id{}(this)->Lib1::get_simple_named_value(name)  )
         {   return     (this)->Lib1::get_simple_named_value(name); }
 
         template< char ... cs
+                , typename id = cambda_utils::id_t
                 , typename std::integral_constant<int, __LINE__> * =nullptr
                 >
         auto constexpr
         get_simple_named_value_overload  ( cambda_utils::char_pack<cs...> name)
-        ->decltype(    (this)->Lib2::get_simple_named_value(name)  )
+        ->decltype(id{}(this)->Lib2::get_simple_named_value(name)  )
         {   return     (this)->Lib2::get_simple_named_value(name); }
 
         template<char ... cs>
