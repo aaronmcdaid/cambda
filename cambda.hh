@@ -543,25 +543,9 @@ namespace cambda {
     template< typename Lib
             , char ... letters >
     auto constexpr
-    get_simple_named_value__priority_overload (cambda_utils::priority_tag<2>, Lib && lib, cambda_utils::char_pack<letters...> name)
+    get_simple_named_value(Lib && lib, cambda_utils::char_pack<letters...> name)
     ->decltype(std::forward<Lib>(lib).get_simple_named_value(name) )
     {   return std::forward<Lib>(lib).get_simple_named_value(name);}
-
-    template< typename Lib
-            , char ... letters >
-    auto constexpr
-    TODOget_simple_named_value__priority_overload (cambda_utils::priority_tag<1>, Lib && lib, cambda_utils::char_pack<letters...> name)
-    {
-        (void)name;
-        return lib * lib + name; // TODO: fix this overload, especially its name!!
-    }
-
-    template< typename Lib
-            , char ... letters >
-    auto constexpr
-    get_simple_named_value (Lib && lib, cambda_utils::char_pack<letters...> name)
-    ->decltype(get_simple_named_value__priority_overload(cambda_utils::priority_tag<9>{}, std::forward<Lib>(lib), name)  )
-    {   return get_simple_named_value__priority_overload(cambda_utils::priority_tag<9>{}, std::forward<Lib>(lib), name); }
 
     template< typename Lib1
             , typename Lib2 >
