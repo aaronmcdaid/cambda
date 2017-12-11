@@ -874,54 +874,6 @@ namespace cambda {
     ->decltype(call_the_simplifier(ast, l)  )
     {   return call_the_simplifier(ast, l); }
 
-    template<typename Lib>
-    struct wrapper_for__calls_using__std_integral_constant
-    {
-        /* wrapper_for__calls_using__std_integral_constant
-         * ===============================================
-         *
-         * The second overload is where the action is. It's where an expression is
-         * 'upgraded' to an std::integral_constant if the int can be computed
-         * as a constant expression
-         */
-
-        // this wrapper only really works for libraries without any state
-        // TODO: reanable these asserts after fixing them
-        //static_assert(std::is_empty<Lib>{} ,"");
-        //static_assert(sizeof(Lib) == 0 ,"");
-
-        //First, the 'normal' overload that just forwards things through
-        template< typename Name
-                , typename LibToForward
-                , typename ...T
-                , typename id = cambda_utils::id_t
-                >
-        auto constexpr
-        apply_after_simplification_overload(cambda_utils::priority_tag<1>, LibToForward l2f, Name, T && ...t)
-        ->decltype(id{}(Lib{}).apply_after_simplification(l2f, Name{}, std::forward<T>(t)...)  )
-        {   return id{}(Lib{}).apply_after_simplification(l2f, Name{}, std::forward<T>(t)...); }
-
-        template< typename ...T
-                , typename LibToForward
-                >
-        auto constexpr
-        apply_after_simplification(LibToForward l2f, T && ...t)
-        ->decltype(this->apply_after_simplification_overload(cambda_utils::priority_tag<9>{}, l2f, std::forward<T>(t)...)  )
-        {   return this->apply_after_simplification_overload(cambda_utils::priority_tag<9>{}, l2f, std::forward<T>(t)...); }
-
-        template< typename Name
-                , typename id = cambda_utils::id_t>
-        auto constexpr
-        get_simple_named_value  ( Name name)
-        ->decltype(id{}(Lib{}).get_simple_named_value(name))
-        {   return id{}(Lib{}).get_simple_named_value(name); }
-    };
-
-    template<typename Lib>
-    auto constexpr
-    wrap_any__calls_using__std_integral_constant(Lib)
-    { return wrapper_for__calls_using__std_integral_constant<Lib>{}; }
-
     template<typename T, char ...c>
     struct binded_name_with_valueOrReference
     {
