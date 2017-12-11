@@ -759,8 +759,10 @@ namespace cambda {
         template<typename Name, typename Lib>
         static auto constexpr
         has_get_simple_named_value_helper(cambda_utils::priority_tag<2>)
-        -> decltype( std::declval<Lib&>().get_simple_named_value(std::declval<Name&>())
-            , std:: true_type{})
+        -> decltype(
+                    get_simple_named_value( std::declval<Lib&>(), std::declval<Name&>())
+                ,   std:: true_type{}
+                )
         { return {}; }
 
         template<typename Name, typename Lib>
@@ -798,7 +800,7 @@ namespace cambda {
 
         static auto constexpr
         simplify(Name name, Lib lib) -> decltype(auto)
-        { return lib.get_simple_named_value(name); }
+        { return get_simple_named_value(lib,name); }
     };
 
     // simplifier for names (functions only, for now)
