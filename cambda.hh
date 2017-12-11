@@ -514,6 +514,31 @@ namespace cambda {
         return x{};
     }
 
+
+    template< typename Lib
+            , char ... letters
+            , typename ...T >
+    auto constexpr
+    apply_after_simplification__priority_overload (cambda_utils::priority_tag<2>, Lib && lib, cambda_utils::char_pack<letters...> name, T && ...t)
+    ->decltype(std::forward<Lib>(lib).apply_after_simplification(std::forward<Lib>(lib), name, std::forward<T>(t)...)  )
+    {   return std::forward<Lib>(lib).apply_after_simplification(std::forward<Lib>(lib), name, std::forward<T>(t)...); }
+
+    template< typename Lib
+            , char ... letters
+            , typename ...T >
+    auto constexpr
+    apply_after_simplification__priority_overload (cambda_utils::priority_tag<1>, Lib && lib, cambda_utils::char_pack<letters...> name, T && ...t)
+    ->decltype(std::forward<Lib>(lib).get_simple_named_value(name)(std::forward<T>(t)...) ) // TODO: test this particular overload more
+    {   return std::forward<Lib>(lib).get_simple_named_value(name)(std::forward<T>(t)...);}
+
+    template< typename Lib
+            , char ... letters
+            , typename ...T >
+    auto constexpr
+    apply_after_simplification (Lib && lib, cambda_utils::char_pack<letters...> name, T && ...t)
+    ->decltype(apply_after_simplification__priority_overload(cambda_utils::priority_tag<9>{}, std::forward<Lib>(lib), name, std::forward<T>(t)...)  )
+    {   return apply_after_simplification__priority_overload(cambda_utils::priority_tag<9>{}, std::forward<Lib>(lib), name, std::forward<T>(t)...); }
+
     template< typename Lib1
             , typename Lib2 >
     struct library_combiner : public Lib1, public Lib2
@@ -527,42 +552,6 @@ namespace cambda {
             : Lib1(std::forward<T>(t))
             , Lib2(std::forward<U>(u))
         {}
-
-        /*
-         * Two types of call must be forwarded, 'apply_after_simplification_helper'
-         * and 'get_simple_named_value'. The relevant call must appear in
-         * exactly one of the two libraries.
-         */
-
-
-        // First, apply_after_simplification_helper
-        template< typename ...T
-                , typename LibToForward
-                , typename id = cambda_utils:: id_t
-                , typename std::integral_constant<int, __LINE__> * =nullptr
-                >
-        auto constexpr
-        apply_after_simplification_helper  (LibToForward l2f, T && ...t)
-        ->decltype(id{}(this)->Lib1::apply_after_simplification(l2f, std::forward<T>(t)...)  )
-        {   return id{}(this)->Lib1::apply_after_simplification(l2f, std::forward<T>(t)...); }
-
-        template< typename ...T
-                , typename LibToForward
-                , typename id = cambda_utils:: id_t
-                , typename std::integral_constant<int, __LINE__> * =nullptr
-                >
-        auto constexpr
-        apply_after_simplification_helper  (LibToForward l2f, T && ...t)
-        ->decltype(id{}(this)->Lib2::apply_after_simplification(l2f, std::forward<T>(t)...)  )
-        {   return id{}(this)->Lib2::apply_after_simplification(l2f, std::forward<T>(t)...); }
-
-        template< typename ...T
-                , typename LibToForward
-                >
-        auto constexpr
-        apply_after_simplification  (LibToForward l2f, T && ...t)
-        ->decltype(library_combiner::apply_after_simplification_helper(l2f, std::forward<T>(t)...))
-        {   return library_combiner::apply_after_simplification_helper(l2f, std::forward<T>(t)...); }
 
 
         /* Second, 'get_simple_named_value'
@@ -809,8 +798,8 @@ namespace cambda {
                     >
             auto constexpr
             operator()  ( T && ...t)
-            ->decltype(id{}(m_lib).apply_after_simplification(m_lib, m_f , std::forward<T>(t) ... )  )
-            {   return id{}(m_lib).apply_after_simplification(m_lib, m_f , std::forward<T>(t) ... ); }
+            ->decltype( apply_after_simplification(m_lib, m_f , std::forward<T>(t) ... )  )
+            {   return  apply_after_simplification(m_lib, m_f , std::forward<T>(t) ... ); }
         };
 
         static auto constexpr
