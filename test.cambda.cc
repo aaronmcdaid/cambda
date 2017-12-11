@@ -83,6 +83,20 @@ test_if_with_side_effects()
 }
 static_assert(test_if_with_side_effects() == 503 ,"");
 
+constexpr auto static
+test_ifNonConstant_with_side_effects()
+{
+    // very similar to the last test, but the boolean input is not constexpr in this case
+    int x = -1;
+    int y = -1;
+    bool bt = true;
+    bool bf = false;
+    "(if bt  [(assign x 3)] [(assign x 5)])"_cambda       ["bt"_binding = bt, "x"_binding = x]();
+    "(if bf  [(assign x 300)] [(assign x 500)])"_cambda   ["bf"_binding = bf, "x"_binding = y]();
+    return x + y;
+}
+static_assert(test_ifNonConstant_with_side_effects() == 503 ,"");
+
 
 constexpr auto static
 test_range_based_for()

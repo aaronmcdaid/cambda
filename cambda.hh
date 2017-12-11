@@ -1213,6 +1213,16 @@ namespace cambda {
         {   return {}; }
 
 
+        /*
+         * 'if'
+         *  Needs three overloads. The first two take 'true_type' and 'false_type'
+         *  and are therefore like 'constexpr if' in C++; in particular, the
+         *  two operaands do not need to be of the same type
+         *
+         *  The third overload is a simple boolean overload
+         */
+
+        // 'if' with true
         template< typename LibToForward
                 , typename QuotedExpressionTrue
                 , typename QuotedExpressionFalse
@@ -1227,6 +1237,8 @@ namespace cambda {
                 return cambda::simplify
                         (   QuotedExpressionTrue{} ,l2f);
         }
+
+        // 'if' with false
         template< typename LibToForward
                 , typename QuotedExpressionTrue
                 , typename QuotedExpressionFalse
@@ -1240,6 +1252,22 @@ namespace cambda {
         {
                 return cambda::simplify
                         (   QuotedExpressionFalse{} ,l2f);
+        }
+
+        // 'if' with bool
+        template< typename LibToForward
+                , typename QuotedExpressionTrue
+                , typename QuotedExpressionFalse
+                >
+        auto constexpr
+        apply_after_simplification  (LibToForward l2f, decltype( "if"_charpack )
+                            , bool b
+                            , cambda::grouped_t<'[', types_t<QuotedExpressionTrue>>
+                            , cambda::grouped_t<'[', types_t<QuotedExpressionFalse>>
+                            )
+        {
+                return b ?  cambda::simplify (   QuotedExpressionTrue{}  ,l2f)
+                         :  cambda::simplify (   QuotedExpressionFalse{} ,l2f);
         }
 
     };
