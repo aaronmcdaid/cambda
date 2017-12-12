@@ -1059,57 +1059,20 @@ namespace cambda {
         -> T
         { return std::forward<T>(t); }
 
+#define MACRO_FOR_SIMPLE_BINARY_INFIX_OPERATION(op_name, infix_op) \
+        template< typename LibToForward , typename Ti , typename Tj >   \
+        auto constexpr                                                  \
+        apply_after_simplification ( LibToForward                       \
+            , decltype( op_name )                                          \
+            , Ti && i , Tj && j)                                        \
+        ->decltype(std::forward<Ti>(i) infix_op std::forward<Tj>(j) )         \
+        {   return std::forward<Ti>(i) infix_op std::forward<Tj>(j); }
 
-        template< typename LibToForward
-                , typename Ti
-                , typename Tj >
-        auto constexpr
-        apply_after_simplification
-            ( LibToForward
-            , decltype( "+"_charpack )
-            , Ti && i
-            , Tj && j)
-        ->decltype(std::forward<Ti>(i) + std::forward<Tj>(j) )
-        {   return std::forward<Ti>(i) + std::forward<Tj>(j); }
-
-
-        template< typename LibToForward
-                , typename Ti
-                , typename Tj >
-        auto constexpr
-        apply_after_simplification
-            ( LibToForward
-            , decltype( "-"_charpack )
-            , Ti && i
-            , Tj && j)
-        ->decltype(std::forward<Ti>(i) - std::forward<Tj>(j) )
-        {   return std::forward<Ti>(i) - std::forward<Tj>(j); }
-
-
-        template< typename LibToForward
-                , typename Ti
-                , typename Tj >
-        auto constexpr
-        apply_after_simplification
-            ( LibToForward
-            , decltype( "*"_charpack )
-            , Ti && i
-            , Tj && j)
-        ->decltype(std::forward<Ti>(i) * std::forward<Tj>(j) )
-        {   return std::forward<Ti>(i) * std::forward<Tj>(j); }
-
-
-        template< typename LibToForward
-                , typename Ti
-                , typename Tj >
-        auto constexpr
-        apply_after_simplification
-            ( LibToForward
-            , decltype( "<"_charpack )
-            , Ti && i
-            , Tj && j)
-        ->decltype(std::forward<Ti>(i) < std::forward<Tj>(j) )
-        {   return std::forward<Ti>(i) < std::forward<Tj>(j); }
+MACRO_FOR_SIMPLE_BINARY_INFIX_OPERATION( "+"_charpack   , + )
+MACRO_FOR_SIMPLE_BINARY_INFIX_OPERATION( "*"_charpack   , * )
+MACRO_FOR_SIMPLE_BINARY_INFIX_OPERATION( "-"_charpack   , - )
+MACRO_FOR_SIMPLE_BINARY_INFIX_OPERATION( "!="_charpack  , !=)
+MACRO_FOR_SIMPLE_BINARY_INFIX_OPERATION( "<"_charpack   , < )
 
 
         template< typename LibToForward
