@@ -215,6 +215,24 @@ equal_string_array  (   const char *l
     }
 }
 
+template< typename T
+        , size_t N1, size_t N2
+        >
+constexpr bool
+equal_array (   T const (&l) [N1]
+            ,   T const (&r) [N2] )
+{
+    if(N1 != N2)
+        return false;
+    for(size_t i=0; i<N1 ; ++i)
+    {
+        if(l[i] != r[i])
+            return false;
+    }
+    return true;
+}
+
+
 }
 
 
