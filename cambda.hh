@@ -464,50 +464,6 @@ namespace cambda {
                 ;
     }
 
-    /* Starting from position 'o', parse as much as possible (up to the
-     * end, or to a closing grouper) and then return a pair representing
-     * what was parsed and what was left over
-     */
-
-    template<typename E, size_t O>
-    struct parse_flat_list_of_terms
-    {
-        constexpr static E e {};
-
-        constexpr static auto tk = find_next_token(e, O);
-
-        constexpr static bool at_the_end = E::at(tk.first) == '\0';
-
-        static_assert(at_the_end || (tk.first<tk.second) ,"");
-
-        template<size_t ... I>
-        static auto constexpr
-        full_token_helper(std::index_sequence<I...>)
-        -> cambda_utils::char_pack< E::at(tk.first+I) ... >
-        { return {}; }
-
-        using full_token_here = decltype(full_token_helper(std::make_index_sequence<tk.second-tk.first>{}));
-
-        using towards_the_next = parse_flat_list_of_terms<E, tk.second>;
-
-        constexpr static auto
-        all_the_terms_helper(std::true_type)
-        -> types_t<>
-        { return {}; }
-
-        template<size_t From = tk.second>
-        constexpr static auto
-        all_the_terms_helper(std::false_type)
-        -> typename parse_flat_list_of_terms<E,From>::all_the_terms :: template prepend<
-                //c_char<E::at(tk.first)>
-                full_token_here
-                >
-        {
-            return {};
-        }
-
-        using all_the_terms = decltype(all_the_terms_helper(std::integral_constant<bool, at_the_end>{}));
-    };
 
 
     /* parse_many_things.
