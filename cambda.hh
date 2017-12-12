@@ -643,21 +643,50 @@ namespace cambda {
     }
 
     template<typename E>
+    struct flatten_again
+    {
+        constexpr flatten_again(){}
+
+        constexpr static E e {};
+
+        constexpr static auto number_of_terms = count_the_terms(e);
+        constexpr static auto all_token_pairs = get_all_token_pairs<number_of_terms>(e);
+        static_assert(all_token_pairs.starts[number_of_terms] == all_token_pairs.ends[number_of_terms] ,"");
+        static_assert(all_token_pairs.starts[number_of_terms-1] < all_token_pairs.ends[number_of_terms-1] ,"");
+
+        template<size_t I, size_t ...J>
+        static auto constexpr
+        just_one_token_as_a_string(std::index_sequence<J...>)
+        {
+            constexpr size_t offset_of_first_char_of_this_token = all_token_pairs.starts[I];
+            return cambda_utils::char_pack< E::at(offset_of_first_char_of_this_token + J) ... >{};
+        }
+
+        template<size_t ...I>
+        static auto constexpr
+        every_token_as_a_string(std::index_sequence<I...>)
+        {
+            return types_t<
+                decltype(just_one_token_as_a_string<I>(
+                            std::make_index_sequence<
+                                                    all_token_pairs.ends[I]
+                                                    -all_token_pairs.starts[I]
+                                                    >{}))
+                ... // across all the tokens
+                >{};
+        }
+
+        using all_the_terms_t = decltype(every_token_as_a_string( cambda_utils::scalable_make_index_sequence<number_of_terms>{} ));
+
+    };
+
+    template<typename E>
     auto constexpr
-    parse_ast(E e)
+    parse_ast(E )
     {
         using all_the_terms_t = typename parse_flat_list_of_terms<E, 0>::all_the_terms;
 
-        constexpr auto number_of_terms = all_the_terms_t::size;
-        static_assert(number_of_terms == count_the_terms(e) ,"");
-
-        constexpr auto all_token_pairs = get_all_token_pairs<number_of_terms>(e);
-        static_assert(all_token_pairs.starts[number_of_terms] == all_token_pairs.ends[number_of_terms] ,"");
-        static_assert(all_token_pairs.starts[number_of_terms-1] < all_token_pairs.ends[number_of_terms-1] ,"");
-        (void)all_token_pairs;
-
-        // I'll need this soon:
-        //  -> cambda_utils::char_pack< E::at(tk.first+I) ... >
+        static_assert(std::is_same<all_the_terms_t, typename flatten_again<E>::all_the_terms_t>{} ,"");
 
         auto parsed =  parser( all_the_terms_t{} );
         static_assert(std::is_same< typename decltype(parsed) :: rest , types_t<>>{} ,"");
