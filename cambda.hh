@@ -738,6 +738,7 @@ namespace cambda {
                         , Lib
                         , cambda_utils::void_t<std::enable_if_t<
                                    '\'' ==            StringLiteral::at(0)
+                                   && '\'' ==         StringLiteral::last()
                           >>>
     {
         static auto constexpr
