@@ -1075,6 +1075,19 @@ MACRO_FOR_SIMPLE_BINARY_INFIX_OPERATION( "!="_charpack  , !=)
 MACRO_FOR_SIMPLE_BINARY_INFIX_OPERATION( "<"_charpack   , < )
 MACRO_FOR_SIMPLE_BINARY_INFIX_OPERATION( "&&"_charpack  , && )
 
+#define MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(op_name, op)                            \
+        template<typename T                                                             \
+                , typename LibToForward >                                               \
+        auto constexpr                                                                  \
+        apply_after_simplification  (LibToForward, decltype( op_name       ) , T&& t)   \
+        ->decltype(op std::forward<T>(t)  )                                             \
+        {   return op std::forward<T>(t); }
+
+MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(    "++"_charpack,  ++  )
+MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(    "--"_charpack,  --  )
+MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
+
+
 
         template< typename LibToForward
                 , char ...c>
