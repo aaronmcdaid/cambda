@@ -684,7 +684,8 @@ namespace cambda {
     auto constexpr
     parse_ast(E )
     {
-        using all_the_terms_t = typename parse_flat_list_of_terms<E, 0>::all_the_terms;
+        //using all_the_terms_t = typename parse_flat_list_of_terms<E, 0>::all_the_terms; /*This was the broken version - clang doesn't like this*/
+        using all_the_terms_t = typename flatten_again<E>::all_the_terms_t;
 
         static_assert(std::is_same<all_the_terms_t, typename flatten_again<E>::all_the_terms_t>{} ,"");
 
