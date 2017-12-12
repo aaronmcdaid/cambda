@@ -1191,6 +1191,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
         apply_after_simplification  (LibToForward lib, decltype( "let"_charpack )
                             , cambda::grouped_t<'[', types_t<SingleOne>>
                             )
+        ->decltype(auto)
         {
                 return cambda::simplify
                         (   SingleOne{}
@@ -1208,6 +1209,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
         apply_after_simplification  (LibToForward lib, decltype( "let"_charpack )
                             , cambda::grouped_t<'[', types_t<BindingName, BoundExpression, TheRest...>>
                             )
+        ->decltype(auto)
         {
             static_assert(sizeof...(TheRest) % 2 == 1 ,"A 'let' must always have an odd number of arguments");
             auto bound_value = cambda::simplify(BoundExpression{}, lib);
