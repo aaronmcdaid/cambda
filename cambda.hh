@@ -1073,6 +1073,7 @@ MACRO_FOR_SIMPLE_BINARY_INFIX_OPERATION( "*"_charpack   , * )
 MACRO_FOR_SIMPLE_BINARY_INFIX_OPERATION( "-"_charpack   , - )
 MACRO_FOR_SIMPLE_BINARY_INFIX_OPERATION( "!="_charpack  , !=)
 MACRO_FOR_SIMPLE_BINARY_INFIX_OPERATION( "<"_charpack   , < )
+MACRO_FOR_SIMPLE_BINARY_INFIX_OPERATION( "&&"_charpack  , && )
 
 
         template< typename LibToForward
