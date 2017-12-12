@@ -250,7 +250,12 @@ namespace cambda {
                 { o+=2; continue; }
 
                 if(C::at(o) == '\'')
-                { o+=1; break; }
+                {
+                    o+=1;
+                    if(C::at(o) == 'c')
+                        o+=1;
+                    break;
+                }
 
                 ++o;
             }
