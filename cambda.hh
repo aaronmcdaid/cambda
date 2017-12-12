@@ -616,6 +616,32 @@ namespace cambda {
         return n;
     }
 
+    template< size_t number_of_terms >
+    struct all_token_pairs_t
+    {
+        size_t starts[number_of_terms+1]; // extra one for the special zero-width 'end' token
+        size_t ends  [number_of_terms+1];
+    };
+
+    template< size_t number_of_terms
+            , typename E>
+    auto constexpr
+    get_all_token_pairs(E e)
+    -> all_token_pairs_t<number_of_terms>
+    {
+        auto first_token = find_next_token(e, 0);
+        all_token_pairs_t<number_of_terms> res{};
+        res.starts[0] = first_token.first;
+        res.ends  [0] = first_token.second;
+        for(size_t i = 1; i<=number_of_terms; ++i)
+        {
+            auto next_token = find_next_token(e, res.ends[i-1]);
+            res.starts[i] = next_token.first;
+            res.ends  [i] = next_token.second;
+        }
+        return res;
+    }
+
     template<typename E>
     auto constexpr
     parse_ast(E e)
@@ -624,6 +650,14 @@ namespace cambda {
 
         constexpr auto number_of_terms = all_the_terms_t::size;
         static_assert(number_of_terms == count_the_terms(e) ,"");
+
+        constexpr auto all_token_pairs = get_all_token_pairs<number_of_terms>(e);
+        static_assert(all_token_pairs.starts[number_of_terms] == all_token_pairs.ends[number_of_terms] ,"");
+        static_assert(all_token_pairs.starts[number_of_terms-1] < all_token_pairs.ends[number_of_terms-1] ,"");
+        (void)all_token_pairs;
+
+        // I'll need this soon:
+        //  -> cambda_utils::char_pack< E::at(tk.first+I) ... >
 
         auto parsed =  parser( all_the_terms_t{} );
         static_assert(std::is_same< typename decltype(parsed) :: rest , types_t<>>{} ,"");
