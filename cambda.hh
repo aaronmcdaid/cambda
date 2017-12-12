@@ -200,10 +200,9 @@ operator==( cambda_utils:: char_pack<c1...>
 { return {}; }
 
 
-template<typename T>
 constexpr bool
-equal_array     (   const T *l
-                    ,   const T *r  )
+equal_string_array  (   const char *l
+                    ,   const char *r  )
 {
     for(int i=0; ; ++i)
     {
