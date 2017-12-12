@@ -164,3 +164,43 @@ test_while()
     return y;
 }
 static_assert(test_while() == 102 ,"");
+
+constexpr bool
+test_partition()
+{
+        int a[] = {6,2,5,8,3,9,7};
+        auto b = std::begin(a);
+        auto e = std::end  (a);
+        R"--(
+            (let[
+                swap (lambda [x y] [(let[
+                                        tmp (ref2val x)
+                                        i1 {x = y}
+                                        i2 {y = tmp}
+                                        ()
+                                    ])])
+                (while
+                    [{{b != e} && {{b + 1} != e}}]
+                    [(if
+                        {(* {b + 1}) < (* b)}
+                        [(begin [
+                                (swap (* {b + 1}) (* b))
+                                (++ b)
+                                ()
+                                ])]
+                        [(begin [
+                            (-- e)
+                            (swap (* {b + 1}) (* e))
+                            ()
+                            ])]
+                        )]
+                    )
+            ])
+        )--"_cambda
+                [   "b"_binding = b
+                ,   "e"_binding = e
+                ]();
+        return cambda_utils::equal_array(a, (int[]){2,5,3,6,9,7,8});
+}
+
+static_assert(test_partition() ,"");
