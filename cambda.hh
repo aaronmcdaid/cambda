@@ -634,19 +634,13 @@ namespace cambda {
     };
 
 
-    template< typename Lib1 >
-    constexpr auto
-    combine_libraries(Lib1 lib1)
-    -> Lib1
-    { return lib1; }
-
     template< typename Lib1
             , typename Lib2
             >
     constexpr auto
     combine_libraries(Lib1 lib1, Lib2 lib2)
     -> library_combiner<Lib1,Lib2>
-    { return {lib1,lib2}; }
+    { return {std::move(lib1),std::move(lib2)}; }
 
 
     template< typename Lib1
@@ -655,9 +649,15 @@ namespace cambda {
             , typename ...Libs
             >
     constexpr auto
-    combine_libraries(Lib1 lib1, Lib2 lib2, Lib3 lib3, Libs ... libs)
+    combine_libraries   (   Lib1 && lib1
+                        ,   Lib2 && lib2
+                        ,   Lib3 && lib3
+                        ,   Libs && ... libs   )
     -> decltype(auto)
-    {   return combine_libraries(lib1,combine_libraries(lib2,lib3,libs...)); }
+    {   return combine_libraries    (   std::forward<Lib1>(lib1)
+                                    ,   combine_libraries   (   std::forward<Lib2>(lib2)
+                                                            ,   std::forward<Lib3>(lib3)
+                                                            ,   std::forward<Libs>(libs)... )); }
 
     struct nil_t { }; // to be returned if you write () in cambda, i.e. "()"_cambda()
 
