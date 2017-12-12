@@ -1224,6 +1224,53 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                         );
         }
 
+
+        /*
+         * 'begin'
+         */
+        template< typename LibToForward
+                , typename SingleOne
+                >
+        auto constexpr
+        apply_after_simplification  (LibToForward && lib, decltype( "begin"_charpack )
+                            , cambda::grouped_t<'[', types_t<SingleOne>>
+                            )
+        ->decltype(auto)
+        {
+                return cambda::simplify
+                        (   SingleOne{}
+                        ,   std::forward<LibToForward>(lib)
+                        );
+        }
+
+        template< typename LibToForward
+                , typename A
+                , typename B
+                , typename ... C
+                >
+        auto constexpr
+        apply_after_simplification  (LibToForward && lib, decltype( "begin"_charpack ) nm
+                            , cambda::grouped_t<'[', types_t<A, B, C...>>
+                            )
+        ->decltype(auto)
+        {
+                cambda::simplify
+                        (   A{}
+                        ,   std::forward<LibToForward>(lib)
+                        );
+                return
+                    apply_after_simplification(
+                        std::forward<LibToForward>(lib)
+                        , nm
+                        , cambda::grouped_t<'[', types_t<B, C...>>{}
+                        );
+        }
+
+
+        /*
+         * truec and falsec
+         */
+
         template<char ... c>
         auto constexpr
         get_simple_named_value  ( decltype( "truec"_charpack ) )
