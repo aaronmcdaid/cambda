@@ -1333,7 +1333,9 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
         ->decltype(auto)
         {
             static_assert(sizeof...(TheRest) % 2 == 1 ,"A 'let' must always have an odd number of arguments");
-            auto bound_value = cambda::simplify(BoundExpression{}, lib);
+
+            decltype(auto) // as it may be a (l/r)reference
+                bound_value = cambda::simplify(BoundExpression{}, lib);
             return cambda::simplify
                         (   cambda::grouped_t<'('
                                     , types_t<cambda_utils::char_pack<'l','e','t'>
@@ -1341,7 +1343,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                                                     TheRest...
                                              >>>
                                     >{}
-                        ,   cambda::combine_libraries   (   lib ,   char_pack__to__binding_name(BindingName{}) = std::move(bound_value))
+                        ,   cambda::combine_libraries   (   lib ,   char_pack__to__binding_name(BindingName{}) = std::forward<decltype(bound_value)>(bound_value))
                         );
         }
 
