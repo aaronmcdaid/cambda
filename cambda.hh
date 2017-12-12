@@ -200,6 +200,22 @@ operator==( cambda_utils:: char_pack<c1...>
 { return {}; }
 
 
+template<typename T>
+constexpr bool
+equal_array     (   const T *l
+                    ,   const T *r  )
+{
+    for(int i=0; ; ++i)
+    {
+        if(l[i] == '\0' && r[i] == '\0')
+            return true;
+        if(l[i] == '\0' || r[i] == '\0')
+            return false;
+        if(l[i] != r[i])
+            return false;
+    }
+}
+
 }
 
 

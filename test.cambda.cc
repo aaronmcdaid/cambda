@@ -87,30 +87,15 @@ auto size_of_v = "(size v)"_cambda
 
 std::initializer_list<int> il{2,3,4};
 
-constexpr bool
-equal_char_array    (   const char *l
-                    ,   const char *r)
-{
-    for(int i=0; ; ++i)
-    {
-        if(l[i] == '\0' && r[i] == '\0')
-            return true;
-        if(l[i] == '\0' || r[i] == '\0')
-            return false;
-        if(l[i] != r[i])
-            return false;
-    }
-}
-
-static_assert(equal_char_array("hi", "hi") ,"");
+static_assert(cambda_utils::equal_array("hi", "hi") ,"");
 
 static_assert("'it''s mine'"_cambda_empty_library()[0] == 'i' ,"");
 static_assert("'it''s mine'"_cambda_empty_library()[1] == 't' ,"");
 static_assert("'it''s mine'"_cambda_empty_library()[2] == '\'' ,"");
 static_assert("'it''s mine'"_cambda_empty_library()[3] == 's' ,"");
-static_assert(equal_char_array("'it''s mine'"_cambda_empty_library(), "it's mine") ,"");
-static_assert(!equal_char_array("'it''s mine'"_cambda_empty_library(), "it's mIne") ,"");
-static_assert(!equal_char_array("'it''s mine'"_cambda_empty_library(), "it's min") ,"");
+static_assert(cambda_utils::equal_array("'it''s mine'"_cambda_empty_library(), "it's mine") ,"");
+static_assert(!cambda_utils::equal_array("'it''s mine'"_cambda_empty_library(), "it's mIne") ,"");
+static_assert(!cambda_utils::equal_array("'it''s mine'"_cambda_empty_library(), "it's min") ,"");
 
 int main() {
     int x=0;
