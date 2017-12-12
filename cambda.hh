@@ -233,10 +233,67 @@ equal_array (   T const (&l) [N1]
 }
 
 
-}
+/*
+ * scalable_make_index_sequence
+ * ============================
+ * Because clang 3.8 doesn't like std::make_index_sequence with more than about 256.
+ * So I'll make my own one
+ *
+ */
+namespace detail {
+template< size_t N
+        , typename = void /* this is pointless, just to allow me to make a very general specialization */
+        , size_t offset = 0> // add this to every entry
+struct scalable_make_index_sequence_helper;
+
+template<size_t offset>
+struct scalable_make_index_sequence_helper<0, void, offset>
+{ using type = std::index_sequence<>; };
+
+template<size_t offset>
+struct scalable_make_index_sequence_helper<1, void, offset>
+{ using type = std::index_sequence<offset+0>; };
+
+template<size_t offset>
+struct scalable_make_index_sequence_helper<2, void, offset>
+{ using type = std::index_sequence<offset+0, offset+1>; };
+
+template< size_t ... Ls
+        , size_t ... Rs >
+auto
+concat_index_packs  (   std::index_sequence<Ls...>
+                    ,   std::index_sequence<Rs...>  )
+-> std::index_sequence<Ls..., Rs...>
+{ return {}; }
+
+template<size_t N, size_t offset>
+struct scalable_make_index_sequence_helper<N, void, offset>
+{
+    static_assert(N > 2, "");
+    constexpr static size_t mid = N/2;
+    using left = typename
+        scalable_make_index_sequence_helper<   mid,void,offset    > :: type;
+    using right_shifted = typename
+        scalable_make_index_sequence_helper< N-mid,void,offset+mid> :: type;
+    using type = decltype(concat_index_packs(left{}, right_shifted{}));
+
+};
+} // namespace detail
+
+template<size_t N>
+using scalable_make_index_sequence = typename detail:: scalable_make_index_sequence_helper<N> :: type;
+
+static_assert(std::is_same< scalable_make_index_sequence<0> , std::make_index_sequence<0> >{} ,"");
+static_assert(std::is_same< scalable_make_index_sequence<1> , std::make_index_sequence<1> >{} ,"");
+static_assert(std::is_same< scalable_make_index_sequence<2> , std::make_index_sequence<2> >{} ,"");
+static_assert(std::is_same< scalable_make_index_sequence<3> , std::make_index_sequence<3> >{} ,"");
+static_assert(std::is_same< scalable_make_index_sequence<4> , std::make_index_sequence<4> >{} ,"");
+static_assert(std::is_same< scalable_make_index_sequence<200> , std::make_index_sequence<200> >{} ,"");
 
 
 
+
+} // namespace cambda_utils
 
 namespace cambda {
     bool constexpr is_whitespace    (char c) { return c==' ' || c=='\t' || c=='\n'; }
