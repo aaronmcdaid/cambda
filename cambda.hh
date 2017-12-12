@@ -974,7 +974,7 @@ namespace cambda {
         auto constexpr
         get_simple_named_value  ( cambda_utils::char_pack<c...> )
         -> T
-        { return m_x; }
+        { return std::forward<T>(m_x); }
     };
 
     template< typename B
