@@ -659,7 +659,7 @@ namespace cambda {
     -> decltype(auto)
     {   return combine_libraries(lib1,combine_libraries(lib2,lib3,libs...)); }
 
-
+    struct nil_t { }; // to be returned if you write () in cambda, i.e. "()"_cambda()
 
     template< typename T
             , typename Lib // for the 'library' - initially simply 'starter_lib', but the user can extend it
@@ -943,6 +943,18 @@ namespace cambda {
                         :: simplify ( grouped_t<'(', types_t<Func, Arg1, Arg2>> {} ,      std::forward<L>(lib) )
                 ;
         }
+    };
+
+    // simplifier for () - simply returns nil_t{}
+    template<typename Lib>
+    struct simplifier   < grouped_t<'(', types_t<>   >
+                        , Lib
+                        >
+    {
+        static auto constexpr
+        simplify(grouped_t<'(', types_t<> >, Lib const &)
+        -> nil_t
+        { return {}; }
     };
 
     template<typename AST, typename Lib>

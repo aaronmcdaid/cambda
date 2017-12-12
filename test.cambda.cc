@@ -96,6 +96,7 @@ static_assert("'it''s mine'"_cambda_empty_library()[3] == 's' ,"");
 static_assert(cambda_utils::equal_string_array("'it''s mine'"_cambda_empty_library(), "it's mine") ,"");
 static_assert(!cambda_utils::equal_string_array("'it''s mine'"_cambda_empty_library(), "it's mIne") ,"");
 static_assert(!cambda_utils::equal_string_array("'it''s mine'"_cambda_empty_library(), "it's min") ,"");
+static_assert(std::is_same<decltype("()"_cambda()) , cambda::nil_t>{} ,"");
 
 int main() {
     int x=0;
