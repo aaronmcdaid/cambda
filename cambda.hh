@@ -1170,6 +1170,16 @@ namespace cambda {
         -> T
         { return std::forward<T>(t); }
 
+        // ref2val
+        template<typename T
+                , typename LibToForward
+                >
+        auto constexpr
+        apply_after_simplification  (LibToForward, decltype( "ref2val"_charpack )
+                            , T& t)
+        -> T
+        { return t; }
+
 #define MACRO_FOR_SIMPLE_BINARY_INFIX_OPERATION(op_name, infix_op) \
         template< typename LibToForward , typename Ti , typename Tj >   \
         auto constexpr                                                  \
