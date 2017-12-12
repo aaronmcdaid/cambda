@@ -373,6 +373,8 @@ namespace cambda {
     struct types_t {
         template<typename Prepend>
         using prepend = types_t<Prepend, T...>;
+
+        constexpr static size_t size = sizeof...(T);
     };
 
     template<typename T>
@@ -599,10 +601,30 @@ namespace cambda {
     { using single_type = T; };
 
     template<typename E>
+    constexpr static size_t
+    count_the_terms(E e)
+    {
+        size_t n = 0;
+        size_t o = 0;
+        while(true) {
+            auto tk = find_next_token(e, o);
+            if(tk.first == tk.second)
+                break;
+            o = tk.second;
+            ++n;
+        }
+        return n;
+    }
+
+    template<typename E>
     auto constexpr
-    parse_ast(E )
+    parse_ast(E e)
     {
         using all_the_terms_t = typename parse_flat_list_of_terms<E, 0>::all_the_terms;
+
+        constexpr auto number_of_terms = all_the_terms_t::size;
+        static_assert(number_of_terms == count_the_terms(e) ,"");
+
         auto parsed =  parser( all_the_terms_t{} );
         static_assert(std::is_same< typename decltype(parsed) :: rest , types_t<>>{} ,"");
         using x = typename should_be_just_one_term< typename decltype(parsed) :: me > :: single_type;
