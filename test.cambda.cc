@@ -75,7 +75,7 @@ static_assert(3.4 ==                        "3.4"_cambda()       ,"");
 static_assert(3.41932 ==                        "3.41932"_cambda()       ,"");
 
 static_assert("(if truec  [3.14] ['hi'])"_cambda() == 3.14 ,"");
-static_assert("(if falsec [3.14] ['hi'])"_cambda() == "hi"_charpack ,"");
+static_assert("(if falsec [3.14] ['hi'c])"_cambda() == "hi"_charpack ,"");
 
 std::vector<int> v{2,3,4};
 auto size_of_v = "(size v)"_cambda
@@ -86,6 +86,31 @@ auto size_of_v = "(size v)"_cambda
         (); //  () executes
 
 std::initializer_list<int> il{2,3,4};
+
+constexpr bool
+equal_char_array    (   const char *l
+                    ,   const char *r)
+{
+    for(int i=0; ; ++i)
+    {
+        if(l[i] == '\0' && r[i] == '\0')
+            return true;
+        if(l[i] == '\0' || r[i] == '\0')
+            return false;
+        if(l[i] != r[i])
+            return false;
+    }
+}
+
+static_assert(equal_char_array("hi", "hi") ,"");
+
+static_assert("'it''s mine'"_cambda_empty_library()[0] == 'i' ,"");
+static_assert("'it''s mine'"_cambda_empty_library()[1] == 't' ,"");
+static_assert("'it''s mine'"_cambda_empty_library()[2] == '\'' ,"");
+static_assert("'it''s mine'"_cambda_empty_library()[3] == 's' ,"");
+static_assert(equal_char_array("'it''s mine'"_cambda_empty_library(), "it's mine") ,"");
+static_assert(!equal_char_array("'it''s mine'"_cambda_empty_library(), "it's mIne") ,"");
+static_assert(!equal_char_array("'it''s mine'"_cambda_empty_library(), "it's min") ,"");
 
 int main() {
     int x=0;

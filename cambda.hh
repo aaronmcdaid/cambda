@@ -675,6 +675,12 @@ namespace cambda {
     namespace detail {
         template<char ...c>
         static auto constexpr
+        drop_leading_c(cambda_utils::char_pack<'c', c...>)
+        -> cambda_utils::char_pack<c...>
+        { return {}; }
+
+        template<char ...c>
+        static auto constexpr
         drop_leading_apostrophe(cambda_utils::char_pack<'\'', c...>)
         -> cambda_utils::char_pack<c...>
         { return {}; }
@@ -743,7 +749,27 @@ namespace cambda {
     {
         static auto constexpr
         simplify(StringLiteral sl, Lib const &)
-        { return detail::parse_string_literal(sl); }
+        { return detail::parse_string_literal(sl).c_str0(); }
+    };
+
+    // simplifier for string literals
+    template<typename StringLiteral, typename Lib>
+    struct simplifier   < StringLiteral
+                        , Lib
+                        , cambda_utils::void_t<std::enable_if_t<
+                                   '\'' ==            StringLiteral::at(0)
+                                   && 'c' ==          StringLiteral::last()
+                          >>>
+    {
+        static auto constexpr
+        simplify(StringLiteral sl, Lib const &)
+        {
+            (void)sl;
+            return  detail::parse_string_literal(
+                    detail::reverse(
+                    detail::drop_leading_c(
+                    detail::reverse(sl))));
+        }
     };
 
     namespace detail
