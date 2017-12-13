@@ -1209,6 +1209,12 @@ MACRO_FOR_SIMPLE_BINARY_INFIX_OPERATION( "&&"_charpack  , && )
 MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(    "++"_charpack,  ++  )
 MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(    "--"_charpack,  --  )
 MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
+        template<typename T
+                , typename LibToForward >
+        auto constexpr
+        apply_after_simplification  (LibToForward, decltype( "&"_charpack       ) , T& t)
+        ->decltype(&t)
+        {   return &t; }
 
 
 
