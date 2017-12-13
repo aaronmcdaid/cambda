@@ -1504,34 +1504,33 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
 
             F & m_f;
 
-            template<typename T>
+            template<typename ... T>
             constexpr auto
-            operator() (T && t) const
+            operator() (T && ... t) const
             -> void
             {
-                m_f(*this,   std::forward<T>(t));
+                m_f(*this,   std::forward<T>(t) ...);
             }
         };
 
         // fix
         template< typename LibToForward
                 , typename F
-                , typename D
+                , typename ... D
                 >
         auto constexpr
         apply_after_simplification  (LibToForward && l2f, decltype( "fix"_charpack )
                             , F && f
-                            , D && d
+                            , D && ... d
                             )
         -> nil_t
         {
             (void)l2f;
             (void)f;
-            (void)d;
 
             const fix_holder<F> fh{f};
 
-            fh(std::forward<D>(d));
+            fh(std::forward<D>(d) ...);
             //f   (   fh ,   std::forward<D>(d)  );
             return {};
         }
