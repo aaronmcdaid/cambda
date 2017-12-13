@@ -1344,6 +1344,11 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
             decltype(auto) // not-an r-ref. May be l-ref though
                 bound_value = cambda::simplify(BoundExpression{}, std::forward<LibToForward>(lib));
             static_assert(!std::is_rvalue_reference<decltype(bound_value)>{} ,"");
+            // Note: we treat bound_value as an lvalue from here on, and allow it to be
+            // taken as l-reference. This means that 'bound_value' is the storage,
+            // assuming storage is required.
+
+
             return cambda::simplify
                         (   cambda::grouped_t<'('
                                     , types_t<cambda_utils::char_pack<'l','e','t'>
@@ -1352,7 +1357,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                                              >>>
                                     >{}
                         ,   cambda::combine_libraries   (   std::forward<LibToForward>(lib)
-                                                        ,   char_pack__to__binding_name(BindingName{}) = std::forward<decltype(bound_value)>(bound_value))
+                                                        ,   char_pack__to__binding_name(BindingName{}) = bound_value)
                         );
         }
 
