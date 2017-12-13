@@ -1335,8 +1335,9 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
         {
             static_assert(sizeof...(TheRest) % 2 == 1 ,"A 'let' must always have an odd number of arguments");
 
-            decltype(auto) // as it may be a (l/r)reference
+            decltype(auto) // not-an r-ref. May be l-ref though
                 bound_value = cambda::simplify(BoundExpression{}, lib);
+            static_assert(!std::is_rvalue_reference<decltype(bound_value)>{} ,"");
             return cambda::simplify
                         (   cambda::grouped_t<'('
                                     , types_t<cambda_utils::char_pack<'l','e','t'>
