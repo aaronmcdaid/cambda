@@ -1317,15 +1317,14 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                 , typename SingleOne
                 >
         auto constexpr
-        apply_after_simplification  (LibToForward lib, decltype( "let"_charpack )
+        apply_after_simplification  (LibToForward && lib, decltype( "let"_charpack )
                             , cambda::grouped_t<'[', types_t<SingleOne>>
                             )
         ->decltype(auto)
         {
                 return cambda::simplify
                         (   SingleOne{}
-                            , lib
-                        //, cambda::combine_libraries   (   m_lib ,   char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...)
+                            , std::forward<LibToForward>(lib)
                         );
         }
 
@@ -1335,7 +1334,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                 , typename ... TheRest
                 >
         auto constexpr
-        apply_after_simplification  (LibToForward lib, decltype( "let"_charpack )
+        apply_after_simplification  (LibToForward && lib, decltype( "let"_charpack )
                             , cambda::grouped_t<'[', types_t<BindingName, BoundExpression, TheRest...>>
                             )
         ->decltype(auto)
@@ -1343,7 +1342,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
             static_assert(sizeof...(TheRest) % 2 == 1 ,"A 'let' must always have an odd number of arguments");
 
             decltype(auto) // not-an r-ref. May be l-ref though
-                bound_value = cambda::simplify(BoundExpression{}, lib);
+                bound_value = cambda::simplify(BoundExpression{}, std::forward<LibToForward>(lib));
             static_assert(!std::is_rvalue_reference<decltype(bound_value)>{} ,"");
             return cambda::simplify
                         (   cambda::grouped_t<'('
@@ -1352,7 +1351,8 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                                                     TheRest...
                                              >>>
                                     >{}
-                        ,   cambda::combine_libraries   (   lib ,   char_pack__to__binding_name(BindingName{}) = std::forward<decltype(bound_value)>(bound_value))
+                        ,   cambda::combine_libraries   (   std::forward<LibToForward>(lib)
+                                                        ,   char_pack__to__binding_name(BindingName{}) = std::forward<decltype(bound_value)>(bound_value))
                         );
         }
 
