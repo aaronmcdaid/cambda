@@ -1497,6 +1497,46 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                 //cambda::simplify   (    QuotedExpressionBody{} ,l2f);
         }
 
+        template<typename F>
+        struct fix_holder
+        {
+            static_assert(!std::is_reference<F>{} ,"");
+
+            F & m_f;
+
+            template<typename T>
+            constexpr auto
+            operator() (T && t) const
+            -> void
+            {
+                m_f(*this,   std::forward<T>(t));
+            }
+        };
+
+        // fix
+        template< typename LibToForward
+                , typename F
+                , typename D
+                >
+        auto constexpr
+        apply_after_simplification  (LibToForward && l2f, decltype( "fix"_charpack )
+                            , F && f
+                            , D && d
+                            )
+        -> nil_t
+        {
+            (void)l2f;
+            (void)f;
+            (void)d;
+
+            const fix_holder<F> fh{f};
+
+            fh(std::forward<D>(d));
+            //f   (   fh ,   std::forward<D>(d)  );
+            return {};
+        }
+
+
     };
 
 

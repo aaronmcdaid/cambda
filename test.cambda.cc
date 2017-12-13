@@ -116,6 +116,39 @@ int main() {
         ["mult"_binding = [](auto x, auto y){return std::integral_constant<int, x.value*y.value>{};}]
         ();
     static_assert(product.value == 12 ,"");
+
+    constexpr
+    auto y =
+    R"--(
+        (let[
+            r 0
+            i3 (fix
+                    (lambda
+                        [rec n]
+                        [
+                            (if {n < 2}
+                                [
+                                    (begin [
+                                        ()
+                                    ])
+                                ]
+                                [
+                                    (begin [
+                                        (assign r {r + 1000})
+                                        (rec {n - 1})
+                                        ()
+                                    ])
+                                ]
+                                )
+                        ])
+                    13
+                    )
+            r
+            ])
+    )--"_cambda
+        ();
+    static_assert(y == 12000 ,"");
+    std::cout << y << '\n';
 }
 
 constexpr auto static
