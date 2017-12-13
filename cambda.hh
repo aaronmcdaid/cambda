@@ -1065,15 +1065,16 @@ namespace cambda {
     template<typename T, char ...c>
     struct binded_name_with_valueOrReference
     {
-        // NOTE: T might be a &-reference type
+        // NOTE: T might be a l-reference type
+        // However, we always return as l-ref
         T m_x;
 
         static_assert(!std::is_rvalue_reference<T>{}, "");
 
         auto constexpr
         get_simple_named_value  ( cambda_utils::char_pack<c...> )
-        -> T
-        { return std::forward<T>(m_x); }
+        -> T&
+        { return m_x; }
     };
 
     template< typename B
