@@ -129,20 +129,7 @@ int main() {
                     (lambda
                         [rec n]
                         [
-                            (if {n < 1}
-                                [
-                                    (begin [
-                                        (assign r 42)
-                                        7
-                                    ])
-                                ]
-                                [
-                                    (begin [
-                                        (rec {n - 1})
-                                        8
-                                    ])
-                                ]
-                                )
+                                        (rec 0)
                         ])
     )--"_cambda
     ["r"_binding = r]
