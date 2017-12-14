@@ -786,8 +786,8 @@ namespace cambda {
     {
         template<typename L>
         static auto constexpr
-        simplify(cambda_utils::char_pack<first_digit, c...> digits, L &&)
-        { return std::integral_constant<int, cambda_utils::char_pack_to_int(digits)>{}; }
+        simplify(cambda_utils::char_pack<first_digit, c...> , L &&)
+        { return std::integral_constant<int, cambda_utils::char_pack_to_int(cambda_utils::char_pack<first_digit, c...>{})>{}; }
     };
 
     namespace detail {
@@ -1121,7 +1121,8 @@ namespace cambda {
     { return {std::move(ast),std::move(lib)}; }
 
     struct starter_lib {
-        constexpr starter_lib(){} // a default constructor, just because clang requires them for constexpr objects
+        int ignore;
+        constexpr starter_lib() : ignore(0) {} // a default constructor, just because clang requires them for constexpr objects
 
 
         // range_based_for
@@ -1536,12 +1537,15 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
         return ::cambda::make_cambda_object_from_the_string_literal(ast, starter_lib_v);
     }
 
+    struct empty {
+        int ignore;
+        constexpr empty() : ignore(0) {}
+    };
     template<typename T, T ... chars>
     constexpr auto
     operator"" _cambda_empty_library ()
     {
         auto ast = parse_ast(cambda_utils:: char_pack<chars...>{});
-        struct empty {};
         return ::cambda::make_cambda_object_from_the_string_literal(ast, empty{});
     }
 
