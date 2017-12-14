@@ -942,7 +942,8 @@ namespace cambda {
         static_assert( '\'' !=            Name::at(0)   ,"");
 
         template<typename L
-                , typename = std::enable_if_t< detail::has_get_simple_named_value_v<Name, L> >
+                , bool b = detail::has_get_simple_named_value_v<Name, L>
+                , typename = std::enable_if_t<b>
                 >
         static auto constexpr
         simplify(Name name, L && lib)
@@ -965,7 +966,8 @@ namespace cambda {
         };
 
         template<typename L
-                , typename = std::enable_if_t<!detail::has_get_simple_named_value_v<Name, L> >
+                , bool b = detail::has_get_simple_named_value_v<Name, L>
+                , typename = std::enable_if_t<!b>
                 >
         static auto constexpr
         simplify(Name f, L && lib) -> gather_args_later<L> {
@@ -1099,18 +1101,23 @@ namespace cambda {
         template< typename id = cambda_utils:: id_t>
         constexpr auto
         operator() ()
-        ->decltype(::cambda:: simplify(id{}(m_ast), lib))
+        //->decltype(::cambda:: simplify(id{}(m_ast), lib))
+        -> decltype(auto)
         {
             return ::cambda:: simplify(     m_ast , lib);
         }
 
         template<typename Binding>
         constexpr auto
-        operator[] (Binding binding_to_insert) && // the '&&' is important, allows us to 'move' from this->lib
+        operator[] (Binding && binding_to_insert) && // the '&&' is important, allows us to 'move' from this->lib
         -> decltype(auto)
         {
-            auto new_library = combine_libraries(std::move(lib), std::move(binding_to_insert));
-            return cambda_object_from_the_string_literal<AST, decltype(new_library)>{m_ast, std::move(new_library)};
+            return cambda_object_from_the_string_literal<AST, decltype(
+                        combine_libraries(std::move(lib), std::forward<Binding>(binding_to_insert))
+                    )>
+            {m_ast
+                        , combine_libraries(std::move(lib), std::forward<Binding>(binding_to_insert))
+            };
             //return *this;
         }
     };
