@@ -123,7 +123,6 @@ int main() {
             auto static
             bar() {
 
-            int r = 0;
             auto l =
     R"--(
                     (lambda
@@ -132,7 +131,6 @@ int main() {
                                         (rec 0)
                         ])
     )--"_cambda
-    ["r"_binding = r]
     ();
             (void)l;
     R"--(
@@ -141,15 +139,11 @@ int main() {
                     3
                     )
     )--"_cambda
-    ["r"_binding = r]
     ["l"_binding = l]
     //["recn"_binding = "[rec n]"_cambda()]
         ();
-            return r;
             }
     };
-    //static_assert(foo::bar() == 42 ,"");
-    std::cout << foo::bar() << '\n';
 #endif
 
     constexpr
