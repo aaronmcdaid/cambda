@@ -919,11 +919,6 @@ namespace cambda {
         -> decltype(auto)
         { return detail:: has_get_simple_named_value_helper<Name,Lib>(cambda_utils::priority_tag<9>{}); }
 
-        template<typename Name, typename Lib>
-        bool constexpr
-        has_get_simple_named_value_v =
-            detail:: has_get_simple_named_value<Name,Lib>();
-
     }
 
     // simplifier for names.
@@ -934,7 +929,6 @@ namespace cambda {
                         , cambda_utils::void_t<std::enable_if_t<
                                 !( is_digit_constexpr(Name::at(0)) )
                              && !( '\'' ==            Name::at(0)  )
-                             //&& ! detail::has_get_simple_named_value_v<Name, Lib>
                           >>>
     {
         static_assert(!is_grouper(Name::at(0))          ,"");
@@ -942,7 +936,7 @@ namespace cambda {
         static_assert( '\'' !=            Name::at(0)   ,"");
 
         template<typename L
-                , bool b = detail::has_get_simple_named_value_v<Name, L>
+                , bool b = detail::has_get_simple_named_value<Name, L>()
                 , typename = std::enable_if_t<b>
                 >
         static auto constexpr
@@ -966,7 +960,7 @@ namespace cambda {
         };
 
         template<typename L
-                , bool b = detail::has_get_simple_named_value_v<Name, L>
+                , bool b = detail::has_get_simple_named_value<Name, L>()
                 , typename = std::enable_if_t<!b>
                 >
         static auto constexpr
