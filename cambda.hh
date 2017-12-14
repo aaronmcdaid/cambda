@@ -960,8 +960,8 @@ namespace cambda {
             template<typename ...T>
             auto constexpr
             operator()  ( T && ...t)
-            ->decltype( apply_after_simplification(m_lib, m_f , std::forward<T>(t) ... )  )
-            {   return  apply_after_simplification(m_lib, m_f , std::forward<T>(t) ... ); }
+            ->decltype( cambda::apply_after_simplification(m_lib, m_f , std::forward<T>(t) ... )  )
+            {   return  cambda::apply_after_simplification(m_lib, m_f , std::forward<T>(t) ... ); }
         };
 
         template<typename L
