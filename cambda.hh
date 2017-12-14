@@ -932,21 +932,25 @@ namespace cambda {
 
     }
 
-    // simplifier for simple names, that directly appear in the library
+    // simplifier for names.
+    // Two overloads, one for where 'get_simple_named_value' is present, and one
+    // to capture-and-store-and-forward to 'apply_after_simplification' later
     template<typename Name, typename Lib>
     struct simplifier   < Name
                         , Lib
                         , cambda_utils::void_t<std::enable_if_t<
-                                    detail::has_get_simple_named_value_v<Name, Lib>
+                                !( is_digit_constexpr(Name::at(0)) )
+                             && !( '\'' ==            Name::at(0)  )
+                             //&& ! detail::has_get_simple_named_value_v<Name, Lib>
                           >>>
     {
-        static_assert(!is_grouper(Name::at(0)) ,"");
-
-        static_assert( detail::has_get_simple_named_value_v<Name, Lib> ,"");
+        static_assert(!is_grouper(Name::at(0))          ,"");
         static_assert(!is_digit_constexpr(Name::at(0))  ,"");
-        static_assert(!( '\'' ==          Name::at(0))  ,"");
+        static_assert( '\'' !=            Name::at(0)   ,"");
 
-        template<typename L>
+        template<typename L
+                , typename = std::enable_if_t< detail::has_get_simple_named_value_v<Name, L> >
+                >
         static auto constexpr
         simplify(Name name, L && lib)
         ->decltype(std::forward<L>(lib).get_simple_named_value(name) )
@@ -954,21 +958,7 @@ namespace cambda {
             static_assert(std::is_same<std::remove_reference_t<L>, Lib>{} ,"");
             return std::forward<L>(lib).get_simple_named_value(name);
         }
-    };
 
-    // simplifier for names where 'get_simple_named_value' doesn't work.
-    // We can reasonably assume they are functions.
-    // This simplifier will often be called by the following simplifier - the '(' simplifier
-    template<typename Name, typename Lib>
-    struct simplifier   < Name
-                        , Lib
-                        , cambda_utils::void_t<std::enable_if_t<
-                                !( is_digit_constexpr(Name::at(0)) )
-                             && !( '\'' ==            Name::at(0)  )
-                             && ! detail::has_get_simple_named_value_v<Name, Lib>
-                          >>>
-    {
-        static_assert(!is_grouper(Name::at(0)) ,"");
         template<typename L>
         struct gather_args_later
         {
@@ -982,7 +972,9 @@ namespace cambda {
             {   return  apply_after_simplification(m_lib, m_f , std::forward<T>(t) ... ); }
         };
 
-        template<typename L>
+        template<typename L
+                , typename = std::enable_if_t<!detail::has_get_simple_named_value_v<Name, L> >
+                >
         static auto constexpr
         simplify(Name f, L && lib) -> gather_args_later<L> {
             static_assert(std::is_same<std::remove_reference_t<L>, Lib>{} ,"");
