@@ -119,12 +119,13 @@ int main() {
 
 #if 1
     struct foo {
-        constexpr auto static
+        //constexpr
+            auto static
             bar() {
 
             int r = 0;
+            auto l =
     R"--(
-            (fix
                     (lambda
                         [rec n]
                         [
@@ -132,26 +133,36 @@ int main() {
                                 [
                                     (begin [
                                         (assign r 42)
-                                        3
+                                        7
                                     ])
                                 ]
                                 [
                                     (begin [
                                         (rec {n - 1})
-                                        3
+                                        8
                                     ])
                                 ]
                                 )
                         ])
+    )--"_cambda
+    ["r"_binding = r]
+    ();
+            (void)l;
+    R"--(
+            (fix
+                    l
                     3
                     )
     )--"_cambda
     ["r"_binding = r]
+    ["l"_binding = l]
+    //["recn"_binding = "[rec n]"_cambda()]
         ();
             return r;
             }
     };
-    static_assert(foo::bar() == 42 ,"");
+    //static_assert(foo::bar() == 42 ,"");
+    std::cout << foo::bar() << '\n';
 #endif
 
     constexpr
