@@ -117,24 +117,26 @@ int main() {
         ();
     static_assert(product.value == 12 ,"");
 
-    constexpr
-    auto y =
+#if 1
+    struct foo {
+        constexpr auto static
+            bar() {
+
+            int r = 0;
     R"--(
-        (let[
-            r 0
-            i3 (fix
+            (fix
                     (lambda
                         [rec n]
                         [
                             (if {n < 1}
                                 [
                                     (begin [
+                                        (assign r 42)
                                         3
                                     ])
                                 ]
                                 [
                                     (begin [
-                                        (assign r {r + 1000})
                                         (rec {n - 1})
                                         3
                                     ])
@@ -143,12 +145,14 @@ int main() {
                         ])
                     3
                     )
-            (ref2val r)
-            ])
     )--"_cambda
+    ["r"_binding = r]
         ();
-    static_assert(y == 3000 ,"");
-    std::cout << y << '\n';
+            return r;
+            }
+    };
+    static_assert(foo::bar() == 42 ,"");
+#endif
 
     constexpr
     auto z =
