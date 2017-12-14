@@ -126,10 +126,9 @@ int main() {
                     (lambda
                         [rec n]
                         [
-                            (if {n < 2}
+                            (if {n < 1}
                                 [
                                     (begin [
-                                        ()
                                         3
                                     ])
                                 ]
@@ -137,20 +136,31 @@ int main() {
                                     (begin [
                                         (assign r {r + 1000})
                                         (rec {n - 1})
-                                        ()
                                         3
                                     ])
                                 ]
                                 )
                         ])
-                    13
+                    3
                     )
-            r
+            (ref2val r)
             ])
     )--"_cambda
         ();
-    static_assert(y == 12000 ,"");
+    static_assert(y == 3000 ,"");
     std::cout << y << '\n';
+
+    constexpr
+    auto z =
+    R"--(
+        (let[
+            r 7
+            (ref2val r)
+            ])
+    )--"_cambda
+        ();
+    static_assert(z == 7 ,"");
+    std::cout << z << '\n';
 }
 
 constexpr auto static

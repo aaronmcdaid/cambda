@@ -1509,7 +1509,9 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
             operator() (T && ... t) const
             -> void
             {
-                m_f(*this,   std::forward<T>(t) ...);
+                auto && x =
+                    m_f(*this,   std::forward<T>(t) ...);
+                static_assert(std::is_same<decltype(x), int&&>{} ,"");
             }
         };
 
