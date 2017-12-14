@@ -684,7 +684,7 @@ namespace cambda {
                 , typename std::integral_constant<int, __LINE__> * =nullptr
                 >
         auto constexpr
-        apply_after_simplification_overload  ( T && ... t)
+        apply_after_simplification( T && ... t)
         ->decltype(id{}(this)->Lib1::apply_after_simplification(std::forward<T>(t)...)  )
         {   return     (this)->Lib1::apply_after_simplification(std::forward<T>(t)...); }
 
@@ -693,15 +693,9 @@ namespace cambda {
                 , typename std::integral_constant<int, __LINE__> * =nullptr
                 >
         auto constexpr
-        apply_after_simplification_overload  (T && ... t)
+        apply_after_simplification(T && ... t)
         ->decltype(id{}(this)->Lib2::apply_after_simplification(std::forward<T>(t)...)  )
         {   return     (this)->Lib2::apply_after_simplification(std::forward<T>(t)...); }
-
-        template< typename ... T>
-        auto constexpr
-        apply_after_simplification  (T && ... t)
-        ->decltype(library_combiner::apply_after_simplification_overload( std::forward<T>(t)...))
-        {   return library_combiner::apply_after_simplification_overload( std::forward<T>(t)...); }
 
         /* Second, 'get_simple_named_value'
          * Define two helper overloads, one for each sub-library.
@@ -712,7 +706,7 @@ namespace cambda {
                 , typename std::integral_constant<int, __LINE__> * =nullptr
                 >
         auto constexpr
-        get_simple_named_value_overload  ( cambda_utils::char_pack<cs...> name)
+        get_simple_named_value( cambda_utils::char_pack<cs...> name)
         ->decltype(id{}(this)->Lib1::get_simple_named_value(name)  )
         {   return     (this)->Lib1::get_simple_named_value(name); }
 
@@ -721,15 +715,9 @@ namespace cambda {
                 , typename std::integral_constant<int, __LINE__> * =nullptr
                 >
         auto constexpr
-        get_simple_named_value_overload  ( cambda_utils::char_pack<cs...> name)
+        get_simple_named_value( cambda_utils::char_pack<cs...> name)
         ->decltype(id{}(this)->Lib2::get_simple_named_value(name)  )
         {   return     (this)->Lib2::get_simple_named_value(name); }
-
-        template<char ... cs>
-        auto constexpr
-        get_simple_named_value  ( cambda_utils::char_pack<cs...> name)
-        ->decltype(library_combiner::get_simple_named_value_overload(name))
-        {   return library_combiner::get_simple_named_value_overload(name); }
     };
 
 
