@@ -1482,8 +1482,6 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
         template<typename F>
         struct fix_holder
         {
-            static_assert(!std::is_reference<F>{} ,"");
-
             F & m_f;
 
             template<typename ... T>
