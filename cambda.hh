@@ -1095,7 +1095,6 @@ namespace cambda {
         template< typename id = cambda_utils:: id_t>
         constexpr auto
         operator() ()
-        //->decltype(::cambda:: simplify(id{}(m_ast), lib))
         -> decltype(auto)
         {
             return ::cambda:: simplify(     m_ast , lib);
