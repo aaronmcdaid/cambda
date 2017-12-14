@@ -1148,7 +1148,7 @@ namespace cambda {
                 , typename LibToForward
                 >
         auto constexpr
-        apply_after_simplification  (LibToForward, decltype( "id"_charpack )
+        apply_after_simplification  (LibToForward &&, decltype( "id"_charpack )
                             , T&& t)
         -> T
         { return std::forward<T>(t); }
@@ -1158,7 +1158,7 @@ namespace cambda {
                 , typename LibToForward
                 >
         auto constexpr
-        apply_after_simplification  (LibToForward, decltype( "ref2val"_charpack )
+        apply_after_simplification  (LibToForward &&, decltype( "ref2val"_charpack )
                             , T& t)
         -> T
         { return t; }
@@ -1166,7 +1166,7 @@ namespace cambda {
 #define MACRO_FOR_SIMPLE_BINARY_INFIX_OPERATION(op_name, infix_op) \
         template< typename LibToForward , typename Ti , typename Tj >   \
         auto constexpr                                                  \
-        apply_after_simplification ( LibToForward                       \
+        apply_after_simplification ( LibToForward &&                    \
             , decltype( op_name )                                          \
             , Ti && i , Tj && j)                                        \
         ->decltype(std::forward<Ti>(i) infix_op std::forward<Tj>(j) )         \
@@ -1184,7 +1184,7 @@ MACRO_FOR_SIMPLE_BINARY_INFIX_OPERATION( "&&"_charpack  , && )
         template<typename T                                                             \
                 , typename LibToForward >                                               \
         auto constexpr                                                                  \
-        apply_after_simplification  (LibToForward, decltype( op_name       ) , T&& t)   \
+        apply_after_simplification  (LibToForward &&, decltype( op_name       ) , T&& t)   \
         ->decltype(op std::forward<T>(t)  )                                             \
         {   return op std::forward<T>(t); }
 
@@ -1194,7 +1194,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
         template<typename T
                 , typename LibToForward >
         auto constexpr
-        apply_after_simplification  (LibToForward, decltype( "&"_charpack       ) , T& t)
+        apply_after_simplification  (LibToForward &&, decltype( "&"_charpack       ) , T& t)
         ->decltype(&t)
         {   return &t; }
 
@@ -1203,7 +1203,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
         template< typename LibToForward
                 , char ...c>
         auto constexpr
-        apply_after_simplification  (LibToForward, decltype( "length"_charpack )
+        apply_after_simplification  (LibToForward &&, decltype( "length"_charpack )
                             , cambda_utils::char_pack<c...>
                             )
         -> std::integral_constant<int, sizeof...(c)>
@@ -1215,6 +1215,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                 , typename ...BindingName>
         struct lambda_capturing_struct
         {
+            static_assert(!std::is_reference<LibToForward>{} ,"");
             LibToForward m_lib;
 
             template< typename ...T>
@@ -1243,8 +1244,8 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                                     , cambda::grouped_t<'[', types_t<BindingName...>>
                                     , cambda::grouped_t<'[', types_t<QuotedExpression>>
                                     )
-        ->decltype(lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {l2f}  )
-        {   return lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {l2f}; }
+        ->decltype(lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {std::move(l2f)}  )
+        {   return lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {std::move(l2f)}; }
 
         template< typename ...BindingName
                 , typename LibToForward
@@ -1254,15 +1255,15 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                                     , cambda::grouped_t<'[', types_t<BindingName...>>
                                     , cambda::grouped_t<'[', types_t<QuotedExpression>>
                                     )
-        ->decltype(lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {l2f}  )
-        {   return lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {l2f}; }
+        ->decltype(lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {std::move(l2f)}  )
+        {   return lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {std::move(l2f)}; }
 
 
         template< typename T
                 , typename LibToForward
                 , typename S >
         auto constexpr
-        apply_after_simplification  (LibToForward, decltype( "assign"_charpack )
+        apply_after_simplification  (LibToForward &&, decltype( "assign"_charpack )
                             , T & target
                             , S   source
                             )
@@ -1272,7 +1273,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                 , typename LibToForward
                 , typename S >
         auto constexpr
-        apply_after_simplification  (LibToForward, decltype( "="_charpack )
+        apply_after_simplification  (LibToForward &&, decltype( "="_charpack )
                             , T & target
                             , S   source
                             )
@@ -1284,7 +1285,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                 , typename Func
                 >
         auto constexpr
-        apply_after_simplification  (LibToForward, decltype( "&"_charpack )
+        apply_after_simplification  (LibToForward &&, decltype( "&"_charpack )
                             , Arg && arg
                             , Func && func
                             )
@@ -1418,14 +1419,14 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                 , typename QuotedExpressionFalse
                 >
         auto constexpr
-        apply_after_simplification  (LibToForward l2f, decltype( "if"_charpack )
+        apply_after_simplification  (LibToForward && l2f, decltype( "if"_charpack )
                             , std::true_type
                             , cambda::grouped_t<'[', types_t<QuotedExpressionTrue>>
                             , cambda::grouped_t<'[', types_t<QuotedExpressionFalse>>
                             )
         {
                 return cambda::simplify
-                        (   QuotedExpressionTrue{} ,l2f);
+                        (   QuotedExpressionTrue{} ,std::forward<LibToForward>(l2f));
         }
 
         // 'if' with false
@@ -1434,14 +1435,14 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                 , typename QuotedExpressionFalse
                 >
         auto constexpr
-        apply_after_simplification  (LibToForward l2f, decltype( "if"_charpack )
+        apply_after_simplification  (LibToForward && l2f, decltype( "if"_charpack )
                             , std::false_type
                             , cambda::grouped_t<'[', types_t<QuotedExpressionTrue>>
                             , cambda::grouped_t<'[', types_t<QuotedExpressionFalse>>
                             )
         {
                 return cambda::simplify
-                        (   QuotedExpressionFalse{} ,l2f);
+                        (   QuotedExpressionFalse{} ,std::forward<LibToForward>(l2f));
         }
 
         // 'if' with bool
@@ -1450,14 +1451,14 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                 , typename QuotedExpressionFalse
                 >
         auto constexpr
-        apply_after_simplification  (LibToForward l2f, decltype( "if"_charpack )
+        apply_after_simplification  (LibToForward && l2f, decltype( "if"_charpack )
                             , bool b
                             , cambda::grouped_t<'[', types_t<QuotedExpressionTrue>>
                             , cambda::grouped_t<'[', types_t<QuotedExpressionFalse>>
                             )
         {
-                return b ?  cambda::simplify (   QuotedExpressionTrue{}  ,l2f)
-                         :  cambda::simplify (   QuotedExpressionFalse{} ,l2f);
+                return b ?  cambda::simplify (   QuotedExpressionTrue{}  ,std::forward<LibToForward>(l2f))
+                         :  cambda::simplify (   QuotedExpressionFalse{} ,std::forward<LibToForward>(l2f));
         }
 
 
@@ -1468,15 +1469,14 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                 , typename QuotedExpressionBody
                 >
         auto constexpr
-        apply_after_simplification  (LibToForward l2f, decltype( "while"_charpack )
+        apply_after_simplification  (LibToForward && l2f, decltype( "while"_charpack )
                             , cambda::grouped_t<'[', types_t<QuotedExpressionCondition>>
                             , cambda::grouped_t<'[', types_t<QuotedExpressionBody>>
                             )
         ->void
-        { (void)l2f;
-            while(cambda::simplify (    QuotedExpressionCondition{} ,l2f))
-                cambda::simplify   (    QuotedExpressionBody{} ,l2f);
-                //cambda::simplify   (    QuotedExpressionBody{} ,l2f);
+        {
+            while(cambda::simplify (    QuotedExpressionCondition{} ,std::forward<LibToForward>(l2f)))
+                cambda::simplify   (    QuotedExpressionBody{}      ,std::forward<LibToForward>(l2f));
         }
 
         template<typename F>
