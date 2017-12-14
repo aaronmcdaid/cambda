@@ -1026,15 +1026,18 @@ namespace cambda {
                         >
     {
         template< typename id = cambda_utils:: id_t
-                , typename L > // we must perfect forward here to avoid a bug in older gcc (5.5.0) where the while loop wasn't repeating
+                , typename L
+                , class ...
+                , typename LNonRef = std::remove_reference_t<L>
+                > // we must perfect forward here to avoid a bug in older gcc (5.5.0) where the while loop wasn't repeating
         static auto constexpr
         simplify(grouped_t<'{', types_t<Arg1, Func, Arg2> >, L && lib)
-        ->decltype(simplifier       < grouped_t<'(', types_t<Func, Arg1, Arg2>> , Lib>
+        ->decltype(simplifier       < grouped_t<'(', types_t<Func, Arg1, Arg2>> , LNonRef>
                         :: simplify ( grouped_t<'(', types_t<Func, Arg1, Arg2>> {} , id{}(std::forward<L>(lib)))
                 )
         {
             static_assert(std::is_same<std::remove_reference_t<L>, Lib>{} ,"");
-            return simplifier       < grouped_t<'(', types_t<Func, Arg1, Arg2>> , Lib>
+            return simplifier       < grouped_t<'(', types_t<Func, Arg1, Arg2>> , LNonRef>
                         :: simplify ( grouped_t<'(', types_t<Func, Arg1, Arg2>> {} ,      std::forward<L>(lib) )
                 ;
         }
