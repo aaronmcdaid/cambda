@@ -1425,6 +1425,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                             , cambda::grouped_t<'[', types_t<QuotedExpressionTrue>>
                             , cambda::grouped_t<'[', types_t<QuotedExpressionFalse>>
                             )
+        ->decltype(auto)
         {
                 return cambda::simplify
                         (   QuotedExpressionTrue{} ,std::forward<LibToForward>(l2f));
@@ -1441,6 +1442,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                             , cambda::grouped_t<'[', types_t<QuotedExpressionTrue>>
                             , cambda::grouped_t<'[', types_t<QuotedExpressionFalse>>
                             )
+        ->decltype(auto)
         {
                 return cambda::simplify
                         (   QuotedExpressionFalse{} ,std::forward<LibToForward>(l2f));
@@ -1457,6 +1459,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                             , cambda::grouped_t<'[', types_t<QuotedExpressionTrue>>
                             , cambda::grouped_t<'[', types_t<QuotedExpressionFalse>>
                             )
+        ->decltype(auto)
         {
                 return b ?  cambda::simplify (   QuotedExpressionTrue{}  ,std::forward<LibToForward>(l2f))
                          :  cambda::simplify (   QuotedExpressionFalse{} ,std::forward<LibToForward>(l2f));
