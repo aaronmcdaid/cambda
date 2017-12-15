@@ -1509,21 +1509,6 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
          *  with older clang as it wasn't good at 'decltype' in the presence
          *  of recursion. Hence, We require that the return type be specified.
          */
-        template<typename F, typename ... Args>
-        struct fix_holder
-        {
-
-            F & m_f;
-
-            constexpr
-            fix_holder(F& f) : m_f(f)   {}
-
-            constexpr auto
-            operator() (Args && ... t) const
-            //->decltype(m_f(*this,   std::forward<Args>(t)...)  )
-            ->int
-            {   return m_f(*this,   std::forward<Args>(t)...); }
-        };
 
         template< typename LibToForward
                 , typename ReturnType
