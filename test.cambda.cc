@@ -124,7 +124,7 @@ int main() {
 #if 1
             auto f =
     R"--(
-            (fix
+            (fix    (typeof 0)
                     (lambda
                         [rec n]
                         [

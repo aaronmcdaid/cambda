@@ -369,6 +369,12 @@ namespace cambda {
     template<int c>     using c_int     = std::integral_constant<int, c>;
     template<size_t c>  using c_sizet   = std::integral_constant<size_t, c>;
 
+    // now, a 'type_t' type template for the 'typeof' function in cambda
+    template<typename T>
+    struct type_t {
+        using type = T;
+    };
+
     template<typename ... T>
     struct types_t {
         template<typename Prepend>
@@ -1154,6 +1160,16 @@ namespace cambda {
         -> T
         { return std::forward<T>(t); }
 
+        // typeof
+        template<typename T
+                , typename LibToForward
+                >
+        auto constexpr
+        apply_after_simplification  (LibToForward &&, decltype( "typeof"_charpack )
+                            , T&& )
+        -> type_t<T>
+        { return {}; }
+
         // ref2val
         template<typename T
                 , typename LibToForward
@@ -1528,11 +1544,13 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
         };
 
         template< typename LibToForward
+                , typename ReturnType
                 , typename F
                 , typename ... D
                 >
         auto constexpr
         apply_after_simplification  (LibToForward && , decltype( "fix"_charpack )
+                            , type_t<ReturnType>
                             , F && f
                             , D && ... d
                             )
@@ -1548,7 +1566,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
 
                 constexpr auto
                 operator() (D && ... t)
-                ->int
+                ->ReturnType
                 {
 
                     return exec(m_f, *this,   std::forward<D>(t)...);
@@ -1558,7 +1576,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                 // no idea why, but older clang (3.8) hangs in constexpr otherwise
                 constexpr static auto
                 exec(F& f, fix_holder &fh, D && ... x)
-                ->int
+                ->ReturnType
                 {
                     return f(fh, std::forward<D>(x) ...);
                 }
