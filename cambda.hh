@@ -1477,10 +1477,13 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                             , cambda::grouped_t<'[', types_t<QuotedExpressionTrue>>
                             , cambda::grouped_t<'[', types_t<QuotedExpressionFalse>>
                             )
-        ->decltype(auto)
+        ->decltype(b    ? cambda::simplify (   QuotedExpressionTrue{}  ,std::forward<LibToForward>(l2f))
+                        : cambda::simplify (   QuotedExpressionFalse{} ,std::forward<LibToForward>(l2f)) )
         {
-                return b ?  cambda::simplify (   QuotedExpressionTrue{}  ,std::forward<LibToForward>(l2f))
-                         :  cambda::simplify (   QuotedExpressionFalse{} ,std::forward<LibToForward>(l2f));
+                if(b)
+                    return cambda::simplify (   QuotedExpressionTrue{}  ,std::forward<LibToForward>(l2f));
+                else
+                    return cambda::simplify (   QuotedExpressionFalse{} ,std::forward<LibToForward>(l2f));
         }
 
 
@@ -1543,7 +1546,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                 constexpr
                 bar(F& f) : m_f(f) {}
 
-                //constexpr //clang doesn't like this
+                constexpr //clang doesn't like this
                 int
                 operator()(fix_holder<bar, D...> const &fh, D && ... x) const
                 {
