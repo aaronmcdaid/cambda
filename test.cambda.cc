@@ -117,34 +117,31 @@ int main() {
         ();
     static_assert(product.value == 12 ,"");
 
-#if 1
     struct foo {
         //constexpr
             auto static
             bar() {
-
-            auto l =
-    R"--(
-                    (lambda
-                        [rec n]
-                        [
-                                        (rec 0)
-                        ])
-    )--"_cambda
-    ();
-            (void)l;
+#if 1
+            auto f =
     R"--(
             (fix
-                    l
-                    3
+                    (lambda2
+                        [rec n]
+                        [
+                            (if {n < 1}
+                                [ 1 ]
+                                [ {n * (rec {n - 1})} ]
+                                )
+                        ])
+                    7
                     )
     )--"_cambda
-    ["l"_binding = l]
-    //["recn"_binding = "[rec n]"_cambda()]
         ();
+            std::cout << "fix: " << f << '\n';
+#endif
             }
     };
-#endif
+    foo::bar();
 
     constexpr
     auto z =
