@@ -1501,60 +1501,53 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                 cambda::simplify   (    QuotedExpressionBody{}      ,std::forward<LibToForward>(l2f));
         }
 
-        template<typename F>
+
+        /* fix
+         * ===
+         *  Important for recursion. I had a lot of trouble getting this to work
+         *  with older clang as it wasn't good at 'decltype' in the presence
+         *  of recursion. Hence, We require that the return type be specified.
+         */
+        template<typename F, typename ... Args>
         struct fix_holder
         {
+
             F & m_f;
+
+            fix_holder(F& f) : m_f(f)   {}
 
             constexpr auto
-            operator() (int t) const
-            ->decltype(m_f(*this,   t)  )
-            {   return m_f(*this,   t); }
+            operator() (Args && ... t) const
+            ->decltype(m_f(*this,   std::forward<Args>(t)...)  )
+            {   return m_f(*this,   std::forward<Args>(t)...); }
         };
 
-        template< typename F
-                , typename ReturnValue
-                >
-        struct FunctorWithFixedReturnValue
-        {
-            F & m_f;
-            template<typename F_>
-            constexpr ReturnValue
-            operator() (F_ && f, int t) const
-            {
-                return m_f  (   std::forward<F_>(f)
-                            ,   std::forward<decltype(t)>(t)  );
-            }
-        };
-
-        // fix
         template< typename LibToForward
                 , typename F
                 , typename ... D
                 >
         auto constexpr
-        apply_after_simplification  (LibToForward && l2f, decltype( "fix"_charpack )
+        apply_after_simplification  (LibToForward && , decltype( "fix"_charpack )
                             , F && f
                             , D && ... d
                             )
         //->decltype( std::declval<fix_holder<F> &>() (std::forward<D>(d) ...))
         ->decltype(auto)
         {
-            (void)l2f;
-            //*
-            auto f_constrained1 =
-                [&f](auto && args, int n) -> int
+            struct bar
+            {
+                F & m_f;
+
+                auto
+                operator()(fix_holder<bar, D...> const &fh, D && ... x) const
+                -> int
                 {
-                    return f (std::forward<decltype(args)>(args) , n );
-                }; (void)f_constrained1;
-                //*/
-            //auto f_constrained2 = FunctorWithFixedReturnValue<decltype(f),int>{f}; (void)f_constrained2;
+                    return m_f(fh, std::forward<D>(x) ...);
+                }
+            };
 
-
-            //fix_holder<F> fh{f};
-            fix_holder<decltype(f_constrained1)> fh{f_constrained1};
-            //fix_holder<decltype(f_constrained2)> fh{f_constrained2};
-
+            bar b{f};
+            fix_holder<bar, D...> fh{b};
             return fh(std::forward<D>(d) ...);
         }
 
