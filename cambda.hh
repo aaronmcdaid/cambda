@@ -1268,24 +1268,6 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                 , typename LibToForward
                 , typename QuotedExpression>
         auto constexpr
-        apply_after_simplification  (LibToForward & l2f, decltype( "lambda2"_charpack )
-                                    , cambda::grouped_t<'[', types_t<BindingName...>>
-                                    , cambda::grouped_t<'[', types_t<QuotedExpression>>
-                                    )
-        //->decltype(lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {std::move(l2f)}  )
-        {
-            auto constrained = lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {l2f};
-            return
-                [&constrained](auto && ... args) -> int
-                {
-                    return constrained (std::forward<decltype(args)>(args) ... );
-                };
-        }
-
-        template< typename ...BindingName
-                , typename LibToForward
-                , typename QuotedExpression>
-        auto constexpr
         apply_after_simplification  (LibToForward l2f, decltype( "/"_charpack )
                                     , cambda::grouped_t<'[', types_t<BindingName...>>
                                     , cambda::grouped_t<'[', types_t<QuotedExpression>>
