@@ -1514,11 +1514,13 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
 
             F & m_f;
 
+            constexpr
             fix_holder(F& f) : m_f(f)   {}
 
             constexpr auto
             operator() (Args && ... t) const
-            ->decltype(m_f(*this,   std::forward<Args>(t)...)  )
+            //->decltype(m_f(*this,   std::forward<Args>(t)...)  )
+            ->int
             {   return m_f(*this,   std::forward<Args>(t)...); }
         };
 
@@ -1538,9 +1540,12 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
             {
                 F & m_f;
 
-                auto
+                constexpr
+                bar(F& f) : m_f(f) {}
+
+                //constexpr //clang doesn't like this
+                int
                 operator()(fix_holder<bar, D...> const &fh, D && ... x) const
-                -> int
                 {
                     return m_f(fh, std::forward<D>(x) ...);
                 }
