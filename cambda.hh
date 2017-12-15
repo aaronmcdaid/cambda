@@ -1505,11 +1505,25 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
         {
             F & m_f;
 
-            template<typename ... T>
             constexpr auto
-            operator() (T && ... t) const
-            ->decltype(m_f(*this,   std::forward<T>(t) ...)  )
-            {   return m_f(*this,   std::forward<T>(t) ...); }
+            operator() (int t) const
+            ->decltype(m_f(*this,   t)  )
+            {   return m_f(*this,   t); }
+        };
+
+        template< typename F
+                , typename ReturnValue
+                >
+        struct FunctorWithFixedReturnValue
+        {
+            F & m_f;
+            template<typename F_>
+            constexpr ReturnValue
+            operator() (F_ && f, int t) const
+            {
+                return m_f  (   std::forward<F_>(f)
+                            ,   std::forward<decltype(t)>(t)  );
+            }
         };
 
         // fix
@@ -1522,13 +1536,23 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                             , F && f
                             , D && ... d
                             )
-        ->decltype(
-                    std::declval<fix_holder<F> &>() (std::forward<D>(d) ...)
-                )
+        //->decltype( std::declval<fix_holder<F> &>() (std::forward<D>(d) ...))
+        ->decltype(auto)
         {
             (void)l2f;
+            //*
+            auto f_constrained1 =
+                [&f](auto && args, int n) -> int
+                {
+                    return f (std::forward<decltype(args)>(args) , n );
+                }; (void)f_constrained1;
+                //*/
+            //auto f_constrained2 = FunctorWithFixedReturnValue<decltype(f),int>{f}; (void)f_constrained2;
 
-            fix_holder<F> fh{f};
+
+            //fix_holder<F> fh{f};
+            fix_holder<decltype(f_constrained1)> fh{f_constrained1};
+            //fix_holder<decltype(f_constrained2)> fh{f_constrained2};
 
             return fh(std::forward<D>(d) ...);
         }

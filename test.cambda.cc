@@ -125,7 +125,7 @@ int main() {
             auto f =
     R"--(
             (fix
-                    (lambda2
+                    (lambda
                         [rec n]
                         [
                             (if {n < 1}
