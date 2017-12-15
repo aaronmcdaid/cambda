@@ -1491,11 +1491,8 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
             template<typename ... T>
             constexpr auto
             operator() (T && ... t) const
-            -> void
-            {
-                m_f(*this,   std::forward<T>(t) ...);
-                //static_assert(std::is_same<decltype( m_f(*this,   std::forward<T>(t) ...)), int&&>{} ,"");
-            }
+            ->decltype(m_f(*this,   std::forward<T>(t) ...)  )
+            {   return m_f(*this,   std::forward<T>(t) ...); }
         };
 
         // fix
@@ -1508,16 +1505,15 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                             , F && f
                             , D && ... d
                             )
-        -> nil_t
+        ->decltype(
+                    std::declval<fix_holder<F> &>() (std::forward<D>(d) ...)
+                )
         {
             (void)l2f;
-            (void)f;
 
-            const fix_holder<F> fh{f};
+            fix_holder<F> fh{f};
 
-            fh(std::forward<D>(d) ...);
-            //f   (   fh ,   std::forward<D>(d)  );
-            return {};
+            return fh(std::forward<D>(d) ...);
         }
 
 
