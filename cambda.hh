@@ -1539,23 +1539,39 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
         //->decltype( std::declval<fix_holder<F> &>() (std::forward<D>(d) ...))
         ->decltype(auto)
         {
+            struct bar;
+            struct fix_holder;
+
+            struct fix_holder
+            {
+                bar * m_f;
+
+                constexpr
+                fix_holder(bar* f) : m_f(f)   {}
+
+                constexpr int
+                operator() (D && ... t) const
+                //->decltype(m_f(*this,   std::forward<Args>(t)...)  )
+                //->int
+                {   return (*m_f)(*this,   std::forward<D>(t)...); }
+            };
             struct bar
             {
-                F & m_f;
+                F m_f;
 
                 constexpr
                 bar(F& f) : m_f(f) {}
 
                 constexpr //clang doesn't like this
                 int
-                operator()(fix_holder<bar, D...> const &fh, D && ... x) const
+                operator()(fix_holder const &fh, D && ... x) const
                 {
-                    return m_f(fh, std::forward<D>(x) ...);
+                    return (m_f)(fh, std::forward<D>(x) ...);
                 }
             };
 
             bar b{f};
-            fix_holder<bar, D...> fh{b};
+            fix_holder fh{&b};
             return fh(std::forward<D>(d) ...);
         }
 

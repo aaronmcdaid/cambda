@@ -118,7 +118,7 @@ int main() {
     static_assert(product.value == 12 ,"");
 
     struct foo {
-        //constexpr
+        constexpr
             auto static
             bar() {
 #if 1
@@ -137,11 +137,14 @@ int main() {
                     )
     )--"_cambda
         ();
-            std::cout << "fix: " << f << '\n';
 #endif
+            return f;
             }
     };
-    foo::bar();
+    constexpr
+    auto f = foo::bar();
+    static_assert(5040 == f ,"");
+    std::cout << "Fix: " << f << '\n';
 
     constexpr
     auto z =
