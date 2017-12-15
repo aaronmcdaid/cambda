@@ -1539,39 +1539,35 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
         //->decltype( std::declval<fix_holder<F> &>() (std::forward<D>(d) ...))
         ->decltype(auto)
         {
-            struct bar;
-            struct fix_holder;
+            struct bar; // bar must be defined after fix_holder. No idea why, but clang 3.8 breaks otherwise!
 
             struct fix_holder
             {
-                bar * m_f;
+                F & m_f;
 
                 constexpr
-                fix_holder(bar* f) : m_f(f)   {}
+                fix_holder(F& f) : m_f(f)   {}
 
-                constexpr int
-                operator() (D && ... t) const
-                //->decltype(m_f(*this,   std::forward<Args>(t)...)  )
-                //->int
-                {   return (*m_f)(*this,   std::forward<D>(t)...); }
+                constexpr auto
+                operator() (D && ... t)
+                //->decltype(m_b(*this,   std::forward<Args>(t)...)  )
+                ->int
+                {
+                    //return m_f( *this,   std::forward<D>(t)...); // this hangs on old clang (~3.8). Hence the next line uses bar::exec
+                    return bar:: exec(m_f, *this,   std::forward<D>(t)...);
+                }
             };
             struct bar
             {
-                F m_f;
-
-                constexpr
-                bar(F& f) : m_f(f) {}
-
-                constexpr //clang doesn't like this
+                constexpr static
                 int
-                operator()(fix_holder const &fh, D && ... x) const
+                exec(F& f, fix_holder &fh, D && ... x)
                 {
-                    return (m_f)(fh, std::forward<D>(x) ...);
+                    return f(fh, std::forward<D>(x) ...);
                 }
             };
 
-            bar b{f};
-            fix_holder fh{&b};
+            fix_holder fh{f};
             return fh(std::forward<D>(d) ...);
         }
 
