@@ -771,8 +771,8 @@ namespace cambda {
             >
     constexpr auto
     combine_libraries(Lib1 && lib1, Lib2 && lib2)
-    -> library_combiner <   std::remove_reference_t<Lib1>
-                        ,   std::remove_reference_t<Lib2>
+    -> library_combiner <   Lib1
+                        ,   Lib2
                         >
     { return {std::forward<Lib1>(lib1),std::forward<Lib2>(lib2)}; }
 
