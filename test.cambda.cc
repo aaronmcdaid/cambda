@@ -67,6 +67,15 @@ static_assert(56088 == R"--(
                             (* left right) ])
                             )--"_cambda () ,"");
 
+static_assert(17 == R"--(
+                        (begin [
+                            ([x] 5)
+                            (assign x {x * 2})
+                            ([y] 7)
+                            {x + y}
+                            ])
+                            )--"_cambda () ,"");
+
 static_assert(std::is_same<std::integral_constant<int,42>, decltype( "42c"_cambda() )>{}  ,"");
 static_assert(std::is_same<int, decltype( "42"_cambda() )>{}  ,"");
 static_assert(std::is_same<double, decltype( "3.4"_cambda() )>{}  ,"");
