@@ -705,6 +705,25 @@ namespace cambda {
         ->decltype(id{}(this)->lib2. apply_after_simplification(std::forward<T>(t)...)  )
         {   return     (this)->lib2. apply_after_simplification(std::forward<T>(t)...); }
 
+        // ... same as above, but const
+        template< typename ... T
+                , typename id = cambda_utils::id_t
+                , typename std::integral_constant<int, __LINE__> * =nullptr
+                >
+        auto constexpr
+        apply_after_simplification( T && ... t) const
+        ->decltype(id{}(this)->lib1. apply_after_simplification(std::forward<T>(t)...)  )
+        {   return     (this)->lib1. apply_after_simplification(std::forward<T>(t)...); }
+
+        template< typename ... T
+                , typename id = cambda_utils::id_t
+                , typename std::integral_constant<int, __LINE__> * =nullptr
+                >
+        auto constexpr
+        apply_after_simplification(T && ... t) const
+        ->decltype(id{}(this)->lib2. apply_after_simplification(std::forward<T>(t)...)  )
+        {   return     (this)->lib2. apply_after_simplification(std::forward<T>(t)...); }
+
         /* Second, 'get_simple_named_value'
          * Define two helper overloads, one for each sub-library.
          * Then forward the call
@@ -724,6 +743,24 @@ namespace cambda {
                 >
         auto constexpr
         get_simple_named_value( cambda_utils::char_pack<cs...> name)
+        ->decltype(id{}(this)->lib2. get_simple_named_value(name)  )
+        {   return     (this)->lib2. get_simple_named_value(name); }
+        // ... same as above, but const.
+        template< char ... cs
+                , typename id = cambda_utils::id_t
+                , typename std::integral_constant<int, __LINE__> * =nullptr
+                >
+        auto constexpr
+        get_simple_named_value( cambda_utils::char_pack<cs...> name) const
+        ->decltype(id{}(this)->lib1. get_simple_named_value(name)  )
+        {   return     (this)->lib1. get_simple_named_value(name); }
+
+        template< char ... cs
+                , typename id = cambda_utils::id_t
+                , typename std::integral_constant<int, __LINE__> * =nullptr
+                >
+        auto constexpr
+        get_simple_named_value( cambda_utils::char_pack<cs...> name) const
         ->decltype(id{}(this)->lib2. get_simple_named_value(name)  )
         {   return     (this)->lib2. get_simple_named_value(name); }
     };
