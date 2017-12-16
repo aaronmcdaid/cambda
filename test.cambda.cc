@@ -211,7 +211,13 @@ test_while()
 {
     //int x = 10;
     int y = 0;
-    "(while [(< y 100)] [{y = {y + 3}}])"_cambda["y"_binding = y]();
+    R"--(
+        (while
+            [   ([max] 100)
+                (< y max)       ]
+            [   {y = {y + 1}}
+                {y = {y + 2}}   ])
+    )--"_cambda["y"_binding = y]();
     return y;
 }
 static_assert(test_while() == 102 ,"");

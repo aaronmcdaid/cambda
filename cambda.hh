@@ -1131,6 +1131,27 @@ namespace cambda {
         constexpr starter_lib() : ignore(0) {} // a default constructor, just because clang requires them for constexpr objects
 
 
+        /* evaluate_inside_begin
+         * =====================
+         *  This will be used by 'if', 'while' and 'lambda' to allow multi-statements.
+         */
+        template<   typename LibToForward
+                ,   typename ... SeriesOfStatements>
+        auto constexpr
+        evaluate_inside_begin(LibToForward && l2f, types_t<SeriesOfStatements...>)
+        -> decltype(auto)
+        {
+            return
+                cambda::simplify   (
+                        cambda::grouped_t   <   '('
+                                            ,   types_t <   decltype("begin"_charpack)
+                                                        ,   grouped_t<'[', types_t<SeriesOfStatements...>>
+                                                        >
+                                            > {}
+                        ,   std::forward<LibToForward>(l2f));
+        }
+
+
         // range_based_for
         template< typename LibToForward
                 , typename Data
@@ -1527,22 +1548,23 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                     return cambda::simplify (   QuotedExpressionFalse{} ,std::forward<LibToForward>(l2f));
         }
 
-
         /* while
          */
         template< typename LibToForward
-                , typename QuotedExpressionCondition
-                , typename QuotedExpressionBody
+                , typename ... QuotedExpressionCondition
+                , typename ... QuotedExpressionBody
                 >
         auto constexpr
         apply_after_simplification  (LibToForward && l2f, decltype( "while"_charpack )
-                            , cambda::grouped_t<'[', types_t<QuotedExpressionCondition>>
-                            , cambda::grouped_t<'[', types_t<QuotedExpressionBody>>
+                            , cambda::grouped_t<'[', types_t<QuotedExpressionCondition...>>
+                            , cambda::grouped_t<'[', types_t<QuotedExpressionBody...>>
                             )
         ->void
         {
-            while(cambda::simplify (    QuotedExpressionCondition{} ,std::forward<LibToForward>(l2f)))
-                cambda::simplify   (    QuotedExpressionBody{}      ,std::forward<LibToForward>(l2f));
+            while(  evaluate_inside_begin   (   std::forward<LibToForward>(l2f)
+                                            ,   types_t<QuotedExpressionCondition...>{}    ))
+                    evaluate_inside_begin   (   std::forward<LibToForward>(l2f)
+                                            ,   types_t<QuotedExpressionBody...>{}      );
         }
 
 
