@@ -23,7 +23,7 @@ namespace testing_namespace_empty_library {
             ( LibToForward
             , decltype( "+"_charpack )
             , Ti && i
-            , Tj && j)
+            , Tj && j) const
         ->decltype(std::forward<Ti>(i) + std::forward<Tj>(j) )
         {   return std::forward<Ti>(i) + std::forward<Tj>(j); }
     };

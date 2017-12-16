@@ -1099,12 +1099,12 @@ namespace cambda {
 
         auto constexpr
         get_simple_named_value  ( cambda_utils::char_pack<c...> )
-        -> T&
+        ->decltype((m_x))
         { return m_x; }
 
         auto constexpr
         get_simple_named_value  ( cambda_utils::char_pack<c...> ) const
-        -> T const &
+        ->decltype((m_x))
         { return m_x; }
     };
 
