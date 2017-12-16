@@ -1124,6 +1124,7 @@ namespace cambda {
     auto constexpr
     operator,   (   B && beforeComma
                 ,   binded_name_with_valueOrReference<T2, c2...> && afterComma)
+    ->decltype(auto)
     {
         return combine_libraries(std::forward<B>(beforeComma), std::move(afterComma));
     }
