@@ -42,9 +42,9 @@ constexpr auto c = "(* 8 7)"_cambda();       // Multiplication
 constexpr auto d = "{8 * 7}"_cambda();       // If there are two args, use {} instead of () for infix notation
 constexpr auto e = "{ {8 * 7} + {6 * 3} }"_cambda();  // Nested application
 
-//constexpr auto cambda_lambda = "(lambda [x] [{x * x}])"_cambda();
-//constexpr auto squared_cambda = cambda_lambda(15);
-//static_assert(squared_cambda == 225 ,"");
+constexpr auto cambda_lambda = "(lambda [x] [{x * x}])"_cambda();
+constexpr auto squared_cambda = cambda_lambda(15);
+static_assert(squared_cambda == 225 ,"");
 
 
 static_assert(a == 15   ,"");
@@ -117,8 +117,8 @@ int main() {
 
     constexpr auto lambda_from_cambd  = "(lambda [x] [x])"_cambda();
     (void)lambda_from_cambd;
-    //constexpr auto lambda_from_cambda = "(lambda [x y] [{x + y}])"_cambda();
-    //static_assert  (11 == lambda_from_cambda(5,6) ,"");
+    constexpr auto lambda_from_cambda = "(lambda [x y] [{x + y}])"_cambda();
+    static_assert  (11 == lambda_from_cambda(5,6) ,"");
 
     auto product =
     "(mult 3c 4c)"_cambda
