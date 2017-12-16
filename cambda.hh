@@ -668,16 +668,18 @@ namespace cambda {
 
     template< typename Lib1
             , typename Lib2 >
-    struct library_combiner : public Lib1, public Lib2
+    struct library_combiner
     {
+        Lib1 lib1;
+        Lib2 lib2;
 
         template< typename T
                 , typename U
                 >
         constexpr
         library_combiner(T&&t, U&&u)
-            : Lib1(std::forward<T>(t))
-            , Lib2(std::forward<U>(u))
+            : lib1(std::forward<T>(t))
+            , lib2(std::forward<U>(u))
         {}
 
 
@@ -691,8 +693,8 @@ namespace cambda {
                 >
         auto constexpr
         apply_after_simplification( T && ... t)
-        ->decltype(id{}(this)->Lib1::apply_after_simplification(std::forward<T>(t)...)  )
-        {   return     (this)->Lib1::apply_after_simplification(std::forward<T>(t)...); }
+        ->decltype(id{}(this)->lib1. apply_after_simplification(std::forward<T>(t)...)  )
+        {   return     (this)->lib1. apply_after_simplification(std::forward<T>(t)...); }
 
         template< typename ... T
                 , typename id = cambda_utils::id_t
@@ -700,8 +702,8 @@ namespace cambda {
                 >
         auto constexpr
         apply_after_simplification(T && ... t)
-        ->decltype(id{}(this)->Lib2::apply_after_simplification(std::forward<T>(t)...)  )
-        {   return     (this)->Lib2::apply_after_simplification(std::forward<T>(t)...); }
+        ->decltype(id{}(this)->lib2. apply_after_simplification(std::forward<T>(t)...)  )
+        {   return     (this)->lib2. apply_after_simplification(std::forward<T>(t)...); }
 
         /* Second, 'get_simple_named_value'
          * Define two helper overloads, one for each sub-library.
@@ -713,8 +715,8 @@ namespace cambda {
                 >
         auto constexpr
         get_simple_named_value( cambda_utils::char_pack<cs...> name)
-        ->decltype(id{}(this)->Lib1::get_simple_named_value(name)  )
-        {   return     (this)->Lib1::get_simple_named_value(name); }
+        ->decltype(id{}(this)->lib1. get_simple_named_value(name)  )
+        {   return     (this)->lib1. get_simple_named_value(name); }
 
         template< char ... cs
                 , typename id = cambda_utils::id_t
@@ -722,8 +724,8 @@ namespace cambda {
                 >
         auto constexpr
         get_simple_named_value( cambda_utils::char_pack<cs...> name)
-        ->decltype(id{}(this)->Lib2::get_simple_named_value(name)  )
-        {   return     (this)->Lib2::get_simple_named_value(name); }
+        ->decltype(id{}(this)->lib2. get_simple_named_value(name)  )
+        {   return     (this)->lib2. get_simple_named_value(name); }
     };
 
 
@@ -731,9 +733,12 @@ namespace cambda {
             , typename Lib2
             >
     constexpr auto
-    combine_libraries(Lib1 lib1, Lib2 lib2)
-    -> library_combiner<Lib1,Lib2>
-    { return {std::move(lib1),std::move(lib2)}; }
+    combine_libraries(Lib1 && lib1, Lib2 lib2)
+    -> library_combiner<
+                        //std::remove_reference_t<Lib1>
+                        std::decay_t<Lib1>
+                        ,Lib2>
+    { return {std::forward<Lib1>(lib1),std::move(lib2)}; }
 
 
     template< typename Lib1
@@ -1058,6 +1063,11 @@ namespace cambda {
         auto constexpr
         get_simple_named_value  ( cambda_utils::char_pack<c...> )
         -> T&
+        { return m_x; }
+
+        auto constexpr
+        get_simple_named_value  ( cambda_utils::char_pack<c...> ) const
+        -> T const &
         { return m_x; }
     };
 
