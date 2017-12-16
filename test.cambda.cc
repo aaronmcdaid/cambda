@@ -211,8 +211,6 @@ constexpr bool
 test_partition()
 {
         int a[] = {6,2,5,8,3,9,7};
-        auto b = std::begin(a);
-        auto e = std::end  (a);
         R"--(
             (let[
                 swap (lambda [x y] [(let[
@@ -239,8 +237,8 @@ test_partition()
                     )
             ])
         )--"_cambda
-                [   "b"_binding = b
-                ,   "e"_binding = e
+                [   "b"_binding = std::begin(a)
+                ,   "e"_binding = std::end  (a)
                 ]();
         return cambda_utils::equal_array(a, (int[]){2,5,3,6,9,7,8});
 }
