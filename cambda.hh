@@ -1154,7 +1154,7 @@ namespace cambda {
     struct cambda_object_from_the_string_literal
     {
         AST m_ast;
-        Lib   lib; // may be a &-ref
+        Lib lib; // may be a &-ref
 
         template< typename id = cambda_utils:: id_t>
         constexpr auto
