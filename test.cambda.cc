@@ -221,13 +221,14 @@ test_partition()
 {
         int a[] = {6,2,5,8,3,9,7};
         R"--(
-            (let[
-                swap (lambda [x y] [(let[
-                                        tmp (ref2val x)
-                                        i1 {x = y}
-                                        i2 {y = tmp}
-                                        ()
-                                    ])])
+            (begin[
+                ([swap] (lambda [x y] [
+                                        (begin[
+                                            ([tmp] (ref2val x))
+                                            {x = y}
+                                            {y = tmp}
+                                        ])
+                                    ]))
                 (while
                     [{{b != e} && {{b + 1} != e}}]
                     [(if
