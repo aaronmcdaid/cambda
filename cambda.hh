@@ -1318,14 +1318,20 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
 
         template< typename ...BindingName
                 , typename LibToForward
-                , typename QuotedExpression>
+                , typename QuotedExpression
+                , class...
+                , typename Lnonref = std::remove_reference_t<LibToForward>
+                >
         auto constexpr
-        apply_after_simplification  (LibToForward & l2f, decltype( "lambda"_charpack )
+        apply_after_simplification  (LibToForward && l2f, decltype( "lambda"_charpack )
                                     , cambda::grouped_t<'[', types_t<BindingName...>>
                                     , cambda::grouped_t<'[', types_t<QuotedExpression>>
                                     ) const
-        ->         lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...>
-        {   return lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {l2f}; }
+        ->         lambda_capturing_struct<Lnonref, QuotedExpression, BindingName...>
+        {
+            static_assert( std::is_reference<LibToForward>{} ,"");
+            return lambda_capturing_struct<Lnonref, QuotedExpression, BindingName...> {l2f};
+        }
 
 
         template< typename T
