@@ -1496,56 +1496,58 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
 
         // 'if' with true
         template< typename LibToForward
-                , typename QuotedExpressionTrue
-                , typename QuotedExpressionFalse
+                , typename ... QuotedExpressionTrue
+                , typename ... QuotedExpressionFalse
                 >
         auto constexpr
         apply_after_simplification  (LibToForward && l2f, decltype( "if"_charpack )
                             , std::true_type
-                            , cambda::grouped_t<'[', types_t<QuotedExpressionTrue>>
-                            , cambda::grouped_t<'[', types_t<QuotedExpressionFalse>>
+                            , cambda::grouped_t<'[', types_t<QuotedExpressionTrue...>>
+                            , cambda::grouped_t<'[', types_t<QuotedExpressionFalse...>>
                             )
         ->decltype(auto)
         {
-                return cambda::simplify
-                        (   QuotedExpressionTrue{} ,std::forward<LibToForward>(l2f));
+                return
+                    evaluate_inside_begin   (   std::forward<LibToForward>(l2f)
+                                            ,   types_t<QuotedExpressionTrue...>{}      );
         }
 
         // 'if' with false
         template< typename LibToForward
-                , typename QuotedExpressionTrue
-                , typename QuotedExpressionFalse
+                , typename ... QuotedExpressionTrue
+                , typename ... QuotedExpressionFalse
                 >
         auto constexpr
         apply_after_simplification  (LibToForward && l2f, decltype( "if"_charpack )
                             , std::false_type
-                            , cambda::grouped_t<'[', types_t<QuotedExpressionTrue>>
-                            , cambda::grouped_t<'[', types_t<QuotedExpressionFalse>>
+                            , cambda::grouped_t<'[', types_t<QuotedExpressionTrue...>>
+                            , cambda::grouped_t<'[', types_t<QuotedExpressionFalse...>>
                             )
         ->decltype(auto)
         {
-                return cambda::simplify
-                        (   QuotedExpressionFalse{} ,std::forward<LibToForward>(l2f));
+                return
+                    evaluate_inside_begin   (   std::forward<LibToForward>(l2f)
+                                            ,   types_t<QuotedExpressionFalse...>{}      );
         }
 
         // 'if' with bool
         template< typename LibToForward
-                , typename QuotedExpressionTrue
-                , typename QuotedExpressionFalse
+                , typename ... QuotedExpressionTrue
+                , typename ... QuotedExpressionFalse
                 >
         auto constexpr
         apply_after_simplification  (LibToForward && l2f, decltype( "if"_charpack )
                             , bool b
-                            , cambda::grouped_t<'[', types_t<QuotedExpressionTrue>>
-                            , cambda::grouped_t<'[', types_t<QuotedExpressionFalse>>
+                            , cambda::grouped_t<'[', types_t<QuotedExpressionTrue...>>
+                            , cambda::grouped_t<'[', types_t<QuotedExpressionFalse...>>
                             )
-        ->decltype(b    ? cambda::simplify (   QuotedExpressionTrue{}  ,std::forward<LibToForward>(l2f))
-                        : cambda::simplify (   QuotedExpressionFalse{} ,std::forward<LibToForward>(l2f)) )
+        ->decltype(b    ?   evaluate_inside_begin    (   std::forward<LibToForward>(l2f) ,   types_t<QuotedExpressionTrue...>{}      )
+                        :   evaluate_inside_begin    (   std::forward<LibToForward>(l2f) ,   types_t<QuotedExpressionFalse...>{}     ))
         {
                 if(b)
-                    return cambda::simplify (   QuotedExpressionTrue{}  ,std::forward<LibToForward>(l2f));
+                    return evaluate_inside_begin    (   std::forward<LibToForward>(l2f) ,   types_t<QuotedExpressionTrue...>{}      );
                 else
-                    return cambda::simplify (   QuotedExpressionFalse{} ,std::forward<LibToForward>(l2f));
+                    return evaluate_inside_begin    (   std::forward<LibToForward>(l2f) ,   types_t<QuotedExpressionFalse...>{}      );
         }
 
         /* while
