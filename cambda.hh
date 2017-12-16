@@ -676,6 +676,14 @@ namespace cambda {
         Lib1 lib1;
         Lib2 lib2;
 
+        constexpr auto getlib1()    const   -> decltype(auto) { return std::forward<std::add_const_t<Lib1>>(lib1); }
+        constexpr auto getlib1()            -> decltype(auto) { return std::forward<                 Lib1 >(lib1); }
+        constexpr auto getlib2()    const   -> decltype(auto) { return std::forward<std::add_const_t<Lib2>>(lib2); }
+        constexpr auto getlib2()            -> decltype(auto) { return std::forward<                 Lib2 >(lib2); }
+
+        static_assert(!std::is_rvalue_reference<Lib1>{} ,"");
+        static_assert(!std::is_rvalue_reference<Lib2>{} ,"");
+
         template< typename T
                 , typename U
                 >
