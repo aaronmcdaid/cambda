@@ -1311,7 +1311,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
             LibToForward m_lib; // may be an &-ref  (in fact, in tests so far, it always is
             // in fact, we should probably treat m_lib as an &-ref always, even if
             // it isn't, in order to allow multi-call lambdas
-            static_assert( std::is_reference<LibToForward>{} ,"");
+            //static_assert( std::is_reference<LibToForward>{} ,"");
 
             template< typename ...T>
             constexpr auto
