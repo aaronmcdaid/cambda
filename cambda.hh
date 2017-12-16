@@ -1142,7 +1142,7 @@ namespace cambda {
     struct cambda_object_from_the_string_literal
     {
         AST m_ast;
-        Lib lib;
+        Lib   lib; // may be a &-ref
 
         template< typename id = cambda_utils:: id_t>
         constexpr auto
@@ -1158,10 +1158,10 @@ namespace cambda {
         -> decltype(auto)
         {
             return cambda_object_from_the_string_literal<AST, decltype(
-                        combine_libraries(std::move(lib), std::forward<Binding>(binding_to_insert))
+                        combine_libraries(std::forward<Lib>(lib), std::forward<Binding>(binding_to_insert))
                     )>
             {m_ast
-                        , combine_libraries(std::move(lib), std::forward<Binding>(binding_to_insert))
+                        , combine_libraries(std::forward<Lib>(lib), std::forward<Binding>(binding_to_insert))
             };
             //return *this;
         }
@@ -1170,7 +1170,7 @@ namespace cambda {
     auto constexpr
     make_cambda_object_from_the_string_literal(AST & ast, Lib & lib)
     -> cambda_object_from_the_string_literal<AST
-                                            ,Lib
+                                            ,Lib&
                                             >
     { return {ast, lib}; }
 
