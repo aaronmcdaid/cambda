@@ -666,6 +666,9 @@ namespace cambda {
     ->decltype(std::forward<Lib>(lib).apply_after_simplification(std::forward<Lib>(lib), name, std::forward<T>(t)...)  )
     {   return std::forward<Lib>(lib).apply_after_simplification(std::forward<Lib>(lib), name, std::forward<T>(t)...); }
 
+    static_assert(std::is_same<int const,   std::add_const<int>::type     >{} ,"");
+    static_assert(std::is_same<int &    ,   std::add_const<int&>::type     >{} ,"");
+
     template< typename Lib1
             , typename Lib2 >
     struct library_combiner
