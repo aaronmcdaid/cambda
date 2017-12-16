@@ -1165,7 +1165,7 @@ namespace cambda {
         -> int
         {
             int count = 0;
-            for(auto && x : data)
+            for(auto && x : std::forward<Data>(data))
                 std::forward<Func>(func) (std::forward<decltype(x)>(x));
             return count;
         }
