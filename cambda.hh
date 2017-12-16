@@ -1008,13 +1008,13 @@ namespace cambda {
         struct gather_args_later
         {
             Name m_f;
-            L m_lib;
+            L && m_lib; // L may, or may not, be &-
 
             template<typename ...T>
             auto constexpr
-            operator()  ( T && ...t) &&
-            ->decltype( cambda::apply_after_simplification(m_lib, m_f , std::forward<T>(t) ... )  )
-            {   return  cambda::apply_after_simplification(m_lib, m_f , std::forward<T>(t) ... ); }
+            operator()  ( T && ...t) && // && means, I think, we are entitled to forward 'm_lib' out
+            ->decltype( cambda::apply_after_simplification(std::forward<L>(m_lib), m_f , std::forward<T>(t) ... )  )
+            {   return  cambda::apply_after_simplification(std::forward<L>(m_lib), m_f , std::forward<T>(t) ... ); }
         };
 
         template<typename L
