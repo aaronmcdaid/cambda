@@ -1361,7 +1361,6 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                                     ) const
         ->         lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...>
         {
-            static_assert( std::is_reference<LibToForward>{} ,"");
             return lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {std::forward<LibToForward>(l2f)};
         }
 
