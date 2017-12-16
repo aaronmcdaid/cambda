@@ -1296,21 +1296,22 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                 , typename ...BindingName>
         struct lambda_capturing_struct
         {
-            LibToForward m_lib;
+            LibToForward m_lib; // may be an &-ref  (in fact, in tests so far, it always is
+            static_assert( std::is_reference<LibToForward>{} ,"");
 
             template< typename ...T>
             constexpr auto
             operator() (T && ... x) const
             ->decltype(cambda::simplify
                         (   QuotedExpression{}
-                        , cambda::combine_libraries   (   m_lib
+                        , cambda::combine_libraries   (   std::forward<LibToForward>(m_lib)
                                                 ,   char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...
                                                 )))
             {
                 static_assert(sizeof...(x) == sizeof...(BindingName) ,"");
                 return cambda::simplify
                         (   QuotedExpression{}
-                        , cambda::combine_libraries   (   m_lib
+                        , cambda::combine_libraries   (   std::forward<LibToForward>(m_lib)
                                                 ,   char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...
                                                 ));
             };
@@ -1327,10 +1328,10 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                                     , cambda::grouped_t<'[', types_t<BindingName...>>
                                     , cambda::grouped_t<'[', types_t<QuotedExpression>>
                                     ) const
-        ->         lambda_capturing_struct<Lnonref, QuotedExpression, BindingName...>
+        ->         lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...>
         {
             static_assert( std::is_reference<LibToForward>{} ,"");
-            return lambda_capturing_struct<Lnonref, QuotedExpression, BindingName...> {l2f};
+            return lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {l2f};
         }
 
 
