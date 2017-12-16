@@ -1057,7 +1057,7 @@ namespace cambda {
 
         auto constexpr
         get_simple_named_value  ( cambda_utils::char_pack<c...> )
-        -> T
+        -> T&
         { return m_x; }
     };
 
