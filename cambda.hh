@@ -1297,6 +1297,8 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
         struct lambda_capturing_struct
         {
             LibToForward m_lib; // may be an &-ref  (in fact, in tests so far, it always is
+            // in fact, we should probably treat m_lib as an &-ref always, even if
+            // it isn't, in order to allow multi-call lambdas
             static_assert( std::is_reference<LibToForward>{} ,"");
 
             template< typename ...T>
@@ -1304,14 +1306,14 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
             operator() (T && ... x) const
             ->decltype(cambda::simplify
                         (   QuotedExpression{}
-                        , cambda::combine_libraries   (   std::forward<LibToForward>(m_lib)
+                        , cambda::combine_libraries   (   m_lib
                                                 ,   char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...
                                                 )))
             {
                 static_assert(sizeof...(x) == sizeof...(BindingName) ,"");
                 return cambda::simplify
                         (   QuotedExpression{}
-                        , cambda::combine_libraries   (   std::forward<LibToForward>(m_lib)
+                        , cambda::combine_libraries   (   m_lib
                                                 ,   char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...
                                                 ));
             };
@@ -1331,7 +1333,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
         ->         lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...>
         {
             static_assert( std::is_reference<LibToForward>{} ,"");
-            return lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {l2f};
+            return lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {std::forward<LibToForward>(l2f)};
         }
 
 
