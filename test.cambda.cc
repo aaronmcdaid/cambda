@@ -42,10 +42,28 @@ constexpr auto c = "(* 8 7)"_cambda();       // Multiplication
 constexpr auto d = "{8 * 7}"_cambda();       // If there are two args, use {} instead of () for infix notation
 constexpr auto e = "{ {8 * 7} + {6 * 3} }"_cambda();  // Nested application
 
+#if 1
 constexpr auto cambda_lambda = "(lambda [x] [{x * x}])"_cambda();
 constexpr auto squared_cambda = cambda_lambda(15);
 static_assert(squared_cambda == 225 ,"");
 
+auto constexpr
+test_lambda_with_binding()
+{
+    int y = 0;
+    (void)y;
+    auto cambda_lambda_bound = "(lambda [x a] [225])"_cambda
+        ["w"_binding = y
+        ,"y"_binding = y
+        ,"z"_binding = y]
+        ()
+        ;
+    //cambda_lambda_bound.lkjsfd();
+    auto res = cambda_lambda_bound(15, 5);
+    return res;
+}
+static_assert(test_lambda_with_binding() == 225 ,"");
+#endif
 
 static_assert(a == 15   ,"");
 static_assert(b == 15   ,"");
@@ -117,8 +135,10 @@ int main() {
 
     constexpr auto lambda_from_cambd  = "(lambda [x] [x])"_cambda();
     (void)lambda_from_cambd;
+#if 1
     constexpr auto lambda_from_cambda = "(lambda [x y] [{x + y}])"_cambda();
     static_assert  (11 == lambda_from_cambda(5,6) ,"");
+#endif
 
     auto product =
     "(mult 3c 4c)"_cambda
@@ -126,11 +146,11 @@ int main() {
         ();
     static_assert(product.value == 12 ,"");
 
+#if 1
     struct foo {
         constexpr
             auto static
             bar() {
-#if 1
             auto f =
     R"--(
             (fix    (typeof 0)
@@ -146,7 +166,6 @@ int main() {
                     )
     )--"_cambda
         ();
-#endif
             return f;
             }
     };
@@ -154,6 +173,7 @@ int main() {
     auto f = foo::bar();
     static_assert(5040 == f ,"");
     std::cout << "Fix: " << f << '\n';
+#endif
 
     constexpr
     auto z =
@@ -235,6 +255,7 @@ test_while()
 }
 static_assert(test_while() == 102 ,"");
 
+#if 1
 constexpr bool
 test_partition()
 {
@@ -273,3 +294,4 @@ test_partition()
 }
 
 static_assert(test_partition() ,"");
+#endif
