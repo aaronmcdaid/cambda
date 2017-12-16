@@ -1150,16 +1150,6 @@ namespace cambda {
         }
 
 
-        // id :: a -> a
-        template<typename T
-                , typename LibToForward
-                >
-        auto constexpr
-        apply_after_simplification  (LibToForward &&, decltype( "id"_charpack )
-                            , T&& t)
-        -> T
-        { return std::forward<T>(t); }
-
         // typeof
         template<typename T
                 , typename LibToForward
@@ -1218,6 +1208,10 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
 
 
 
+        /* length
+         * ======
+         *  The length of a constant-expression string literal
+         */
         template< typename LibToForward
                 , char ...c>
         auto constexpr
