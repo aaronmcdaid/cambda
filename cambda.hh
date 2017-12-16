@@ -1161,7 +1161,7 @@ namespace cambda {
         operator() () &&
         -> decltype(auto)
         {
-            return ::cambda:: simplify(     m_ast , lib);
+            return ::cambda:: simplify(     m_ast , std::forward<Lib> (lib));
         }
 
         template<typename Binding>
