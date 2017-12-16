@@ -115,10 +115,8 @@ int main() {
 
     std:: cout << "x = " << x << " should be 1234" << '\n';
 
-    auto lambda_from_cpp = [](auto x, auto y) { return x+y; }; // cannot be made constexpr
     constexpr auto lambda_from_cambda = "(lambda [x y] [{x + y}])"_cambda();
-    std::cout << lambda_from_cpp(5,6) << " == " << lambda_from_cambda(5,6) << '\n';
-    //static_assert(11 == lambda_from_cpp(5,6)    ,"");
+    std::cout << lambda_from_cambda(5,6) << '\n';
     static_assert  (11 == lambda_from_cambda(5,6) ,"");
 
     auto product =
