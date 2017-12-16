@@ -1276,7 +1276,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                                     , cambda::grouped_t<'[', types_t<BindingName...>>
                                     , cambda::grouped_t<'[', types_t<QuotedExpression>>
                                     )
-        ->decltype(lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {std::move(l2f)}  )
+        ->         lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...>
         {   return lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {std::move(l2f)}; }
 
         template< typename ...BindingName
@@ -1287,7 +1287,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                                     , cambda::grouped_t<'[', types_t<BindingName...>>
                                     , cambda::grouped_t<'[', types_t<QuotedExpression>>
                                     )
-        ->decltype(lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {std::move(l2f)}  )
+        ->         lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...>
         {   return lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {std::move(l2f)}; }
 
 

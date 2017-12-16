@@ -195,16 +195,30 @@ test_ifNonConstant_with_side_effects()
 static_assert(test_ifNonConstant_with_side_effects() == 503 ,"");
 
 
+#if 1
 constexpr auto static
 test_range_based_for()
 {
         int test_data[] {5,6,7};
-        "(range_based_for test_data (lambda [r] [(assign r {r * r})]))"_cambda
+        R"--(
+            (range_based_for
+                test_data
+                (lambda
+                    [r]
+                    [
+                        (begin[
+                        (assign r {r * r})
+                        ])
+                    ]
+                )
+            )
+            )--"_cambda
             ["test_data"_binding = test_data]
             ();
         return test_data[0]+test_data[1]+test_data[2];
 }
 static_assert( test_range_based_for() == 5*5 + 6*6 + 7*7 ,"");
+#endif
 
 constexpr auto static
 test_while()
