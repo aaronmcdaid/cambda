@@ -1137,7 +1137,7 @@ namespace cambda {
          */
         template<   typename LibToForward
                 ,   typename ... SeriesOfStatements>
-        auto constexpr
+        auto constexpr static
         evaluate_inside_begin(LibToForward && l2f, types_t<SeriesOfStatements...>)
         -> decltype(auto)
         {
