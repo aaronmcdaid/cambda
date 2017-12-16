@@ -1112,7 +1112,7 @@ namespace cambda {
             , char ...c2 >
     auto constexpr
     operator,   (   B && beforeComma
-                ,   binded_name_with_valueOrReference<T2, c2...> afterComma)
+                ,   binded_name_with_valueOrReference<T2, c2...> && afterComma)
     {
         return combine_libraries(std::forward<B>(beforeComma), std::move(afterComma));
     }
@@ -1168,7 +1168,7 @@ namespace cambda {
     };
     template<typename AST, typename Lib>
     auto constexpr
-    make_cambda_object_from_the_string_literal(AST & ast, Lib lib)
+    make_cambda_object_from_the_string_literal(AST & ast, Lib & lib)
     -> cambda_object_from_the_string_literal<AST
                                             ,Lib
                                             >
@@ -1320,12 +1320,12 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                 , typename LibToForward
                 , typename QuotedExpression>
         auto constexpr
-        apply_after_simplification  (LibToForward l2f, decltype( "lambda"_charpack )
+        apply_after_simplification  (LibToForward & l2f, decltype( "lambda"_charpack )
                                     , cambda::grouped_t<'[', types_t<BindingName...>>
                                     , cambda::grouped_t<'[', types_t<QuotedExpression>>
                                     ) const
         ->         lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...>
-        {   return lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {std::move(l2f)}; }
+        {   return lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {l2f}; }
 
 
         template< typename T
