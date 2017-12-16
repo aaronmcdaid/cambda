@@ -1647,12 +1647,13 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
         int ignore;
         constexpr empty() : ignore(0) {}
     };
+    constexpr empty empty_v;
     template<typename T, T ... chars>
     constexpr auto
     operator"" _cambda_empty_library ()
     {
         auto ast = parse_ast(cambda_utils:: char_pack<chars...>{});
-        return ::cambda::make_cambda_object_from_the_string_literal(ast, empty{});
+        return ::cambda::make_cambda_object_from_the_string_literal(ast, empty_v);
     }
 
 }
