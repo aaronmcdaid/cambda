@@ -1327,17 +1327,6 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
         ->         lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...>
         {   return lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {std::move(l2f)}; }
 
-        template< typename ...BindingName
-                , typename LibToForward
-                , typename QuotedExpression>
-        auto constexpr
-        apply_after_simplification  (LibToForward l2f, decltype( "/"_charpack )
-                                    , cambda::grouped_t<'[', types_t<BindingName...>>
-                                    , cambda::grouped_t<'[', types_t<QuotedExpression>>
-                                    ) const
-        ->         lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...>
-        {   return lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {std::move(l2f)}; }
-
 
         template< typename T
                 , typename LibToForward
