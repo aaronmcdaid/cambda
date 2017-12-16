@@ -1158,7 +1158,7 @@ namespace cambda {
 
         template< typename id = cambda_utils:: id_t>
         constexpr auto
-        operator() ()
+        operator() () &&
         -> decltype(auto)
         {
             return ::cambda:: simplify(     m_ast , lib);
@@ -1315,7 +1315,24 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
 
             template< typename ...T>
             constexpr auto
-            operator() (T && ... x) const
+            operator() (T && ... x) &
+            ->decltype(cambda::simplify
+                        (   QuotedExpression{}
+                        , cambda::combine_libraries   (   m_lib
+                                                ,   char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...
+                                                )))
+            {
+                static_assert(sizeof...(x) == sizeof...(BindingName) ,"");
+                return cambda::simplify
+                        (   QuotedExpression{}
+                        , cambda::combine_libraries   (   m_lib
+                                                ,   char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...
+                                                ));
+            };
+
+            template< typename ...T>
+            constexpr auto
+            operator() (T && ... x) const &
             ->decltype(cambda::simplify
                         (   QuotedExpression{}
                         , cambda::combine_libraries   (   m_lib
