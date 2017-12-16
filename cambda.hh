@@ -1387,7 +1387,10 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
         apply_after_simplification  (LibToForward && lib, decltype( "begin"_charpack )
                             , cambda::grouped_t<'[', types_t<SingleOne>>
                             )
-        ->decltype(auto)
+        ->decltype(    cambda::simplify
+                        (   SingleOne{}
+                        ,   std::forward<LibToForward>(lib)
+                        ))
         {
                 return cambda::simplify
                         (   SingleOne{}
