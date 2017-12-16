@@ -1241,6 +1241,16 @@ namespace cambda {
         -> type_t<T>
         { return {}; }
 
+        // id
+        template<typename T
+                , typename LibToForward
+                >
+        auto constexpr
+        apply_after_simplification  (LibToForward &&, decltype( "id"_charpack )
+                            , T&& t) const
+        -> T // must be T. Not T&&, not decltype(std::forward<T>(t)). Otherwise, clang notices lifetimes have expired
+        { return std::forward<T>(t); }
+
         // ref2val
         template<typename T
                 , typename LibToForward
