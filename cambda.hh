@@ -1484,58 +1484,6 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
         /*
          * 'begin'
          */
-
-        // this next overload is to allow let-style bindings in side 'begin'
-        template< typename LibToForward
-                , typename BindingName
-                , typename BindingExpression
-                , typename B
-                , typename ... C
-                , typename TypeOfTheBoundValue_AsLvalue = std::decay_t< decltype( cambda::simplify(BindingExpression{}, std::declval<LibToForward>()) ) > &
-                >
-        auto constexpr
-        begin_priority_overload  (LibToForward && lib
-                            ,   cambda::grouped_t
-                                    <   '['
-                                    ,   types_t
-                                            <   grouped_t
-                                                    <   '('
-                                                    , types_t
-                                                        <   grouped_t<'[',types_t<>> // the empty [] that introduces a new binding
-                                                        ,   grouped_t
-                                                                <   '['
-                                                                ,   types_t<BindingName>
-                                                                >
-                                                        ,
-                                                            BindingExpression
-                                                        >
-                                                     >
-                                                , B, C...>>
-                            ) const
-        ->decltype(auto)
-        {
-            decltype(auto) // not-an r-ref. May be l-ref though
-                bound_value = cambda::simplify(BindingExpression{}, std::forward<LibToForward>(lib));
-            static_assert(std::is_same
-                            <   decltype(bound_value)
-                            ,   decltype(cambda::simplify(BindingExpression{}, std::forward<LibToForward>(lib)))    >{} ,"Argh, what does decltype(auto) do on vars?");
-            static_assert(!std::is_rvalue_reference<decltype(bound_value)>{} ,""); // TODO: this is probably too strict
-            static_assert(std::is_same<TypeOfTheBoundValue_AsLvalue, decltype((bound_value))>{} ,"");
-            // Note: we treat bound_value as an lvalue from here on, and allow it to be
-            // taken as l-reference. This means that 'bound_value' is the storage,
-            // assuming storage is required.
-
-            return cambda::simplify
-                        (   cambda::grouped_t<'('
-                                    , types_t< decltype("begin"_charpack)
-                                    , cambda::grouped_t<'[', types_t<
-                                                    B, C...
-                                             >>>
-                                    >{}
-                        ,   cambda::combine_libraries   (   std::forward<LibToForward>(lib)
-                                                        ,   char_pack__to__binding_name(BindingName{}) = bound_value)
-                        );
-        }
         template< typename LibToForward
                 , typename SingleOne
                 >
@@ -1556,22 +1504,45 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
         }
 
         template< typename LibToForward
-                , typename A
+                , typename BindingName
+                , typename BindingExpression
                 , typename B // need to check if this is grouped_t<'(', ...>
                 , typename ... C
                 , std::enable_if_t<cambda:: is_the_special_block_command_for_bindings(
-                            cambda::grouped_t<'[', types_t<A, B, C...>> {}
+                            cambda::grouped_t<'[', types_t<grouped_t<'(',types_t<grouped_t<'[',types_t<>>, grouped_t<'[',types_t<BindingName>>, BindingExpression>>, B, C...>> {}
                         ) . value>* = nullptr
                 >
         auto constexpr
         apply_after_simplification  (LibToForward && lib, decltype( "begin"_charpack )
-                            , cambda::grouped_t<'[', types_t<A, B, C...>> code
+                            , cambda::grouped_t<'[', types_t<grouped_t<'(',types_t<grouped_t<'[',types_t<>>, grouped_t<'[',types_t<BindingName>>, BindingExpression>>, B, C...>> code
                             ) const
         ->decltype(auto)
         {
-            constexpr bool is_special_command = cambda:: is_the_special_block_command_for_bindings(code) . value;
-            static_assert( is_special_command ,"");
-            return this->begin_priority_overload(std::forward<LibToForward>(lib) , code);
+            static_assert( cambda:: is_the_special_block_command_for_bindings(code) . value ,"");
+
+            decltype(auto) // not-an r-ref. May be l-ref though
+                bound_value = cambda::simplify(BindingExpression{}, std::forward<LibToForward>(lib));
+            static_assert(std::is_same
+                            <   decltype(bound_value)
+                            ,   decltype(cambda::simplify(BindingExpression{}, std::forward<LibToForward>(lib)))    >{} ,"Argh, what does decltype(auto) do on vars?");
+            static_assert(!std::is_rvalue_reference<decltype(bound_value)>{} ,""); // TODO: this is probably too strict
+                //, typename TypeOfTheBoundValue_AsLvalue = std::decay_t< decltype( cambda::simplify(BindingExpression{}, std::declval<LibToForward>()) ) > &
+            //static_assert(std::is_same<TypeOfTheBoundValue_AsLvalue, decltype((bound_value))>{} ,"");
+
+            // Note: we treat bound_value as an lvalue from here on, and allow it to be
+            // taken as l-reference. This means that 'bound_value' is the storage,
+            // assuming storage is required.
+
+            return cambda::simplify
+                        (   cambda::grouped_t<'('
+                                    , types_t< decltype("begin"_charpack)
+                                    , cambda::grouped_t<'[', types_t<
+                                                    B, C...
+                                             >>>
+                                    >{}
+                        ,   cambda::combine_libraries   (   std::forward<LibToForward>(lib)
+                                                        ,   char_pack__to__binding_name(BindingName{}) = bound_value)
+                        );
         }
 
         template< typename LibToForward
