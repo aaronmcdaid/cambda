@@ -1484,44 +1484,6 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
         /*
          * 'begin'
          */
-        template< typename LibToForward
-                , typename A
-                >
-        auto constexpr
-        begin_priority_overload  (cambda_utils::priority_tag<1>, LibToForward && lib
-                            , cambda::grouped_t<'[', types_t<A>>
-                            ) const
-        ->decltype(auto)
-        {
-            return
-                cambda::simplify
-                        (   A{}
-                        ,   std::forward<LibToForward>(lib)
-                        );
-        }
-
-        template< typename LibToForward
-                , typename A
-                , typename B
-                , typename ... C
-                >
-        auto constexpr
-        begin_priority_overload  (cambda_utils::priority_tag<1>, LibToForward && lib
-                            , cambda::grouped_t<'[', types_t<A, B, C...>>
-                            ) const
-        ->decltype(auto)
-        {
-                cambda::simplify
-                        (   A{}
-                        ,   std::forward<LibToForward>(lib)
-                        );
-                return
-                    cambda::apply_after_simplification(
-                        std::forward<LibToForward>(lib)
-                        , "begin"_charpack
-                        , cambda::grouped_t<'[', types_t<B, C...>>{}
-                        );
-        }
 
         // this next overload is to allow let-style bindings in side 'begin'
         template< typename LibToForward
@@ -1532,7 +1494,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                 , typename TypeOfTheBoundValue_AsLvalue = std::decay_t< decltype( cambda::simplify(BindingExpression{}, std::declval<LibToForward>()) ) > &
                 >
         auto constexpr
-        begin_priority_overload  (cambda_utils::priority_tag<2>, LibToForward && lib
+        begin_priority_overload  (LibToForward && lib
                             ,   cambda::grouped_t
                                     <   '['
                                     ,   types_t
@@ -1581,17 +1543,16 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
         apply_after_simplification  (LibToForward && lib, decltype( "begin"_charpack )
                             , cambda::grouped_t<'[', types_t<SingleOne>> code
                             ) const
-        ->decltype(    cambda::simplify
-                        (   SingleOne{}
-                        ,   std::forward<LibToForward>(lib)
-                        ))
+        ->decltype( cambda::simplify
+                    (   SingleOne{}
+                    ,   std::forward<LibToForward>(lib)))
         {
             constexpr bool is_special_command = cambda:: is_the_special_block_command_for_bindings(code) . value;
             static_assert(!is_special_command ,""); // (should) never be true - we can't end a begin on a binding
-            return this->begin_priority_overload( cambda_utils::priority_tag<9>{}
-                        , std::forward<LibToForward>(lib)
-                        , code
-                        );
+            return  cambda::simplify
+                    (   SingleOne{}
+                    ,   std::forward<LibToForward>(lib)
+                    );
         }
 
         template< typename LibToForward
@@ -1610,10 +1571,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
         {
             constexpr bool is_special_command = cambda:: is_the_special_block_command_for_bindings(code) . value;
             static_assert( is_special_command ,"");
-            return this->begin_priority_overload( cambda_utils::priority_tag<9>{}
-                        , std::forward<LibToForward>(lib)
-                        , code
-                        );
+            return this->begin_priority_overload(std::forward<LibToForward>(lib) , code);
         }
 
         template< typename LibToForward
@@ -1633,10 +1591,17 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
             constexpr bool is_special_command = cambda:: is_the_special_block_command_for_bindings(code) . value;
             (void)is_special_command;
             static_assert(!is_special_command ,"");
-            return this->begin_priority_overload( cambda_utils::priority_tag<9>{}
-                        , std::forward<LibToForward>(lib)
-                        , code
-                        );
+
+            cambda::simplify
+                    (   A{}
+                    ,   std::forward<LibToForward>(lib)
+                    );
+            return
+                cambda::apply_after_simplification(
+                    std::forward<LibToForward>(lib)
+                    , "begin"_charpack
+                    , cambda::grouped_t<'[', types_t<B, C...>>{}
+                    );
         }
 
 
