@@ -555,13 +555,6 @@ namespace cambda {
         return parse_many_things<types_t<T...>> {};
     }
 
-    template<typename T>
-    struct should_be_just_one_term;
-
-    template<typename T>
-    struct should_be_just_one_term< types_t<T> >
-    { using single_type = T; };
-
     template<typename E>
     constexpr static size_t
     count_the_terms(E e)
@@ -1151,65 +1144,7 @@ namespace cambda {
     }
 
     template< typename CodeType>
-    struct multi_statement_execution
-    {
-    };
-
-    template<typename AST, typename Lib>
-    struct cambda_object_from_the_string_literal
-    {
-        AST m_ast;
-        Lib lib; // may be a &-ref
-
-        template< typename id = cambda_utils:: id_t>
-        constexpr auto
-        operator() () &&
-        -> decltype(auto)
-        {
-            return ::cambda:: multi_statement_execution<decltype(m_ast)> :: eval( std::forward<Lib> (lib));
-        }
-
-        template<typename Binding>
-        constexpr auto
-        operator[] (Binding && binding_to_insert) && // the '&&' is important, allows us to 'move' from this->lib
-        -> decltype(auto)
-        {
-            return cambda_object_from_the_string_literal<AST, decltype(
-                        combine_libraries(std::forward<Lib>(lib), std::forward<Binding>(binding_to_insert))
-                    )>
-            {m_ast
-                        , combine_libraries(std::forward<Lib>(lib), std::forward<Binding>(binding_to_insert))
-            };
-            //return *this;
-        }
-    };
-    template<typename AST, typename Lib>
-    auto constexpr
-    make_cambda_object_from_the_string_literal(AST & ast, Lib & lib)
-    -> cambda_object_from_the_string_literal<AST
-                                            ,Lib&
-                                            >
-    { return {ast, lib}; }
-
-    namespace detail {
-        template<typename ...T>
-        auto static constexpr
-        is_the_special_block_command_for_bindings(cambda_utils::priority_tag<1>, grouped_t<'[', types_t<T...>>)
-        -> std::false_type
-        { return {}; }
-
-        template<typename ...T, typename ...U>
-        auto static constexpr
-        is_the_special_block_command_for_bindings(cambda_utils::priority_tag<2>, grouped_t<'[', types_t<grouped_t<'(',types_t<grouped_t<'[', types_t<>>, T...>>, U...>>)
-        -> std::true_type
-        { return {}; }
-    }
-
-    template<typename T>
-    auto static constexpr
-    is_the_special_block_command_for_bindings(T t)
-    ->decltype(auto)
-    { return detail:: is_the_special_block_command_for_bindings(cambda_utils::priority_tag<9>{}, t); }
+    struct multi_statement_execution;
 
     template< typename SingleOne >
     struct multi_statement_execution< types_t<SingleOne> >
@@ -1228,8 +1163,6 @@ namespace cambda {
             >
     struct multi_statement_execution< types_t<A, B...>>
     {
-        static_assert(!cambda:: is_the_special_block_command_for_bindings( cambda::grouped_t<'[', types_t<A, B...>> {}) . value ,"");
-
         template< typename LibToForward >
         auto constexpr static
         eval  (LibToForward && lib)
@@ -1276,25 +1209,42 @@ namespace cambda {
         }
     };
 
-    struct multi_statement_support
+    template<typename AST, typename Lib>
+    struct cambda_object_from_the_string_literal
     {
+        AST m_ast;
+        Lib lib; // may be a &-ref
 
-        /*
-         * 'Begin'
-         */
-        template< typename LibToForward
-                , typename ... Statements
-                >
-        auto constexpr static
-        apply_after_simplification  (LibToForward && lib, decltype( "Begin"_charpack )
-                            , cambda::grouped_t<'[', types_t<Statements...>>
-                            )
-        ->decltype(multi_statement_execution< types_t<Statements...> > :: eval(std::forward<LibToForward>(lib)) )
-        {   return multi_statement_execution< types_t<Statements...> > :: eval(std::forward<LibToForward>(lib)); }
+        template< typename id = cambda_utils:: id_t>
+        constexpr auto
+        operator() () &&
+        -> decltype(auto)
+        {
+            return ::cambda:: multi_statement_execution<decltype(m_ast)> :: eval( std::forward<Lib> (lib));
+        }
+
+        template<typename Binding>
+        constexpr auto
+        operator[] (Binding && binding_to_insert) && // the '&&' is important, allows us to 'move' from this->lib
+        -> decltype(auto)
+        {
+            return cambda_object_from_the_string_literal<AST, decltype(
+                        combine_libraries(std::forward<Lib>(lib), std::forward<Binding>(binding_to_insert))
+                    )>
+            {m_ast
+                        , combine_libraries(std::forward<Lib>(lib), std::forward<Binding>(binding_to_insert))
+            };
+            //return *this;
+        }
     };
-
-    struct starter_lib : public multi_statement_support {
-        using multi_statement_support:: apply_after_simplification;
+    template<typename AST, typename Lib>
+    auto constexpr
+    make_cambda_object_from_the_string_literal(AST & ast, Lib & lib)
+    -> cambda_object_from_the_string_literal<AST
+                                            ,Lib&
+                                            >
+    { return {ast, lib}; }
+    struct starter_lib {
         int ignore;
         constexpr starter_lib() : ignore(0) {} // a default constructor, just because clang requires them for constexpr objects
 
@@ -1727,7 +1677,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
         return ::cambda::make_cambda_object_from_the_string_literal(ast, starter_lib_v);
     }
 
-    struct empty : public multi_statement_support {
+    struct empty {
         int ignore;
         constexpr empty() : ignore(0) {}
 
