@@ -1186,10 +1186,12 @@ namespace cambda {
                                             >
     { return {ast, lib}; }
 
+    struct execute_a_multi_statement {
+
         template< typename LibToForward
                 , typename A
                 >
-        auto constexpr
+        auto constexpr static
         begin_priority_overload  (cambda_utils::priority_tag<1>, LibToForward && lib
                             , cambda::grouped_t<'[', types_t<A>>
                             )
@@ -1207,7 +1209,7 @@ namespace cambda {
                 , typename B
                 , typename ... C
                 >
-        auto constexpr
+        auto constexpr static
         begin_priority_overload  (cambda_utils::priority_tag<1>, LibToForward && lib
                             , cambda::grouped_t<'[', types_t<A, B, C...>>
                             )
@@ -1232,7 +1234,7 @@ namespace cambda {
                 , typename B
                 , typename ... C
                 >
-        auto constexpr
+        auto constexpr static
         begin_priority_overload  (cambda_utils::priority_tag<2>, LibToForward && lib
                             ,   cambda::grouped_t
                                     <   '['
@@ -1271,6 +1273,15 @@ namespace cambda {
                                                         ,   char_pack__to__binding_name(BindingName{}) = bound_value)
                         );
         }
+    };
+
+    template<typename ... T>
+    auto constexpr
+    begin_priority_overload(T && ... t)
+    ->decltype(auto)
+    {
+        return execute_a_multi_statement::begin_priority_overload(std::forward<T>(t)...);
+    }
 
 
     struct starter_lib {
