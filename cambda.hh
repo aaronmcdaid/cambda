@@ -1206,8 +1206,7 @@ namespace cambda {
     ->decltype(auto)
     { return detail:: is_the_special_block_command_for_bindings(cambda_utils::priority_tag<9>{}, t); }
 
-    template< typename CodeType
-            , typename = void >/* for void_t */
+    template< typename CodeType>
     struct multi_statement_execution
     {
     };
