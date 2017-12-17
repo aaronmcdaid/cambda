@@ -1465,14 +1465,12 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
             template< typename ...T>
             constexpr auto
             operator() (T && ... x) &
-            ->decltype( evaluate_inside_begin   (   cambda::combine_libraries   (   m_lib
-                                                        ,   char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...)
-                                                ,   MultiStatement{}    )   )
+            ->decltype(multi_statement_execution< MultiStatement >
+                        :: eval( cambda::combine_libraries(m_lib, char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...)) )
             {
                 static_assert(sizeof...(x) == sizeof...(BindingName) ,"");
-                return  evaluate_inside_begin   (   cambda::combine_libraries   (   m_lib
-                                                        ,   char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...)
-                                                ,   MultiStatement{}    )   ;
+                return multi_statement_execution< MultiStatement >
+                        :: eval( cambda::combine_libraries(m_lib, char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...));
 
             };
 
@@ -1708,10 +1706,10 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                             ) const
         ->void
         {
-            while(  evaluate_inside_begin   (   std::forward<LibToForward>(l2f)
-                                            ,   types_t<QuotedExpressionCondition...>{}    ))
-                    evaluate_inside_begin   (   std::forward<LibToForward>(l2f)
-                                            ,   types_t<QuotedExpressionBody...>{}      );
+            while(  multi_statement_execution<types_t<QuotedExpressionCondition...>> :: eval( std::forward<LibToForward>(l2f)))
+            {
+                    multi_statement_execution<types_t<QuotedExpressionBody...>> :: eval( std::forward<LibToForward>(l2f));
+            }
         }
 
 
