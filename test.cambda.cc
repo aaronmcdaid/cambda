@@ -52,14 +52,11 @@ test_lambda_with_binding()
 {
     int y = 0;
     (void)y;
-    auto cambda_lambda_bound = "(lambda [x a] [225])"_cambda
-        ["w"_binding = y
-        ,"y"_binding = y
-        ,"z"_binding = y]
+    auto cambda_lambda_bound = "(lambda [x] [{x * x}])"_cambda
+        ["w"_binding = y]
         ()
         ;
-    //cambda_lambda_bound.lkjsfd();
-    auto res = cambda_lambda_bound(15, 5);
+    auto res = cambda_lambda_bound(15);
     return res;
 }
 static_assert(test_lambda_with_binding() == 225 ,"");
