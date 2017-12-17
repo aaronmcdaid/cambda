@@ -1567,17 +1567,15 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
          * 'begin'
          */
         template< typename LibToForward
-                , typename ... T
+                , typename ... Statements
                 >
         auto constexpr
-        apply_after_simplification  (LibToForward && lib, decltype( "begin"_charpack ), T && ... t) const
-        ->decltype(apply_after_simplification   (   std::forward<LibToForward>(lib)
-                                                ,   "Begin"_charpack
-                                                ,   std::forward<T>(t) ... )    )
+        apply_after_simplification  (LibToForward && lib, decltype( "begin"_charpack )
+                , cambda::grouped_t<'[', types_t<Statements...>>
+                ) const
+        ->decltype(multi_statement_execution<types_t<Statements...>>::eval(std::forward<LibToForward>(lib)))
         {
-            return apply_after_simplification   (   std::forward<LibToForward>(lib)
-                                                ,   "Begin"_charpack
-                                                ,   std::forward<T>(t) ... );
+            return multi_statement_execution<types_t<Statements...>>::eval(std::forward<LibToForward>(lib));
         }
 
 
