@@ -1317,7 +1317,8 @@ namespace cambda {
         }
     };
 
-    struct starter_lib {
+    struct starter_lib : public multi_statement_support {
+        using multi_statement_support:: apply_after_simplification;
         int ignore;
         constexpr starter_lib() : ignore(0) {} // a default constructor, just because clang requires them for constexpr objects
 

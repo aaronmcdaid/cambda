@@ -83,7 +83,7 @@ static_assert(56088 == R"--(
                             )--"_cambda () ,"");
 
 static_assert(17 == R"--(
-                        (begin [
+                        (Begin [
                             ([] [x] 5)
                             (assign x {x * 2})
                             ([] [y] 7)
