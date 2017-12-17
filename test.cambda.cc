@@ -83,12 +83,10 @@ static_assert(56088 == R"--(
                             )--"_cambda () ,"");
 
 static_assert(17 == R"--(
-                        (Begin [
                             ([] [x] 5)
                             (assign x {x * 2})
                             ([] [y] 7)
                             {x + y}
-                            ])
                             )--"_cambda () ,"");
 
 static_assert(std::is_same<std::integral_constant<int,42>, decltype( "42c"_cambda() )>{}  ,"");
@@ -256,7 +254,6 @@ test_partition()
 {
         int a[] = {6,2,5,8,3,9,7};
         R"--(
-            (begin[
                 ([] [swap] (lambda [x y] [
                                             ([] [tmp] (ref2val x))
                                             {x = y}
@@ -278,7 +275,6 @@ test_partition()
                         ]
                     )]
                 )
-            ])
         )--"_cambda
                 [   "b"_binding = std::begin(a)
                 ,   "e"_binding = std::end  (a)
