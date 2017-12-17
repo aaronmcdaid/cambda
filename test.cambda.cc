@@ -316,7 +316,17 @@ test_quicksort()
                                             )]
                                         )
                                     ]))
-                (partition B E)
+                ([] [quicksort]     (lambda [rec b0 e0]
+                                        [
+                                            (partition b0 e0)
+                                            ()
+                                        ]))
+                (fix
+                    (typeof ())
+                    quicksort
+                    B
+                    E
+                    )
         )--"_cambda
                 [   "B"_binding = std::begin(a)
                 ,   "E"_binding = std::end  (a)
