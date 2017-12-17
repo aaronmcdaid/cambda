@@ -222,9 +222,7 @@ test_range_based_for()
                 (lambda
                     [r]
                     [
-                        (begin[
                         (assign r {r * r})
-                        ])
                     ]
                 )
             )
@@ -260,28 +258,26 @@ test_partition()
         R"--(
             (begin[
                 ([] [swap] (lambda [x y] [
-                                        (begin[
                                             ([] [tmp] (ref2val x))
                                             {x = y}
                                             {y = tmp}
-                                        ])
                                     ]))
                 (while
                     [{{b != e} && {{b + 1} != e}}]
                     [(if
                         {(* {b + 1}) < (* b)}
-                        [(begin [
+                        [
                                 (swap (* {b + 1}) (* b))
                                 (++ b)
                                 ()
-                                ])]
-                        [(begin [
+                        ]
+                        [
                             (-- e)
                             (swap (* {b + 1}) (* e))
                             ()
-                            ])]
-                        )]
-                    )
+                        ]
+                    )]
+                )
             ])
         )--"_cambda
                 [   "b"_binding = std::begin(a)
