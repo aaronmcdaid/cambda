@@ -1471,13 +1471,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
         begin_priority_overload  (cambda_utils::priority_tag<1>, LibToForward && lib
                             , cambda::grouped_t<'[', types_t<A>>
                             ) const
-        //->decltype(auto) /*
-        ->decltype(
-                cambda::simplify
-                        (   A{}
-                        ,   std::forward<LibToForward>(lib)
-                        ))
-        //*/
+        ->decltype(auto)
         {
             return
                 cambda::simplify
@@ -1495,21 +1489,14 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
         begin_priority_overload  (cambda_utils::priority_tag<1>, LibToForward && lib
                             , cambda::grouped_t<'[', types_t<A, B, C...>>
                             ) const
-        ->decltype(auto) /*
-        ->decltype(
-                    apply_after_simplification(
-                        std::forward<LibToForward>(lib)
-                        , "begin"_charpack
-                        , cambda::grouped_t<'[', types_t<B, C...>>{}
-                        )   )
-        //*/
+        ->decltype(auto)
         {
                 cambda::simplify
                         (   A{}
                         ,   std::forward<LibToForward>(lib)
                         );
                 return
-                    apply_after_simplification(
+                    cambda::apply_after_simplification(
                         std::forward<LibToForward>(lib)
                         , "begin"_charpack
                         , cambda::grouped_t<'[', types_t<B, C...>>{}
@@ -1522,6 +1509,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                 , typename BindingExpression
                 , typename B
                 , typename ... C
+                , typename TypeOfTheBoundValue_AsLvalue = std::decay_t< decltype( cambda::simplify(BindingExpression{}, std::declval<LibToForward>()) ) > &
                 >
         auto constexpr
         begin_priority_overload  (cambda_utils::priority_tag<2>, LibToForward && lib
@@ -1542,22 +1530,15 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                                                      >
                                                 , B, C...>>
                             ) const
-        ->decltype(auto) /*
-        ->decltype(cambda::simplify
-                        (   cambda::grouped_t<'('
-                                    , types_t< decltype("begin"_charpack)
-                                    , cambda::grouped_t<'[', types_t<
-                                                    B, C...
-                                             >>>
-                                    >{}
-                        ,   cambda::combine_libraries   (   std::forward<LibToForward>(lib)
-                                                        ,   char_pack__to__binding_name(BindingName{}) = bound_value)
-                        )   )
-        //*/
+        ->decltype(auto)
         {
             decltype(auto) // not-an r-ref. May be l-ref though
                 bound_value = cambda::simplify(BindingExpression{}, std::forward<LibToForward>(lib));
-            static_assert(!std::is_rvalue_reference<decltype(bound_value)>{} ,"");
+            static_assert(std::is_same
+                            <   decltype(bound_value)
+                            ,   decltype(cambda::simplify(BindingExpression{}, std::forward<LibToForward>(lib)))    >{} ,"Argh, what does decltype(auto) do on vars?");
+            static_assert(!std::is_rvalue_reference<decltype(bound_value)>{} ,""); // TODO: this is probably too strict
+            static_assert(std::is_same<TypeOfTheBoundValue_AsLvalue, decltype((bound_value))>{} ,"");
             // Note: we treat bound_value as an lvalue from here on, and allow it to be
             // taken as l-reference. This means that 'bound_value' is the storage,
             // assuming storage is required.
