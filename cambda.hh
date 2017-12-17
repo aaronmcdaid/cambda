@@ -1186,6 +1186,26 @@ namespace cambda {
                                             >
     { return {ast, lib}; }
 
+    namespace detail {
+        template<typename ...T>
+        auto static constexpr
+        is_the_special_block_command_for_bindings(cambda_utils::priority_tag<1>, grouped_t<'[', types_t<T...>>)
+        -> std::false_type
+        { return {}; }
+
+        template<typename ...T, typename ...U>
+        auto static constexpr
+        is_the_special_block_command_for_bindings(cambda_utils::priority_tag<2>, grouped_t<'[', types_t<grouped_t<'(',types_t<grouped_t<'[', types_t<>>, T...>>, U...>>)
+        -> std::true_type
+        { return {}; }
+    }
+
+    template<typename T>
+    auto static constexpr
+    is_the_special_block_command_for_bindings(T t)
+    ->decltype(auto)
+    { return detail:: is_the_special_block_command_for_bindings(cambda_utils::priority_tag<9>{}, t); }
+
     struct starter_lib {
         int ignore;
         constexpr starter_lib() : ignore(0) {} // a default constructor, just because clang requires them for constexpr objects
@@ -1566,14 +1586,18 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                         ,   std::forward<LibToForward>(lib)
                         ))
         {
+            constexpr bool is_special_command = cambda:: is_the_special_block_command_for_bindings(code) . value;
+            (void)is_special_command;
+            static_assert(!is_special_command ,""); // (should) never be true - we can't end a begin on a binding
             return this->begin_priority_overload( cambda_utils::priority_tag<9>{}
                         , std::forward<LibToForward>(lib)
                         , code
                         );
         }
+
         template< typename LibToForward
                 , typename A
-                , typename B
+                , typename B // need to check if this is grouped_t<'(', ...>
                 , typename ... C
                 >
         auto constexpr
@@ -1582,6 +1606,9 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                             ) const
         ->decltype(auto)
         {
+            constexpr bool is_special_command = cambda:: is_the_special_block_command_for_bindings(code) . value;
+            (void)is_special_command;
+            //static_assert( is_special_command ,"");
             return this->begin_priority_overload( cambda_utils::priority_tag<9>{}
                         , std::forward<LibToForward>(lib)
                         , code
