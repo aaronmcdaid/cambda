@@ -1231,7 +1231,7 @@ namespace cambda {
     };
     template< typename BindingName
             , typename BindingExpression
-            , typename B // need to check if this is grouped_t<'(', ...>
+            , typename B
             , typename ... C
             >
     struct multi_statement_execution< types_t<grouped_t<'(',types_t<grouped_t<'[',types_t<>>, grouped_t<'[',types_t<BindingName>>, BindingExpression>>, B, C...>>
@@ -1303,7 +1303,7 @@ namespace cambda {
         template< typename LibToForward
                 , typename BindingName
                 , typename BindingExpression
-                , typename B // need to check if this is grouped_t<'(', ...>
+                , typename B
                 , typename ... C
                 , std::enable_if_t<cambda:: is_the_special_block_command_for_bindings(
                             cambda::grouped_t<'[', types_t<grouped_t<'(',types_t<grouped_t<'[',types_t<>>, grouped_t<'[',types_t<BindingName>>, BindingExpression>>, B, C...>> {}
@@ -1323,7 +1323,7 @@ namespace cambda {
 
         template< typename LibToForward
                 , typename A
-                , typename B // need to check if this is grouped_t<'(', ...>
+                , typename B
                 , typename ... C
                 , std::enable_if_t<!cambda:: is_the_special_block_command_for_bindings(
                             cambda::grouped_t<'[', types_t<A, B, C...>> {}
