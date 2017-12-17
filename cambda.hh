@@ -653,7 +653,7 @@ namespace cambda {
 
         auto parsed =  parser( all_the_terms_t{} );
         static_assert(std::is_same< typename decltype(parsed) :: rest , types_t<>>{} ,"");
-        using x = typename should_be_just_one_term< typename decltype(parsed) :: me > :: single_type;
+        using x = typename decltype(parsed) :: me;
         return x{};
     }
 
@@ -1150,6 +1150,11 @@ namespace cambda {
         return binding_name<chars...>{};
     }
 
+    template< typename CodeType>
+    struct multi_statement_execution
+    {
+    };
+
     template<typename AST, typename Lib>
     struct cambda_object_from_the_string_literal
     {
@@ -1161,7 +1166,7 @@ namespace cambda {
         operator() () &&
         -> decltype(auto)
         {
-            return ::cambda:: simplify(     m_ast , std::forward<Lib> (lib));
+            return ::cambda:: multi_statement_execution<decltype(m_ast)> :: eval( std::forward<Lib> (lib));
         }
 
         template<typename Binding>
@@ -1205,11 +1210,6 @@ namespace cambda {
     is_the_special_block_command_for_bindings(T t)
     ->decltype(auto)
     { return detail:: is_the_special_block_command_for_bindings(cambda_utils::priority_tag<9>{}, t); }
-
-    template< typename CodeType>
-    struct multi_statement_execution
-    {
-    };
 
     template< typename SingleOne >
     struct multi_statement_execution< types_t<SingleOne> >
