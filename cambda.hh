@@ -1217,15 +1217,9 @@ namespace cambda {
         template<typename LibToForward>
         auto constexpr static
         eval(LibToForward && l2f)
-        -> decltype(cambda::simplify
-                    (   SingleOne{}
-                    ,   std::forward<LibToForward>(l2f)
-                    )   )
+        -> decltype(cambda::simplify (   SingleOne{} ,   std::forward<LibToForward>(l2f))   )
         {
-            return  cambda::simplify
-                    (   SingleOne{}
-                    ,   std::forward<LibToForward>(l2f)
-                    );
+            return  cambda::simplify (   SingleOne{} ,   std::forward<LibToForward>(l2f));
         }
     };
 
@@ -1263,16 +1257,7 @@ namespace cambda {
                 >
         auto constexpr static
         eval  (LibToForward && lib)
-        ->decltype(cambda::simplify
-                        (   cambda::grouped_t<'('
-                                    , types_t< decltype("Begin"_charpack)
-                                    , cambda::grouped_t<'[', types_t<
-                                                    B, C...
-                                             >>>
-                                    >{}
-                        ,   cambda::combine_libraries   (   std::forward<LibToForward>(lib)
-                                                        ,   char_pack__to__binding_name(BindingName{}) = std::declval<TypeOfTheBoundValue_AsLvalue>())
-                        )   )
+        ->decltype(auto)
         {
             //static_assert( cambda:: is_the_special_block_command_for_bindings(code) . value ,"");
 
