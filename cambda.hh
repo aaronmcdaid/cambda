@@ -1465,22 +1465,27 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
          * 'begin'
          */
         template< typename LibToForward
-                , typename SingleOne
+                , typename A
                 >
         auto constexpr
-        apply_after_simplification  (LibToForward && lib, decltype( "begin"_charpack )
-                            , cambda::grouped_t<'[', types_t<SingleOne>>
+        begin_priority_overload  (cambda_utils::priority_tag<1>, LibToForward && lib
+                            , cambda::grouped_t<'[', types_t<A>>
                             ) const
-        ->decltype(    cambda::simplify
-                        (   SingleOne{}
+        //->decltype(auto) /*
+        ->decltype(
+                cambda::simplify
+                        (   A{}
                         ,   std::forward<LibToForward>(lib)
                         ))
+        //*/
         {
-            return cambda::simplify
-                        (   SingleOne{}
+            return
+                cambda::simplify
+                        (   A{}
                         ,   std::forward<LibToForward>(lib)
                         );
         }
+
         template< typename LibToForward
                 , typename A
                 , typename B
@@ -1490,7 +1495,14 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
         begin_priority_overload  (cambda_utils::priority_tag<1>, LibToForward && lib
                             , cambda::grouped_t<'[', types_t<A, B, C...>>
                             ) const
-        ->decltype(auto)
+        ->decltype(auto) /*
+        ->decltype(
+                    apply_after_simplification(
+                        std::forward<LibToForward>(lib)
+                        , "begin"_charpack
+                        , cambda::grouped_t<'[', types_t<B, C...>>{}
+                        )   )
+        //*/
         {
                 cambda::simplify
                         (   A{}
@@ -1530,7 +1542,18 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                                                      >
                                                 , B, C...>>
                             ) const
-        ->decltype(auto)
+        ->decltype(auto) /*
+        ->decltype(cambda::simplify
+                        (   cambda::grouped_t<'('
+                                    , types_t< decltype("begin"_charpack)
+                                    , cambda::grouped_t<'[', types_t<
+                                                    B, C...
+                                             >>>
+                                    >{}
+                        ,   cambda::combine_libraries   (   std::forward<LibToForward>(lib)
+                                                        ,   char_pack__to__binding_name(BindingName{}) = bound_value)
+                        )   )
+        //*/
         {
             decltype(auto) // not-an r-ref. May be l-ref though
                 bound_value = cambda::simplify(BindingExpression{}, std::forward<LibToForward>(lib));
@@ -1548,6 +1571,23 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                                     >{}
                         ,   cambda::combine_libraries   (   std::forward<LibToForward>(lib)
                                                         ,   char_pack__to__binding_name(BindingName{}) = bound_value)
+                        );
+        }
+        template< typename LibToForward
+                , typename SingleOne
+                >
+        auto constexpr
+        apply_after_simplification  (LibToForward && lib, decltype( "begin"_charpack )
+                            , cambda::grouped_t<'[', types_t<SingleOne>> code
+                            ) const
+        ->decltype(    cambda::simplify
+                        (   SingleOne{}
+                        ,   std::forward<LibToForward>(lib)
+                        ))
+        {
+            return this->begin_priority_overload( cambda_utils::priority_tag<9>{}
+                        , std::forward<LibToForward>(lib)
+                        , code
                         );
         }
         template< typename LibToForward
