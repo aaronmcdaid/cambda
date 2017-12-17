@@ -1199,7 +1199,13 @@ namespace cambda {
                 ,   typename ... SeriesOfStatements>
         auto constexpr static
         evaluate_inside_begin(LibToForward && l2f, types_t<SeriesOfStatements...>)
-        -> decltype(auto)
+        ->decltype(cambda::simplify   (
+                        cambda::grouped_t   <   '('
+                                            ,   types_t <   decltype("begin"_charpack)
+                                                        ,   grouped_t<'[', types_t<SeriesOfStatements...>>
+                                                        >
+                                            > {}
+                        ,   std::forward<LibToForward>(l2f))    )
         {
             return
                 cambda::simplify   (
