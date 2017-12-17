@@ -1324,33 +1324,6 @@ namespace cambda {
         constexpr starter_lib() : ignore(0) {} // a default constructor, just because clang requires them for constexpr objects
 
 
-        /* evaluate_inside_begin
-         * =====================
-         *  This will be used by 'if', 'while' and 'lambda' to allow multi-statements.
-         */
-        template<   typename LibToForward
-                ,   typename ... SeriesOfStatements>
-        auto constexpr static
-        evaluate_inside_begin(LibToForward && l2f, types_t<SeriesOfStatements...>)
-        ->decltype(cambda::simplify   (
-                        cambda::grouped_t   <   '('
-                                            ,   types_t <   decltype("begin"_charpack)
-                                                        ,   grouped_t<'[', types_t<SeriesOfStatements...>>
-                                                        >
-                                            > {}
-                        ,   std::forward<LibToForward>(l2f))    )
-        {
-            return
-                cambda::simplify   (
-                        cambda::grouped_t   <   '('
-                                            ,   types_t <   decltype("begin"_charpack)
-                                                        ,   grouped_t<'[', types_t<SeriesOfStatements...>>
-                                                        >
-                                            > {}
-                        ,   std::forward<LibToForward>(l2f));
-        }
-
-
         // range_based_for
         template< typename LibToForward
                 , typename Data
@@ -1477,14 +1450,12 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
             template< typename ...T>
             constexpr auto
             operator() (T && ... x) const &
-            ->decltype( evaluate_inside_begin   (   cambda::combine_libraries   (   m_lib
-                                                        ,   char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...)
-                                                ,   MultiStatement{}    )   )
+            ->decltype(multi_statement_execution<MultiStatement>
+                            ::eval(cambda::combine_libraries   (m_lib, char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...))   )
             {
                 static_assert(sizeof...(x) == sizeof...(BindingName) ,"");
-                return  evaluate_inside_begin   (   cambda::combine_libraries   (   m_lib
-                                                        ,   char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...)
-                                                ,   MultiStatement{}    )   ;
+                return  multi_statement_execution<MultiStatement>
+                            ::eval(cambda::combine_libraries   (m_lib, char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...))   ;
 
             };
         };
@@ -1648,11 +1619,11 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                             , cambda::grouped_t<'[', types_t<QuotedExpressionTrue...>>
                             , cambda::grouped_t<'[', types_t<QuotedExpressionFalse...>>
                             ) const
-        ->decltype(auto)
+        ->decltype(multi_statement_execution<types_t<QuotedExpressionTrue...>>
+                    :: eval(   std::forward<LibToForward>(l2f) )    )
         {
-                return
-                    evaluate_inside_begin   (   std::forward<LibToForward>(l2f)
-                                            ,   types_t<QuotedExpressionTrue...>{}      );
+            return multi_statement_execution<types_t<QuotedExpressionTrue...>>
+                    :: eval(   std::forward<LibToForward>(l2f) );
         }
 
         // 'if' with false
@@ -1666,11 +1637,11 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                             , cambda::grouped_t<'[', types_t<QuotedExpressionTrue...>>
                             , cambda::grouped_t<'[', types_t<QuotedExpressionFalse...>>
                             ) const
-        ->decltype(auto)
+        ->decltype(multi_statement_execution<types_t<QuotedExpressionFalse...>>
+                    ::eval( std::forward<LibToForward>(l2f) )   )
         {
-                return
-                    evaluate_inside_begin   (   std::forward<LibToForward>(l2f)
-                                            ,   types_t<QuotedExpressionFalse...>{}      );
+            return multi_statement_execution<types_t<QuotedExpressionFalse...>>
+                    ::eval( std::forward<LibToForward>(l2f) );
         }
 
         // 'if' with bool
@@ -1684,13 +1655,13 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                             , cambda::grouped_t<'[', types_t<QuotedExpressionTrue...>>
                             , cambda::grouped_t<'[', types_t<QuotedExpressionFalse...>>
                             ) const
-        ->decltype(b    ?   evaluate_inside_begin    (   std::forward<LibToForward>(l2f) ,   types_t<QuotedExpressionTrue...>{}      )
-                        :   evaluate_inside_begin    (   std::forward<LibToForward>(l2f) ,   types_t<QuotedExpressionFalse...>{}     ))
+        ->decltype(b    ?   multi_statement_execution<types_t<QuotedExpressionTrue...>>  ::eval(   std::forward<LibToForward>(l2f) )
+                        :   multi_statement_execution<types_t<QuotedExpressionFalse...>> ::eval(   std::forward<LibToForward>(l2f) ))
         {
                 if(b)
-                    return evaluate_inside_begin    (   std::forward<LibToForward>(l2f) ,   types_t<QuotedExpressionTrue...>{}      );
+                    return multi_statement_execution<types_t<QuotedExpressionTrue...>>  ::eval(   std::forward<LibToForward>(l2f) );
                 else
-                    return evaluate_inside_begin    (   std::forward<LibToForward>(l2f) ,   types_t<QuotedExpressionFalse...>{}      );
+                    return multi_statement_execution<types_t<QuotedExpressionFalse...>> ::eval(   std::forward<LibToForward>(l2f) );
         }
 
         /* while
