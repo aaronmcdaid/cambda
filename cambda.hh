@@ -1206,45 +1206,46 @@ namespace cambda {
     ->decltype(auto)
     { return detail:: is_the_special_block_command_for_bindings(cambda_utils::priority_tag<9>{}, t); }
 
-    struct multi_statement_support
+    template< typename CodeType
+            , typename = void >/* for void_t */
+    struct multi_statement_execution
     {
+    };
 
-        /*
-         * 'Begin'
-         */
-        template< typename LibToForward
-                , typename SingleOne
-                >
+    template< typename SingleOne >
+    struct multi_statement_execution< types_t<SingleOne> >
+    {
+        template<typename LibToForward>
         auto constexpr static
-        apply_after_simplification  (LibToForward && lib, decltype( "Begin"_charpack )
-                            , cambda::grouped_t<'[', types_t<SingleOne>> code
-                            )
-        ->decltype( cambda::simplify
+        eval(LibToForward && l2f)
+        -> decltype(cambda::simplify
                     (   SingleOne{}
-                    ,   std::forward<LibToForward>(lib)))
+                    ,   std::forward<LibToForward>(l2f)
+                    )   )
         {
-            constexpr bool is_special_command = cambda:: is_the_special_block_command_for_bindings(code) . value;
-            static_assert(!is_special_command ,""); // (should) never be true - we can't end a begin on a binding
             return  cambda::simplify
                     (   SingleOne{}
-                    ,   std::forward<LibToForward>(lib)
+                    ,   std::forward<LibToForward>(l2f)
                     );
         }
-
+    };
+    template< typename BindingName
+            , typename BindingExpression
+            , typename B // need to check if this is grouped_t<'(', ...>
+            , typename ... C
+            >
+    struct multi_statement_execution< types_t<grouped_t<'(',types_t<grouped_t<'[',types_t<>>, grouped_t<'[',types_t<BindingName>>, BindingExpression>>, B, C...>>
+    {
+        /*
+            , std::enable_if_t<cambda:: is_the_special_block_command_for_bindings(
+                        cambda::grouped_t<'[', types_t<grouped_t<'(',types_t<grouped_t<'[',types_t<>>, grouped_t<'[',types_t<BindingName>>, BindingExpression>>, B, C...>> {}
+                    ) . value>* = nullptr
+            */
         template< typename LibToForward
-                , typename BindingName
-                , typename BindingExpression
-                , typename B // need to check if this is grouped_t<'(', ...>
-                , typename ... C
-                , std::enable_if_t<cambda:: is_the_special_block_command_for_bindings(
-                            cambda::grouped_t<'[', types_t<grouped_t<'(',types_t<grouped_t<'[',types_t<>>, grouped_t<'[',types_t<BindingName>>, BindingExpression>>, B, C...>> {}
-                        ) . value>* = nullptr
                 , typename TypeOfTheBoundValue_AsLvalue = std::decay_t< decltype( cambda::simplify(BindingExpression{}, std::declval<LibToForward>()) ) > &
                 >
         auto constexpr static
-        apply_after_simplification  (LibToForward && lib, decltype( "Begin"_charpack )
-                            , cambda::grouped_t<'[', types_t<grouped_t<'(',types_t<grouped_t<'[',types_t<>>, grouped_t<'[',types_t<BindingName>>, BindingExpression>>, B, C...>> code
-                            )
+        eval  (LibToForward && lib)
         ->decltype(cambda::simplify
                         (   cambda::grouped_t<'('
                                     , types_t< decltype("Begin"_charpack)
@@ -1256,7 +1257,7 @@ namespace cambda {
                                                         ,   char_pack__to__binding_name(BindingName{}) = std::declval<TypeOfTheBoundValue_AsLvalue>())
                         )   )
         {
-            static_assert( cambda:: is_the_special_block_command_for_bindings(code) . value ,"");
+            //static_assert( cambda:: is_the_special_block_command_for_bindings(code) . value ,"");
 
             decltype(auto) // not-an r-ref. May be l-ref though
                 bound_value = cambda::simplify(BindingExpression{}, std::forward<LibToForward>(lib));
@@ -1280,6 +1281,44 @@ namespace cambda {
                         ,   cambda::combine_libraries   (   std::forward<LibToForward>(lib)
                                                         ,   char_pack__to__binding_name(BindingName{}) = bound_value)
                         );
+        }
+    };
+
+    struct multi_statement_support
+    {
+
+        /*
+         * 'Begin'
+         */
+        template< typename LibToForward
+                , typename SingleOne
+                >
+        auto constexpr static
+        apply_after_simplification  (LibToForward && lib, decltype( "Begin"_charpack )
+                            , cambda::grouped_t<'[', types_t<SingleOne>>
+                            )
+        ->decltype(multi_statement_execution< types_t<SingleOne> > :: eval(std::forward<LibToForward>(lib)) )
+        {   return multi_statement_execution< types_t<SingleOne> > :: eval(std::forward<LibToForward>(lib)); }
+
+        template< typename LibToForward
+                , typename BindingName
+                , typename BindingExpression
+                , typename B // need to check if this is grouped_t<'(', ...>
+                , typename ... C
+                , std::enable_if_t<cambda:: is_the_special_block_command_for_bindings(
+                            cambda::grouped_t<'[', types_t<grouped_t<'(',types_t<grouped_t<'[',types_t<>>, grouped_t<'[',types_t<BindingName>>, BindingExpression>>, B, C...>> {}
+                        ) . value>* = nullptr
+                , typename t = multi_statement_execution< types_t<grouped_t<'(',types_t<grouped_t<'[',types_t<>>, grouped_t<'[',types_t<BindingName>>, BindingExpression>>, B, C...>>
+                , typename TypeOfTheBoundValue_AsLvalue = std::decay_t< decltype( cambda::simplify(BindingExpression{}, std::declval<LibToForward>()) ) > &
+                >
+        auto constexpr static
+        apply_after_simplification  (LibToForward && lib, decltype( "Begin"_charpack )
+                            , cambda::grouped_t<'[', types_t<grouped_t<'(',types_t<grouped_t<'[',types_t<>>, grouped_t<'[',types_t<BindingName>>, BindingExpression>>, B, C...>> code
+                            )
+        ->decltype(t :: eval(std::forward<LibToForward>(lib)) )
+        {
+            return t :: eval(std::forward<LibToForward>(lib));
+            static_assert( cambda:: is_the_special_block_command_for_bindings(code) . value ,"");
         }
 
         template< typename LibToForward
