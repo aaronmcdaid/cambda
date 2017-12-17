@@ -1229,6 +1229,24 @@ namespace cambda {
                     );
         }
     };
+
+    template< typename A
+            , typename ...B
+            >
+    struct multi_statement_execution< types_t<A, B...>>
+    {
+        static_assert(!cambda:: is_the_special_block_command_for_bindings( cambda::grouped_t<'[', types_t<A, B...>> {}) . value ,"");
+
+        template< typename LibToForward >
+        auto constexpr static
+        eval  (LibToForward && lib)
+        ->decltype(multi_statement_execution<types_t<B...>> :: eval( std::forward<LibToForward>(lib) ) )
+        {
+
+            cambda::simplify (   A{} ,   std::forward<LibToForward>(lib));
+            return multi_statement_execution<types_t<B...>> :: eval( std::forward<LibToForward>(lib) );
+        }
+    };
     template< typename BindingName
             , typename BindingExpression
             , typename B
@@ -1317,8 +1335,8 @@ namespace cambda {
                             )
         ->decltype(t :: eval(std::forward<LibToForward>(lib)) )
         {
-            return t :: eval(std::forward<LibToForward>(lib));
             static_assert( cambda:: is_the_special_block_command_for_bindings(code) . value ,"");
+            return t :: eval(std::forward<LibToForward>(lib));
         }
 
         template< typename LibToForward
@@ -1339,20 +1357,13 @@ namespace cambda {
                     , cambda::grouped_t<'[', types_t<B, C...>>{}
                     ) )
         {
+            using t = multi_statement_execution< types_t<A, B, C...>>;
+            static_assert(std::is_same<t,t>{} ,"");
+            return t :: eval(std::forward<LibToForward>(lib));
+
             constexpr bool is_special_command = cambda:: is_the_special_block_command_for_bindings(code) . value;
             (void)is_special_command;
             static_assert(!is_special_command ,"");
-
-            cambda::simplify
-                    (   A{}
-                    ,   std::forward<LibToForward>(lib)
-                    );
-            return
-                cambda::apply_after_simplification(
-                    std::forward<LibToForward>(lib)
-                    , "Begin"_charpack
-                    , cambda::grouped_t<'[', types_t<B, C...>>{}
-                    );
         }
     };
 
