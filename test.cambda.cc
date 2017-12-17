@@ -84,9 +84,9 @@ static_assert(56088 == R"--(
 
 static_assert(17 == R"--(
                         (begin [
-                            ([x] 5)
+                            ([] [x] 5)
                             (assign x {x * 2})
-                            ([y] 7)
+                            ([] [y] 7)
                             {x + y}
                             ])
                             )--"_cambda () ,"");
@@ -243,7 +243,7 @@ test_while()
     int y = 0;
     R"--(
         (while
-            [   ([max] 100)
+            [   ([] [max] 100)
                 (< y max)       ]
             [   {y = {y + 1}}
                 {y = {y + 2}}   ])
@@ -259,9 +259,9 @@ test_partition()
         int a[] = {6,2,5,8,3,9,7};
         R"--(
             (begin[
-                ([swap] (lambda [x y] [
+                ([] [swap] (lambda [x y] [
                                         (begin[
-                                            ([tmp] (ref2val x))
+                                            ([] [tmp] (ref2val x))
                                             {x = y}
                                             {y = tmp}
                                         ])

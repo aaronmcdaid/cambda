@@ -1514,7 +1514,22 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                 >
         auto constexpr
         begin_priority_overload  (cambda_utils::priority_tag<2>, LibToForward && lib
-                            , cambda::grouped_t<'[', types_t<grouped_t<'(', types_t<grouped_t<'[',types_t<BindingName>>,BindingExpression> > , B, C...>>
+                            ,   cambda::grouped_t
+                                    <   '['
+                                    ,   types_t
+                                            <   grouped_t
+                                                    <   '('
+                                                    , types_t
+                                                        <   grouped_t<'[',types_t<>> // the empty [] that introduces a new binding
+                                                        ,   grouped_t
+                                                                <   '['
+                                                                ,   types_t<BindingName>
+                                                                >
+                                                        ,
+                                                            BindingExpression
+                                                        >
+                                                     >
+                                                , B, C...>>
                             ) const
         ->decltype(auto)
         {
