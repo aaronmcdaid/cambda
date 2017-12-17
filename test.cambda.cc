@@ -52,14 +52,14 @@ test_lambda_with_binding()
 {
     int y = 0;
     (void)y;
-    auto cambda_lambda_bound = "(lambda [x] [{x * x}])"_cambda
-        ["w"_binding = y]
+    auto cambda_lambda_bound = "(lambda [x] [{y = 2} {x * x}])"_cambda
+        ["y"_binding = y]
         ()
         ;
-    auto res = cambda_lambda_bound(15);
-    return res;
+    auto res = cambda_lambda_bound(10);
+    return y * res;
 }
-static_assert(test_lambda_with_binding() == 225 ,"");
+static_assert(test_lambda_with_binding() == 200 ,"");
 #endif
 
 static_assert(a == 15   ,"");
