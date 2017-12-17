@@ -1511,12 +1511,22 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                 , std::enable_if_t<cambda:: is_the_special_block_command_for_bindings(
                             cambda::grouped_t<'[', types_t<grouped_t<'(',types_t<grouped_t<'[',types_t<>>, grouped_t<'[',types_t<BindingName>>, BindingExpression>>, B, C...>> {}
                         ) . value>* = nullptr
+                , typename TypeOfTheBoundValue_AsLvalue = std::decay_t< decltype( cambda::simplify(BindingExpression{}, std::declval<LibToForward>()) ) > &
                 >
         auto constexpr
         apply_after_simplification  (LibToForward && lib, decltype( "begin"_charpack )
                             , cambda::grouped_t<'[', types_t<grouped_t<'(',types_t<grouped_t<'[',types_t<>>, grouped_t<'[',types_t<BindingName>>, BindingExpression>>, B, C...>> code
                             ) const
-        ->decltype(auto)
+        ->decltype(cambda::simplify
+                        (   cambda::grouped_t<'('
+                                    , types_t< decltype("begin"_charpack)
+                                    , cambda::grouped_t<'[', types_t<
+                                                    B, C...
+                                             >>>
+                                    >{}
+                        ,   cambda::combine_libraries   (   std::forward<LibToForward>(lib)
+                                                        ,   char_pack__to__binding_name(BindingName{}) = std::declval<TypeOfTheBoundValue_AsLvalue>())
+                        )   )
         {
             static_assert( cambda:: is_the_special_block_command_for_bindings(code) . value ,"");
 
@@ -1526,8 +1536,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                             <   decltype(bound_value)
                             ,   decltype(cambda::simplify(BindingExpression{}, std::forward<LibToForward>(lib)))    >{} ,"Argh, what does decltype(auto) do on vars?");
             static_assert(!std::is_rvalue_reference<decltype(bound_value)>{} ,""); // TODO: this is probably too strict
-                //, typename TypeOfTheBoundValue_AsLvalue = std::decay_t< decltype( cambda::simplify(BindingExpression{}, std::declval<LibToForward>()) ) > &
-            //static_assert(std::is_same<TypeOfTheBoundValue_AsLvalue, decltype((bound_value))>{} ,"");
+            static_assert(std::is_same<TypeOfTheBoundValue_AsLvalue, decltype((bound_value))>{} ,"");
 
             // Note: we treat bound_value as an lvalue from here on, and allow it to be
             // taken as l-reference. This means that 'bound_value' is the storage,
@@ -1557,7 +1566,11 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
         apply_after_simplification  (LibToForward && lib, decltype( "begin"_charpack )
                             , cambda::grouped_t<'[', types_t<A, B, C...>> code
                             ) const
-        ->decltype(auto)
+        ->decltype(cambda::apply_after_simplification(
+                    std::forward<LibToForward>(lib)
+                    , "begin"_charpack
+                    , cambda::grouped_t<'[', types_t<B, C...>>{}
+                    ) )
         {
             constexpr bool is_special_command = cambda:: is_the_special_block_command_for_bindings(code) . value;
             (void)is_special_command;
