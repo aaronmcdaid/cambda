@@ -1320,7 +1320,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
 
 
         template< typename LibToForward
-                , typename QuotedExpression
+                , typename MultiStatement
                 , typename ...BindingName>
         struct lambda_capturing_struct
         {
@@ -1332,52 +1332,46 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
             template< typename ...T>
             constexpr auto
             operator() (T && ... x) &
-            ->decltype(cambda::simplify
-                        (   QuotedExpression{}
-                        , cambda::combine_libraries   (   m_lib
-                                                ,   char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...
-                                                )))
+            ->decltype( evaluate_inside_begin   (   cambda::combine_libraries   (   m_lib
+                                                        ,   char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...)
+                                                ,   MultiStatement{}    )   )
             {
                 static_assert(sizeof...(x) == sizeof...(BindingName) ,"");
-                return cambda::simplify
-                        (   QuotedExpression{}
-                        , cambda::combine_libraries   (   m_lib
-                                                ,   char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...
-                                                ));
+                return  evaluate_inside_begin   (   cambda::combine_libraries   (   m_lib
+                                                        ,   char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...)
+                                                ,   MultiStatement{}    )   ;
+
             };
 
             template< typename ...T>
             constexpr auto
             operator() (T && ... x) const &
-            ->decltype(cambda::simplify
-                        (   QuotedExpression{}
-                        , cambda::combine_libraries   (   m_lib
-                                                ,   char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...
-                                                )))
+            ->decltype( evaluate_inside_begin   (   cambda::combine_libraries   (   m_lib
+                                                        ,   char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...)
+                                                ,   MultiStatement{}    )   )
             {
                 static_assert(sizeof...(x) == sizeof...(BindingName) ,"");
-                return cambda::simplify
-                        (   QuotedExpression{}
-                        , cambda::combine_libraries   (   m_lib
-                                                ,   char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...
-                                                ));
+                return  evaluate_inside_begin   (   cambda::combine_libraries   (   m_lib
+                                                        ,   char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...)
+                                                ,   MultiStatement{}    )   ;
+
             };
         };
 
         template< typename ...BindingName
                 , typename LibToForward
-                , typename QuotedExpression
+                , typename ...QuotedExpression
                 , class...
                 , typename Lnonref = std::remove_reference_t<LibToForward>
                 >
         auto constexpr
         apply_after_simplification  (LibToForward && l2f, decltype( "lambda"_charpack )
                                     , cambda::grouped_t<'[', types_t<BindingName...>>
-                                    , cambda::grouped_t<'[', types_t<QuotedExpression>>
+                                    , cambda::grouped_t<'[', types_t<QuotedExpression...>>
                                     ) const
-        ->         lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...>
+        ->         lambda_capturing_struct<LibToForward, types_t<QuotedExpression...>, BindingName...>
         {
-            return lambda_capturing_struct<LibToForward, QuotedExpression, BindingName...> {std::forward<LibToForward>(l2f)};
+            return lambda_capturing_struct<LibToForward, types_t<QuotedExpression...>, BindingName...> {std::forward<LibToForward>(l2f)};
         }
 
 
