@@ -284,3 +284,45 @@ test_partition()
 
 static_assert(test_partition() ,"");
 #endif
+
+#if 1
+constexpr bool
+test_quicksort()
+{
+        int a[] = {6,2,5,8,3,9,7};
+        R"--(
+                ([] [swap]      (lambda [x y]
+                                    [
+                                            ([] [tmp] (ref2val x))
+                                            {x = y}
+                                            {y = tmp}
+                                    ]))
+                ([] [partition] (lambda [b e]
+                                    [
+                                        (while
+                                            [{{b != e} && {{b + 1} != e}}]
+                                            [(if
+                                                {(* {b + 1}) < (* b)}
+                                                [
+                                                        (swap (* {b + 1}) (* b))
+                                                        (++ b)
+                                                        ()
+                                                ]
+                                                [
+                                                    (-- e)
+                                                    (swap (* {b + 1}) (* e))
+                                                    ()
+                                                ]
+                                            )]
+                                        )
+                                    ]))
+                (partition B E)
+        )--"_cambda
+                [   "B"_binding = std::begin(a)
+                ,   "E"_binding = std::end  (a)
+                ]();
+        return cambda_utils::equal_array(a, (int[]){2,5,3,6,9,7,8});
+}
+
+static_assert(test_quicksort() ,"");
+#endif
