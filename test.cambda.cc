@@ -297,7 +297,7 @@ test_quicksort()
                                             {x = y}
                                             {y = tmp}
                                     ]))
-                ([] [partition] (lambda [b e]
+                ([] [partition] (lambda.val [b e]
                                     [
                                         (while
                                             [{{b != e} && {{b + 1} != e}}]
@@ -319,12 +319,12 @@ test_quicksort()
                                     ]))
                 ([] [quicksort]     (lambda [rec b0 e0]
                                         [
-                                            ([] [new.pivot] (partition (ref2val b0) (ref2val e0)))
+                                            ([] [new.pivot] (partition b0 (ref2val e0)))
                                             (if {b0 != new.pivot}
                                                 [
                                                     (partition (ref2val b0) (ref2val new.pivot))
                                                 ])
-                                            (if truec
+                                            (if {e0 != {new.pivot + 1}}
                                                 [
                                                     (partition {new.pivot + 1} (ref2val e0       ))
                                                 ])
