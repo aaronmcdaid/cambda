@@ -291,6 +291,10 @@ test_quicksort()
 {
         int a[] = {9,8,7,6,5,3,2};
         R"--(
+            (lambda [arr]
+            [
+                ([] [B] (std::begin arr))
+                ([] [E] (std::end   arr))
                 ([] [swap]      (lambda [x y]
                                     [
                                             ([] [tmp] (ref2val x))
@@ -336,10 +340,8 @@ test_quicksort()
                     (ref2val B)
                     (ref2val E)
                     )
-        )--"_cambda
-                [   "B"_binding = std::begin(a)
-                ,   "E"_binding = std::end  (a)
-                ]();
+            ])
+        )--"_cambda()(a);
         return cambda_utils::equal_array(a, (int[]){2,3,5,6,7,8,9});
 }
 
