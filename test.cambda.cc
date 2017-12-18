@@ -326,15 +326,15 @@ test_quicksort()
                                                 ])
                                             (if {e0 != {new.pivot + 1}}
                                                 [
-                                                    (partition {new.pivot + 1} (ref2val e0       ))
+                                                    (rec {new.pivot + 1} (ref2val e0       ))
                                                 ])
                                             ()
                                         ]))
                 (fix
                     (typeof ())
                     quicksort
-                    B
-                    E
+                    (ref2val B)
+                    (ref2val E)
                     )
         )--"_cambda
                 [   "B"_binding = std::begin(a)
