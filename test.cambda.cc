@@ -142,12 +142,12 @@ int main() {
     static_assert(product.value == 12 ,"");
 
 #if 1
-    struct foo {
-        constexpr
-            auto static
-            bar() {
-            auto f =
+    struct factorial {
+        constexpr auto static
+        bar() {
+        auto answer =
     R"--(
+        (lambda [N] [
             (fix    (typeof 0)
                     (lambda
                         [rec n]
@@ -157,17 +157,17 @@ int main() {
                                 [ {n * (rec {n - 1})} ]
                                 )
                         ])
-                    7
+                    (ref2val N)
                     )
-    )--"_cambda
-        ();
-            return f;
-            }
+                    ])
+    )--"_cambda ()(7); // compute the factorial of 7.
+            return answer;
+        }
     };
     constexpr
-    auto f = foo::bar();
-    static_assert(5040 == f ,"");
-    std::cout << "Fix: " << f << '\n';
+    auto factorial7 = factorial::bar();
+    static_assert(5040 == factorial7 ,"");
+    std::cout << "Fix: " << factorial7 << '\n';
 #endif
 
     constexpr
