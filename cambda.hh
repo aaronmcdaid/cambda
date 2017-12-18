@@ -1187,7 +1187,7 @@ namespace cambda {
     struct multi_statement_execution< types_t<grouped_t<'(',types_t<grouped_t<'[',types_t<>>, grouped_t<'[',types_t<BindingName>>, BindingExpression>>, B, C...>>
     {
         template< typename LibToForward
-                , typename TypeOfTheBoundValue_AsLvalue = std::decay_t< decltype( cambda::simplify(BindingExpression{}, std::declval<LibToForward>()) ) > &
+                , typename TypeOfTheBoundValue_AsLvalue = decltype( cambda::simplify(BindingExpression{}, std::declval<LibToForward>()) ) &
                 >
         auto constexpr static
         eval  (LibToForward && lib)
