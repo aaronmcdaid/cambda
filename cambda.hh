@@ -665,15 +665,6 @@ namespace cambda {
         return x{};
     }
 
-
-    template< typename Lib
-            , char ... letters
-            , typename ...T >
-    auto constexpr
-    apply_after_simplification (Lib && lib, cambda_utils::char_pack<letters...> name, T && ...t)
-    ->decltype(std::forward<Lib>(lib).apply_after_simplification(std::forward<Lib>(lib), name, std::forward<T>(t)...)  )
-    {   return std::forward<Lib>(lib).apply_after_simplification(std::forward<Lib>(lib), name, std::forward<T>(t)...); }
-
     static_assert(std::is_same<int const,   std::add_const<int>::type     >{} ,"");
     static_assert(std::is_same<int &    ,   std::add_const<int&>::type     >{} ,"");
 
@@ -1021,8 +1012,8 @@ namespace cambda {
             template<typename ...T>
             auto constexpr
             operator()  ( T && ...t) && // && means, I think, we are entitled to forward 'm_lib' out
-            ->decltype( cambda::apply_after_simplification(std::forward<L>(m_lib), m_f , std::forward<T>(t) ... )  )
-            {   return  cambda::apply_after_simplification(std::forward<L>(m_lib), m_f , std::forward<T>(t) ... ); }
+            ->decltype( std::forward<L>(m_lib).apply_after_simplification(std::forward<L>(m_lib), m_f , std::forward<T>(t) ... )  )
+            {   return  std::forward<L>(m_lib).apply_after_simplification(std::forward<L>(m_lib), m_f , std::forward<T>(t) ... ); }
         };
 
         template<typename L
