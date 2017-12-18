@@ -325,8 +325,8 @@ namespace cambda {
             // If you, for some reason, what this to not be interpreted as a comment,
             // then put a space after the '#', or between the '{' and '}'
             if  (   C::at(o) == '#'
-                 && C::at(o+1) == '{'
-                 && C::at(o+2) == '}')
+                 && C::at(o+1) == '('
+                 && C::at(o+2) == ')')
             {
                 while(C::at(o) != '\n')
                     ++o;
