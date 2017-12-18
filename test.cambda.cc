@@ -289,7 +289,7 @@ static_assert(test_partition() ,"");
 constexpr bool
 test_quicksort()
 {
-        int a[] = {6,5,2,8,3,7,9};
+        int a[] = {9,8,7,6,5,3,2};
         R"--(
                 ([] [swap]      (lambda [x y]
                                     [
@@ -322,7 +322,7 @@ test_quicksort()
                                             ([] [new.pivot] (partition b0 (ref2val e0)))
                                             (if {b0 != new.pivot}
                                                 [
-                                                    (partition (ref2val b0) (ref2val new.pivot))
+                                                    (rec (ref2val b0) (ref2val new.pivot))
                                                 ])
                                             (if {e0 != {new.pivot + 1}}
                                                 [
