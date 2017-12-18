@@ -121,6 +121,25 @@ static_assert(!cambda_utils::equal_string_array("'it''s mine'"_cambda_empty_libr
 static_assert("(length 'it''s mine'c)"_cambda() == 9,"");
 static_assert(std::is_same<decltype("()"_cambda()) , cambda::nil_t>{} ,"");
 
+void README_md_tests()
+{
+    constexpr auto a = "15"_cambda();            // a is 15
+    constexpr auto b = "(+ 8 7)"_cambda();       // Function call. This is addition. b is 15
+    constexpr auto c = "(* 8 7)"_cambda();       // Multiplication
+    constexpr auto d = "{8 * 7}"_cambda();       // If there are two args, use {} instead of () for infix notation
+    constexpr auto e = "{ {8 * 7} + {6 * 3} }"_cambda();  // Nested application
+
+    static_assert(a == 15 ,"");
+    static_assert(b == 15 ,"");
+    static_assert(c == 56 ,"");
+    static_assert(d == 56 ,"");
+    static_assert(e == 74 ,"");
+    static_assert("(lambda [x y] [{x + y}])"_cambda() (20,30) == 50   ,"20+30 should equal 50");
+    /* This next line isn't accepted in C++14, whereas cambdas are useable in unevaluated contexts
+    static_assert( [](auto x, auto y){ return x+y;}   (20,30) == 50   ,"20+30 should equal 50");
+    */
+};
+
 int main() {
     int x=0;
     "(assign x 1234)"_cambda ["x"_binding = x] ();

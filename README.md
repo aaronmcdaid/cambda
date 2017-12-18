@@ -5,6 +5,27 @@ Write lambdas in C++ within an embedded Lisp-like language. Header-only. Very 'c
 
 In C++14, lambdas are very useful but they have some restrictions. They can't be used in certain contexts and they aren't very friendly with `constexpr`.
 
+## Examples
+
+```
+    constexpr auto a = "15"_cambda();            // a is 15
+    constexpr auto b = "(+ 8 7)"_cambda();       // Function call. This is addition. b is 15
+    constexpr auto c = "(* 8 7)"_cambda();       // Multiplication
+    constexpr auto d = "{8 * 7}"_cambda();       // If there are two args, use {} instead of () for infix notation
+    constexpr auto e = "{ {8 * 7} + {6 * 3} }"_cambda();  // Nested application
+
+    static_assert(a == 15 ,"");
+    static_assert(b == 15 ,"");
+    static_assert(c == 56 ,"");
+    static_assert(d == 56 ,"");
+    static_assert(e == 64 ,"");
+    static_assert("(lambda [x y] [{x + y}])"_cambda() (20,30) == 50   ,"20+30 should equal 50");
+```
+
+## Including in your project
+
+## Motivation
+
 I developed this while working on my own range library, in order to be able to perform flexible testing of my ranges at compile time.
 
 In plain C++, we can write this, but we can't mark them as `constexpr` and therefore we can't do a `static_assert` on the result:
