@@ -315,13 +315,13 @@ test_quicksort()
                                                 ]
                                             )]
                                         )
-                                        b
+                                        (ref2val b)
                                     ]))
                 ([] [quicksort]     (lambda [rec b0 e0]
                                         [
-                                            ([]
-                                                [new.pivot]
-                                                (partition b0 e0))
+                                            ([] [new.pivot] (partition (ref2val b0) (ref2val e0)))
+                                            {(* b0             ) = {100 + (* b0             )}}
+                                            (partition (ref2val b0) (ref2val new.pivot))
                                             ()
                                         ]))
                 (fix
@@ -334,7 +334,7 @@ test_quicksort()
                 [   "B"_binding = std::begin(a)
                 ,   "E"_binding = std::end  (a)
                 ]();
-        return cambda_utils::equal_array(a, (int[]){2,5,3,6,9,7,8});
+        return cambda_utils::equal_array(a, (int[]){5,3,102,6,9,7,8});
 }
 
 static_assert(test_quicksort() ,"");
