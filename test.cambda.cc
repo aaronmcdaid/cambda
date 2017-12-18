@@ -289,12 +289,10 @@ static_assert(test_partition() ,"");
 constexpr bool
 test_quicksort()
 {
-        int a[] = {9,8,7,6,5,3,2};
+    constexpr auto quicksort_cambda =
         R"--(
             (lambda [arr]
             [
-                ([] [B] (std::begin arr))
-                ([] [E] (std::end   arr))
                 ([] [swap]      (lambda [x y]
                                     [
                                             ([] [tmp] (ref2val x))
@@ -337,11 +335,15 @@ test_quicksort()
                 (fix
                     (typeof ())
                     quicksort
-                    (ref2val B)
-                    (ref2val E)
+                    (std::begin arr)
+                    (std::end   arr)
                     )
             ])
-        )--"_cambda()(a);
+        )--"_cambda();
+
+        int a[] = {9,8,7,6,5,3,2};
+        quicksort_cambda(a);
+
         return cambda_utils::equal_array(a, (int[]){2,3,5,6,7,8,9});
 }
 
