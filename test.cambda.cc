@@ -315,10 +315,13 @@ test_quicksort()
                                                 ]
                                             )]
                                         )
+                                        b
                                     ]))
                 ([] [quicksort]     (lambda [rec b0 e0]
                                         [
-                                            (partition b0 e0)
+                                            ([]
+                                                [new.pivot]
+                                                (partition b0 e0))
                                             ()
                                         ]))
                 (fix
