@@ -322,7 +322,7 @@ test_quicksort()
                                         (ref2val b)
                                     ]))
                 ([] [quicksort]     (lambda [rec b0 e0]
-                                        [
+                                        [(if {b0 != e0} [
                                             ([] [new.pivot] (partition b0 (ref2val e0)))
                                             (if {b0 != new.pivot}
                                                 [
@@ -333,7 +333,7 @@ test_quicksort()
                                                     (rec {new.pivot + 1} (ref2val e0       ))
                                                 ])
                                             ()
-                                        ]))
+                                        ])]))
                 (fix
                     (typeof ())
                     quicksort
