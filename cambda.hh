@@ -316,7 +316,24 @@ namespace cambda {
     {
         // first, skip whitespace
         while(C::at(o) != '\0' && is_whitespace(C::at(o)))
-            ++o;
+        {
+            while(C::at(o) != '\0' && is_whitespace(C::at(o)))
+                ++o;
+            // a one-line comment begins with whitespace followed by #{},
+            // and runs until the the end of the line
+            //  (foo bar)       #{} this is a comment
+            // If you, for some reason, what this to not be interpreted as a comment,
+            // then put a space after the '#', or between the '{' and '}'
+            if  (   C::at(o) == '#'
+                 && C::at(o+1) == '{'
+                 && C::at(o+2) == '}')
+            {
+                while(C::at(o) != '\n')
+                    ++o;
+            }
+        }
+
+
         size_t start = o;
 
         // then, check if we're at the end
@@ -641,8 +658,6 @@ namespace cambda {
     {
         //using all_the_terms_t = typename parse_flat_list_of_terms<E, 0>::all_the_terms; /*This was the broken version - clang doesn't like this*/
         using all_the_terms_t = typename flatten_again<E>::all_the_terms_t;
-
-        static_assert(std::is_same<all_the_terms_t, typename flatten_again<E>::all_the_terms_t>{} ,"");
 
         auto parsed =  parser( all_the_terms_t{} );
         static_assert(std::is_same< typename decltype(parsed) :: rest , types_t<>>{} ,"");
