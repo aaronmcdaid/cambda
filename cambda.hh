@@ -1719,6 +1719,25 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
         }
 
 
+        /* std::{begin,end}
+         * ================
+         */
+        template< typename LibToForward , typename ... T >
+        auto constexpr
+        apply_after_simplification  (LibToForward && , decltype( "std::begin"_charpack ) , T && ... t) const
+        ->decltype(std::begin(std::forward<T>(t) ...) )
+        {
+            return std::begin(std::forward<T>(t) ...);
+        }
+
+        template< typename LibToForward , typename ... T >
+        auto constexpr
+        apply_after_simplification  (LibToForward && , decltype( "std::end"_charpack ) , T && ... t) const
+        ->decltype(std::end(std::forward<T>(t) ...) )
+        {
+            return std::end(std::forward<T>(t) ...);
+        }
+
     };
 
 
