@@ -1587,6 +1587,22 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                     return multi_statement_execution<types_t<QuotedExpressionFalse...>> ::eval(   std::forward<LibToForward>(l2f) );
         }
 
+        // 'if' with bool and just one branch
+        template< typename LibToForward
+                , typename ... QuotedExpressionTrue
+                >
+        auto constexpr
+        apply_after_simplification  (LibToForward && l2f, decltype( "if"_charpack )
+                            , bool b
+                            , cambda::grouped_t<'[', types_t<QuotedExpressionTrue...>>
+                            ) const
+        -> nil_t
+        {
+                if(b)
+                    multi_statement_execution<types_t<QuotedExpressionTrue...>>  ::eval(   std::forward<LibToForward>(l2f) );
+                return {};
+        }
+
         /* while
          */
         template< typename LibToForward
