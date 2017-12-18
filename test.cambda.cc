@@ -293,42 +293,42 @@ test_quicksort()
         R"--(
             (lambda [arr]
             [
-                ([] [swap]      (lambda [x y]
+                ([] [swap]      (lambda [x y]                       #() define a 'swap' function to be used within 'partition' below
                                     [
-                                            ([] [tmp] (ref2val x))
+                                            ([] [tmp] (ref2val x))  #() 'ref2val' in order that 'tmp' is a copy of 'x', not a reference to it
                                             {x = y}
                                             {y = tmp}
                                     ]))
-                ([] [partition] (lambda.val [b e]
+                ([] [partition] (lambda.val [b e]                   #() 'lambda.val' to take 'b' and 'e' by value, not by 'decltype(auto)'
                                     [
                                         (while
                                             [{{b != e} && {{b + 1} != e}}]
                                             [(if
                                                 {(* {b + 1}) < (* b)}
                                                 [
-                                                        (swap (* {b + 1}) (* b))
-                                                        (++ b)
-                                                        ()
+                                                    (swap (* {b + 1}) (* b))
+                                                    (++ b)
+                                                    ()              #() return a value of 'nil_t' from this branch of the if
                                                 ]
                                                 [
                                                     (-- e)
                                                     (swap (* {b + 1}) (* e))
-                                                    ()
+                                                    ()              #() return a value of 'nil_t' from this branch of the if
                                                 ]
                                             )]
                                         )
-                                        (ref2val b)
+                                        (ref2val b)                 #() return the iterator to the pivot (by value)
                                     ]))
                 ([] [quicksort]     (lambda [rec b0 e0]
-                                        [(if {b0 != e0} [
-                                            ([] [new.pivot] (partition b0 (ref2val e0)))
-                                            (if {b0 != new.pivot}
+                                        [(if {b0 != e0} [           #() check if the range to be sorted is non-empty
+                                            ([] [iterator.to.pivot] (partition b0 e0))  #() partition into two parts
+                                            (if {b0 != iterator.to.pivot}               #() if before the pivot is non.empty
                                                 [
-                                                    (rec (ref2val b0) (ref2val new.pivot))
+                                                    (rec (ref2val b0) (ref2val iterator.to.pivot)) #() recursive call
                                                 ])
-                                            (if {e0 != {new.pivot + 1}}
+                                            (if {e0 != {iterator.to.pivot + 1}}         #() if after the pivot is non.empty
                                                 [
-                                                    (rec {new.pivot + 1} (ref2val e0       ))
+                                                    (rec {iterator.to.pivot + 1} (ref2val e0       )) #() recursive call
                                                 ])
                                             ()
                                         ])]))
