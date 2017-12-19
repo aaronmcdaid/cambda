@@ -1245,7 +1245,6 @@ namespace cambda {
             static_assert(std::is_same
                             <   decltype(bound_value)
                             ,   decltype(cambda::simplify(BindingExpression{}, std::forward<LibToForward>(lib)))    >{} ,"Argh, what does decltype(auto) do on vars?");
-            static_assert(!std::is_lvalue_reference<decltype(bound_value)>{} ,""); // TODO: this is probably too strict
             static_assert(!std::is_rvalue_reference<decltype(bound_value)>{} ,""); // TODO: this is probably too strict
             static_assert(std::is_same<TypeOfTheBoundValue_AsLvalue, decltype((bound_value))>{} ,"");
 

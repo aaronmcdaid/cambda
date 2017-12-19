@@ -266,7 +266,7 @@ test_partition()
         int a[] = {6,2,5,8,3,9,7};
         R"--(
                 ([] [swap] (lambda [(& x) (& y)] [
-                                            ([] [tmp] (ref2val x))
+                                            ([] [tmp] x)
                                             {x = y}
                                             {y = tmp}
                                     ]))
@@ -306,7 +306,7 @@ test_quicksort()
     [
         ([] [swap]      (lambda [(& x) (& y)] #() define a 'swap' function. Captures by reference
             [
-                    ([] [tmp] (ref2val x))  #() 'ref2val' in order that 'tmp' is a copy of 'x', not a reference to it
+                    ([] [tmp] x)
                     {x = y}
                     {y = tmp}
             ]))
