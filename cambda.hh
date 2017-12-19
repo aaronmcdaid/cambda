@@ -1396,6 +1396,21 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
         { return {}; }
 
 
+        /* ++
+         * ==
+         *  Concatentate two compile-time strings
+         */
+        template< typename LibToForward
+                , char ...l
+                , char ...r>
+        auto constexpr
+        apply_after_simplification  (LibToForward &&, decltype( "++"_charpack )
+                            , cambda_utils::char_pack<l...>
+                            , cambda_utils::char_pack<r...>
+                            ) const
+        { return cambda_utils::char_pack<l..., r...>{}; }
+
+
         template< typename LibToForward
                 , typename MultiStatement
                 , typename ...BindingName>
