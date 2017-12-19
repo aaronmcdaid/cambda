@@ -677,8 +677,19 @@ namespace cambda {
 
         constexpr auto getlib1()    const   -> decltype(auto) { return std::forward<std::add_const_t<Lib1>>(lib1); }
         constexpr auto getlib1()            -> decltype(auto) { return std::forward<                 Lib1 >(lib1); }
-        constexpr auto getlib2()    const   -> decltype(auto) { return std::forward<std::add_const_t<Lib2>>(lib2); }
-        constexpr auto getlib2()            -> decltype(auto) { return std::forward<                 Lib2 >(lib2); }
+
+        template< typename Self>
+        constexpr auto static
+        getlib2(Self && self)
+        -> decltype(auto)
+        {
+            static_assert(!std::is_rvalue_reference<Lib2>{} ,"");
+            using ReturnType = std::conditional_t   <   std::is_lvalue_reference<Lib2>{}
+                                                    ,   decltype((self.lib2))
+                                                    ,   std::remove_reference_t<decltype((self.lib2))>
+                                                    >;
+            return std::forward<ReturnType>(self.lib2);
+        }
 
         static_assert(!std::is_rvalue_reference<Lib1>{} ,"");
         static_assert(!std::is_rvalue_reference<Lib2>{} ,"");
@@ -712,8 +723,8 @@ namespace cambda {
                 >
         auto constexpr
         apply_after_simplification(T && ... t)
-        ->decltype(id{}(this)->getlib2(). apply_after_simplification(std::forward<T>(t)...)  )
-        {   return     (this)->getlib2(). apply_after_simplification(std::forward<T>(t)...); }
+        ->decltype(id{}(this)->getlib2(*this). apply_after_simplification(std::forward<T>(t)...)  )
+        {   return     (this)->getlib2(*this). apply_after_simplification(std::forward<T>(t)...); }
 
         // ... same as above, but const
         template< typename ... T
@@ -731,8 +742,8 @@ namespace cambda {
                 >
         auto constexpr
         apply_after_simplification(T && ... t) const
-        ->decltype(id{}(this)->getlib2(). apply_after_simplification(std::forward<T>(t)...)  )
-        {   return     (this)->getlib2(). apply_after_simplification(std::forward<T>(t)...); }
+        ->decltype(id{}(this)->getlib2(*this). apply_after_simplification(std::forward<T>(t)...)  )
+        {   return     (this)->getlib2(*this). apply_after_simplification(std::forward<T>(t)...); }
 
         /* Now, 'static_get_simple_named_value'
          * Define two helper overloads, one for each sub-library.
@@ -754,8 +765,8 @@ namespace cambda {
                 >
         auto constexpr static
         static_get_simple_named_value(Self && self, cambda_utils::char_pack<cs...> name)
-        ->decltype(std::forward<Self>(self).getlib2().static_get_simple_named_value(std::forward<Self>(self).getlib2(), name)  )
-        {   return std::forward<Self>(self).getlib2().static_get_simple_named_value(std::forward<Self>(self).getlib2(), name); }
+        ->decltype(self.getlib2(std::forward<Self>(self)).static_get_simple_named_value(self.getlib2(std::forward<Self>(self)), name)  )
+        {   return self.getlib2(std::forward<Self>(self)).static_get_simple_named_value(self.getlib2(std::forward<Self>(self)), name); }
 
 
     };
