@@ -50,6 +50,32 @@ Just include `cambda.hh`
 
 When compiling, add these flags `-std=c++14 -Wno-gnu-string-literal-operator-template`.
 
+## Factorial
+
+A more important example is to compute factorial with this library, demonstrating recursion via [`fix`](https://en.wikipedia.org/wiki/Fixed-point_combinator#The_factorial_function).
+
+
+```
+static_assert(5040 ==
+    // Use a raw string literal (C++11) to specify multiline strings
+    R"--(
+        (lambda [N] [                           #() a single-line starts with #()
+            (fix    (typeof 0)                  #() fix requires us to specify the return type
+                    (lambda
+                        [(& rec) n]
+                        [
+                            (if {n < 1}
+                                [ 1 ]
+                                [ {n * (rec {n - 1})} ]
+                                )
+                        ])
+                    (ref2val N)
+                    )
+                    ])
+    )--"_cambda ()(7)
+,""); // compute the factorial of 7.
+```
+
 
 ## Motivation
 
@@ -115,7 +141,7 @@ standards as support is improved for lambdas in `constexpr` contexts.
 ```
 std::vector<int> v{2,3,4};
 auto size_of_v = "(size v)"_cambda
-        [   "v"_binding = v
+        [   "v"_binding &= v    //  &=  to bind by reference
         ,   "size"_binding =
                         [](auto && x){return x.size();}
         ]   //  [] attaches the bindings

@@ -20,7 +20,7 @@ namespace testing_namespace_empty_library {
                 , typename Tj >
         auto constexpr
         apply_after_simplification
-            ( LibToForward
+            ( LibToForward &&
             , decltype( "+"_charpack )
             , Ti && i
             , Tj && j) const
@@ -98,7 +98,7 @@ static_assert("(if.constexpr falsec [3.14] ['hi'c])"_cambda() == "hi"_charpack ,
 
 std::vector<int> v{2,3,4};
 auto size_of_v = "(size v)"_cambda
-        [   "v"_binding = v
+        [   "v"_binding &= v
         ,   "size"_binding =
                         [](auto && x){return x.size();}
         ]   //  [] attaches the bindings
@@ -155,32 +155,28 @@ int main() {
     static_assert(product.value == 12 ,"");
 
 #if 1
-    struct factorial {
-        constexpr auto static
-        bar() {
-        auto answer =
+    static_assert(5040 ==
+    /* For complex cambdas, it's good to use raw string
+     * literals (C++11) to enable multi-line strings.
+     */
     R"--(
+
+        ([]
+            [fact]
+            (lambda
+                [(& rec) n]
+                [ (if {n < 1} [ 1 ] [ {n * (rec {n - 1})} ]) ]
+            ))
+
         (lambda [N] [
-            (fix    (typeof 0)
-                    (lambda
-                        [(& rec) n]
-                        [
-                            (if {n < 1}
-                                [ 1 ]
-                                [ {n * (rec {n - 1})} ]
-                                )
-                        ])
-                    (ref2val N)
-                    )
-                    ])
-    )--"_cambda ()(7); // compute the factorial of 7.
-            return answer;
-        }
-    };
-    constexpr
-    auto factorial7 = factorial::bar();
-    static_assert(5040 == factorial7 ,"");
-    std::cout << "Fix: " << factorial7 << '\n';
+            (fix
+                (typeof 0)
+                fact
+                (ref2val N)
+                )])
+
+    )--"_cambda ()(7)
+    ,""); // compute the factorial of 7.
 #endif
 
     constexpr
