@@ -996,6 +996,34 @@ namespace cambda {
         -> decltype(auto)
         { return detail:: has_get_simple_named_value_helper<Name,Lib>(cambda_utils::priority_tag<9>{}); }
 
+
+        /* has_static_get_simple_named_value */
+
+        template< typename Name, typename Lib>
+        static auto constexpr
+        has_static_get_simple_named_value_helper(cambda_utils::priority_tag<2>)
+        -> decltype(void(
+                        std::declval<Lib&>().
+                    static_get_simple_named_value(
+                        std::declval<Lib&>(),
+                        std::declval<Name&>())
+                    )
+                ,   std:: true_type{}
+                )
+        { return {}; }
+
+        template<typename Name, typename Lib>
+        static auto constexpr
+        has_static_get_simple_named_value_helper(cambda_utils::priority_tag<1>)
+        -> std:: false_type
+        { return {}; }
+
+        template<typename Name, typename Lib>
+        static auto constexpr
+        has_static_get_simple_named_value()
+        -> decltype(auto)
+        { return detail:: has_static_get_simple_named_value_helper<Name,Lib>(cambda_utils::priority_tag<9>{}); }
+
     }
 
     // simplifier for names.
@@ -1013,8 +1041,20 @@ namespace cambda {
         static_assert( '\'' !=            Name::at(0)   ,"");
 
         template<typename L
+                , bool b = detail::has_static_get_simple_named_value<Name, L>()
+                , std::enable_if_t<b, std::integral_constant<int,__LINE__>>* =nullptr
+                >
+        static auto constexpr
+        simplify(Name name, L && lib)
+        ->decltype(Get_simple_named_value(std::forward<L>(lib), name) )
+        {
+            return Get_simple_named_value(std::forward<L>(lib), name);
+        }
+
+        template<typename L
                 , bool b = detail::has_get_simple_named_value<Name, L>()
-                , typename = std::enable_if_t<b>
+                        && !detail::has_static_get_simple_named_value<Name, L>()
+                , std::enable_if_t<b, std::integral_constant<int,__LINE__>>* =nullptr
                 >
         static auto constexpr
         simplify(Name name, L && lib)
@@ -1037,8 +1077,9 @@ namespace cambda {
         };
 
         template<typename L
-                , bool b = detail::has_get_simple_named_value<Name, L>()
-                , typename = std::enable_if_t<!b>
+                , bool b =!detail::has_get_simple_named_value<Name, L>()
+                        && !detail::has_static_get_simple_named_value<Name, L>()
+                , std::enable_if_t< b, std::integral_constant<int,__LINE__>>* =nullptr
                 >
         static auto constexpr
         simplify(Name f, L && lib) -> gather_args_later<L> {
