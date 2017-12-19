@@ -234,7 +234,7 @@ test_range_based_for()
             (range_based_for
                 test_data
                 (lambda
-                    [r]
+                    [(& r)]
                     [
                         (assign r {r * r})
                     ]
@@ -270,7 +270,7 @@ test_partition()
 {
         int a[] = {6,2,5,8,3,9,7};
         R"--(
-                ([] [swap] (lambda [x y] [
+                ([] [swap] (lambda [(& x) (& y)] [
                                             ([] [tmp] (ref2val x))
                                             {x = y}
                                             {y = tmp}
@@ -309,7 +309,7 @@ test_quicksort()
         R"--(
     (lambda [arr]
     [
-        ([] [swap]      (lambda [x y]       #() define a 'swap' function to be used within 'partition' below
+        ([] [swap]      (lambda [(& x) (& y)] #() define a 'swap' function. Captures by reference
             [
                     ([] [tmp] (ref2val x))  #() 'ref2val' in order that 'tmp' is a copy of 'x', not a reference to it
                     {x = y}
@@ -335,7 +335,7 @@ test_quicksort()
                 )
                 (ref2val b)                 #() return the iterator to the pivot (by value)
             ]))
-        ([] [quicksort]     (lambda [rec b0 e0]
+        ([] [quicksort]     (lambda [(& rec) b0 e0]
             [(if {b0 != e0} [               #() check if the range to be sorted is non-empty
                 ([] [iterator.to.pivot] (partition b0 e0))  #() partition into two parts
                 (if {b0 != iterator.to.pivot}               #() if before the pivot is non.empty

@@ -1123,6 +1123,10 @@ namespace cambda {
         }
     };
 
+    enum class capture_policy   { byEither // capture as T&&, but store as T
+                                , byLvalueReference // strictly T&
+                                };
+
     template< typename B
             , typename T2
             , char ...c2 >
@@ -1134,25 +1138,39 @@ namespace cambda {
         return combine_libraries(std::forward<B>(beforeComma), std::move(afterComma));
     }
 
-    template<char ...c>
+    template< capture_policy cap
+            , char ...c>
     struct binding_name
     {
         template<typename V>
         auto constexpr
         operator=(V && v)
         ->decltype(auto)
-        { return binded_name_with_valueOrReference<V, c...>{std::forward<V>(v)}; }
+        {
+            static_assert(!std::is_rvalue_reference<V>{} ,"");
+            using BoundStorageType = std::conditional_t
+                                        < cap == capture_policy:: byEither
+                                        , V
+                                        , V & // other, cap == capture_policy:: byLvalueReference
+                                        >;
+            return binded_name_with_valueOrReference<BoundStorageType, c...>{std::forward<V>(v)};
+        }
     };
     template<char ...c>
     auto constexpr
     char_pack__to__binding_name(cambda_utils::char_pack<c...>)
-    -> binding_name<c...>
+    -> binding_name<capture_policy:: byEither, c...>
+    {return {};}
+    template<char ...c>
+    auto constexpr
+    char_pack__to__binding_name(grouped_t<'(', types_t<cambda_utils::char_pack<'&'>, cambda_utils::char_pack<c...>>>)
+    -> binding_name<capture_policy:: byLvalueReference, c...>
     {return {};}
 
     template<typename T, T ... chars>
     constexpr auto
     operator"" _binding () {
-        return binding_name<chars...>{};
+        return binding_name<capture_policy:: byEither, chars...>{};
     }
 
     template< typename CodeType>
