@@ -56,10 +56,10 @@ When compiling, add these flags `-std=c++14 -Wno-gnu-string-literal-operator-tem
     /* For complex cambdas, it's good to use raw string
      * literals (C++11) to enable multi-line strings.
      */
-    static_assert(42 ==
+
+static_assert(42 ==
     R"--(
         #()     A single-line comment is introduced by #().
-        #()     strings are surrounded by single-quotes.
 
         #()     Each expression is evaluated in turn, and only
         #()     the last one is returned
@@ -73,7 +73,7 @@ When compiling, add these flags `-std=c++14 -Wno-gnu-string-literal-operator-tem
         {six * seven}   #() returns 42
     )--"_cambda () ,""); // compute the factorial of 7.
 
-    static_assert(49 ==
+static_assert(49 ==
     R"--(
         #()     The 'lambda' function can create an anonymous function,
         #()     and we use a  #()  to give it a name
@@ -83,7 +83,7 @@ When compiling, add these flags `-std=c++14 -Wno-gnu-string-literal-operator-tem
         (square 7)
     )--"_cambda () ,""); // compute the factorial of 7.
 
-    static_assert(174 ==
+static_assert(174 ==
     R"--(
         #()     This is an example of a lambda that takes two arguments.
         #()     Also, the body of a lambda can have multiple statements.
@@ -107,7 +107,7 @@ When compiling, add these flags `-std=c++14 -Wno-gnu-string-literal-operator-tem
         (sum.of.square.and.cube 7 5)    #() returns 174 (7*7 + 5*5*5)
     )--"_cambda () ,"wrong result computed"); // compute the factorial of 7.
 
-    static_assert(3.14 ==
+static_assert(3.14 ==
     R"--(
         #()     'if' evaluates one of two expressions
 
@@ -115,7 +115,7 @@ When compiling, add these flags `-std=c++14 -Wno-gnu-string-literal-operator-tem
 
     )--"_cambda () ,"wrong result computed"); // compute the factorial of 7.
 
-    static_assert(12 ==
+static_assert(12 ==
     R"--(
 
     #() Begin with x==0
@@ -152,8 +152,10 @@ A more important example is to compute factorial with this library, demonstratin
 static_assert(5040 ==
     // Use a raw string literal (C++11) to specify multiline strings
     R"--(
-        (lambda [N] [                           #() a single-line starts with #()
-            (fix    (typeof 0)                  #() fix requires us to specify the return type
+        (lambda [N] [
+            (fix    (typeof 0)                  #() 'fix' requires us to specify the return type,
+                                                #() due to challenges getting recurive return
+                                                #() type deduction to work in C++.
                     (lambda
                         [(& rec) n]
                         [
@@ -162,10 +164,13 @@ static_assert(5040 ==
                                 [ {n * (rec {n - 1})} ]
                                 )
                         ])
-                    (ref2val N)
+                    (ref2val N)                 #() Pass in, by value, the number we want
+                                                #() the factorial of.
                     )
                     ])
-    )--"_cambda ()(7)
+    )--"_cambda
+            ()      // 'execute' the 'cambda', which simply returns the anonymous function
+            (7)     // This line actually calls the anonymous function
 ,""); // compute the factorial of 7.
 ```
 
@@ -210,8 +215,15 @@ In C++, we write `foo(5, 3.14)`, but in Lisp we write `(foo 5 3.14)`. Note also 
     constexpr auto a = "15"_cambda();            // a is 15
     constexpr auto b = "(+ 8 7)"_cambda();       // Function call. This is addition. b is 15
     constexpr auto c = "(* 8 7)"_cambda();       // Multiplication
-    constexpr auto d = "{8 * 7}"_cambda();       // If there are two args, use {} instead of () for infix notation
+    constexpr auto d = "{8 * 7}"_cambda();       // If there are two args, use {} instead
+                                                 // of () for infix notation
     constexpr auto e = "{ {8 * 7} + {6 * 3} }"_cambda();  // Nested application
+
+    static_assert(a == 15   ,"");
+    static_assert(b == 15   ,"");
+    static_assert(c == 56   ,"");
+    static_assert(d == 56   ,"");
+    static_assert(e == 74   ,"");
 ```
 
 Please note that the whitespace is important here. Also, unlike C++, Lisp is very flexible about what can appear in identifiers.
@@ -226,6 +238,19 @@ using `[ ]` between the `_cambda` and the `()`:
 
 ```
 constexpr auto four_squared = "{x * x}"_cambda ["x"_binding = 4] ();
+
+// ... or add a binding by-reference using  &=  instead of  =
+
+constexpr auto
+foo()
+{
+    int y = 0;
+    "{y = 4}"_cambda        // 'compile' a cambda, which performs an assignment
+        ["y"_binding &= y]  // attach a binding to the C++ variable
+        ();                 // 'execute' the cambda
+    return y;
+}
+static_assert(foo() == 4 ,"");
 ```
 
 We can't make the next example `constexpr` in C++14, but it might work in future
