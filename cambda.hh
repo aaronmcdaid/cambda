@@ -1537,7 +1537,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
                 , typename ... QuotedExpressionFalse
                 >
         auto constexpr
-        apply_after_simplification  (LibToForward && l2f, decltype( "if"_charpack )
+        apply_after_simplification  (LibToForward && l2f, decltype( "if.constexpr"_charpack )
                             , std::true_type
                             , cambda::grouped_t<'[', types_t<QuotedExpressionTrue...>>
                             , cambda::grouped_t<'[', types_t<QuotedExpressionFalse...>>
@@ -1555,7 +1555,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
                 , typename ... QuotedExpressionFalse
                 >
         auto constexpr
-        apply_after_simplification  (LibToForward && l2f, decltype( "if"_charpack )
+        apply_after_simplification  (LibToForward && l2f, decltype( "if.constexpr"_charpack )
                             , std::false_type
                             , cambda::grouped_t<'[', types_t<QuotedExpressionTrue...>>
                             , cambda::grouped_t<'[', types_t<QuotedExpressionFalse...>>

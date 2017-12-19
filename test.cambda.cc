@@ -95,8 +95,8 @@ static_assert(42 ==                       "42"_cambda()       ,"");
 static_assert(3.4 ==                        "3.4"_cambda()       ,"");
 static_assert(3.41932 ==                        "3.41932"_cambda()       ,"");
 
-static_assert("(if truec  [3.14] ['hi'])"_cambda() == 3.14 ,"");
-static_assert("(if falsec [3.14] ['hi'c])"_cambda() == "hi"_charpack ,"");
+static_assert("(if.constexpr truec  [3.14] ['hi'])"_cambda() == 3.14 ,"");
+static_assert("(if.constexpr falsec [3.14] ['hi'c])"_cambda() == "hi"_charpack ,"");
 
 std::vector<int> v{2,3,4};
 auto size_of_v = "(size v)"_cambda
