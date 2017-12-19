@@ -37,8 +37,30 @@ namespace testing_namespace_empty_library {
 constexpr auto a = "15"_cambda();            // a is 15
 constexpr auto b = "(+ 8 7)"_cambda();       // Function call. This is addition. b is 15
 constexpr auto c = "(* 8 7)"_cambda();       // Multiplication
-constexpr auto d = "{8 * 7}"_cambda();       // If there are two args, use {} instead of () for infix notation
+constexpr auto d = "{8 * 7}"_cambda();       // If there are two args, use {} instead
+                                             // of () for infix notation
 constexpr auto e = "{ {8 * 7} + {6 * 3} }"_cambda();  // Nested application
+
+static_assert(a == 15   ,"");
+static_assert(b == 15   ,"");
+static_assert(c == 56   ,"");
+static_assert(d == 56   ,"");
+static_assert(e == 74   ,"");
+
+
+constexpr auto four_squared = "{x * x}"_cambda ["x"_binding = 4] ();
+static_assert(four_squared == 16 ,"");
+
+constexpr auto
+foo()
+{
+    int y = 0;
+    "{y = 4}"_cambda        // 'compile' a cambda, which performs an assignment
+        ["y"_binding &= y]  // attach a binding to the C++ variable
+        ();                 // 'execute' the cambda
+    return y;
+}
+static_assert(foo() == 4 ,"");
 
 #if 1
 constexpr auto cambda_lambda = "(lambda [x] [{x * x}])"_cambda();
@@ -60,17 +82,8 @@ test_lambda_with_binding()
 static_assert(test_lambda_with_binding() == 200 ,"");
 #endif
 
-static_assert(a == 15   ,"");
-static_assert(b == 15   ,"");
-static_assert(c == 56   ,"");
-static_assert(d == 56   ,"");
-static_assert(e == 74   ,"");
-
 constexpr auto a_integralconstant = "15c"_cambda();            // a is 15
 static_assert(a_integralconstant.value == 15   ,"");
-
-constexpr auto four_squared = "{x * x}"_cambda ["x"_binding = 4] ();
-static_assert(four_squared == 16   ,"");
 
 static_assert(42    == "(* 21 2)"_cambda ()   ,"");
 static_assert(56088 == R"--(
