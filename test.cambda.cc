@@ -28,8 +28,6 @@ namespace testing_namespace_empty_library {
         {   return std::forward<Ti>(i) + std::forward<Tj>(j); }
     };
 
-    constexpr auto a = "([] [x] 15c) x"_cambda_empty_library();
-    static_assert(a == 15 ,"");
     constexpr auto b = "(+ 7 8)"_cambda_empty_library["+"_binding = plus]();
     static_assert(b == 15 ,"");
     constexpr auto c = "(+ 7 8)"_cambda_empty_library[a_lib_with_plus{}]();
