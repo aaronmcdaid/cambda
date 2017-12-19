@@ -1452,28 +1452,39 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
         }
 
 
+        /* assign   (also simply called '=')
+         * ======
+         */
 
         template< typename T
                 , typename LibToForward
                 , typename S >
         auto constexpr
         apply_after_simplification  (LibToForward &&, decltype( "assign"_charpack )
-                            , T & target
-                            , S   source
+                            , T &  target
+                            , S && source
                             ) const
-        ->decltype(target = source  )
-        {   return target = source; }
+        ->decltype(target = std::forward<S>(source)  )
+        {   return target = std::forward<S>(source); }
         template< typename T
                 , typename LibToForward
                 , typename S >
         auto constexpr
         apply_after_simplification  (LibToForward &&, decltype( "="_charpack )
-                            , T & target
-                            , S   source
+                            , T &  target
+                            , S && source
                             ) const
-        ->decltype(target = source  )
-        {   return target = source; }
+        ->decltype(target = std::forward<S>(source)  )
+        {   return target = std::forward<S>(source); }
 
+
+        /* &
+         * =
+         *
+         *  Simply apply a function to a value. This allows a 'pipe-like'
+         *  behaviour:
+         *      { d & f }   is the same as  (f d)
+         */
         template< typename LibToForward
                 , typename Arg
                 , typename Func
@@ -1488,7 +1499,13 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
 
 
         /*
-         * 'begin'
+         * begin
+         * =====
+         *  Evaluate each term, returning the last one. The name 'begin' might
+         *  seem a bit strange, but it is common in Lisp-like languages
+         *  (e.g. http://docs.racket-lang.org/guide/begin.html)
+         *
+         *  This also allows binding via ([] [name] value)
          */
         template< typename LibToForward
                 , typename ... Statements
