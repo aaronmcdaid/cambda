@@ -754,6 +754,30 @@ namespace cambda {
         ->decltype(id{}(this)->getlib2(). apply_after_simplification(std::forward<T>(t)...)  )
         {   return     (this)->getlib2(). apply_after_simplification(std::forward<T>(t)...); }
 
+        /* Now, 'static_get_simple_named_value'
+         * Define two helper overloads, one for each sub-library.
+         * Then forward the call
+         */
+        template< typename Self
+                , char ... cs
+                , typename id = cambda_utils::id_t
+                , typename std::integral_constant<int, __LINE__> * =nullptr
+                >
+        auto constexpr static
+        static_get_simple_named_value(Self && self, cambda_utils::char_pack<cs...> name)
+        ->decltype(std::forward<Self>(self).getlib1().static_get_simple_named_value(std::forward<Self>(self).getlib1(), name)  )
+        {   return std::forward<Self>(self).getlib1().static_get_simple_named_value(std::forward<Self>(self).getlib1(), name); }
+        template< typename Self
+                , char ... cs
+                , typename id = cambda_utils::id_t
+                , typename std::integral_constant<int, __LINE__> * =nullptr
+                >
+        auto constexpr static
+        static_get_simple_named_value(Self && self, cambda_utils::char_pack<cs...> name)
+        ->decltype(std::forward<Self>(self).getlib2().static_get_simple_named_value(std::forward<Self>(self).getlib2(), name)  )
+        {   return std::forward<Self>(self).getlib2().static_get_simple_named_value(std::forward<Self>(self).getlib2(), name); }
+
+
         /* Second, 'get_simple_named_value'
          * Define two helper overloads, one for each sub-library.
          * Then forward the call
