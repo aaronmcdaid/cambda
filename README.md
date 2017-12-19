@@ -50,6 +50,99 @@ Just include `cambda.hh`
 
 When compiling, add these flags `-std=c++14 -Wno-gnu-string-literal-operator-template`.
 
+## Declaring variables, if-expressions, ...
+
+```
+    /* For complex cambdas, it's good to use raw string
+     * literals (C++11) to enable multi-line strings.
+     */
+    static_assert(42 ==
+    R"--(
+        #()     A single-line comment is introduced by #().
+        #()     strings are surrounded by single-quotes.
+
+        #()     Each expression is evaluated in turn, and only
+        #()     the last one is returned
+
+        #()     New bindings can be introduced with ([] [name] value)
+
+        ([] [six] 6)
+
+        ([] [seven] 7)
+
+        {six * seven}   #() returns 42
+    )--"_cambda () ,""); // compute the factorial of 7.
+
+    static_assert(49 ==
+    R"--(
+        #()     The 'lambda' function can create an anonymous function,
+        #()     and we use a  #()  to give it a name
+
+        ([] [square] (lambda [x] [{x * x}]))
+
+        (square 7)
+    )--"_cambda () ,""); // compute the factorial of 7.
+
+    static_assert(174 ==
+    R"--(
+        #()     This is an example of a lambda that takes two arguments.
+        #()     Also, the body of a lambda can have multiple statements.
+
+        ([]
+            [sum.of.square.and.cube]
+                (lambda
+                    [x y]       #() ... the two argument names
+                    [           #() A multi-line lambda body starts here
+
+                            #() First, two bindings inside the lambda
+                            ([] [x.squared] {x * x})
+                            ([] [y.cubed] {y * {y * y}})
+
+                            #() Then, the return-expression from the lambda
+                            {x.squared + y.cubed}
+                    ]           #() ... end the lambda body
+                )
+        )
+
+        (sum.of.square.and.cube 7 5)    #() returns 174 (7*7 + 5*5*5)
+    )--"_cambda () ,"wrong result computed"); // compute the factorial of 7.
+
+    static_assert(3.14 ==
+    R"--(
+        #()     'if' evaluates one of two expressions
+
+        (if {5 > 3} [3.14] [2.718])
+
+    )--"_cambda () ,"wrong result computed"); // compute the factorial of 7.
+
+    static_assert(12 ==
+    R"--(
+
+    #() Begin with x==0
+
+    ([] [x] 0)
+
+    #() Now a while loop
+
+    (while
+        [{x < 10}]          #() condition for 'while'
+        [{x = {x + 3}}]     #() add 3 to 'x' each time
+    )
+
+    #() We can't simply return 'x' here because it will return #() by
+    #() reference for simple names. It kind of like this C++ code:
+    #()         return std::forward<decltype(x)>(x);
+    #() ... which would return a reference to a temporary.
+
+    #() Therefore, we call a function ('ref2val') which simply
+    #() returns it by value.
+
+    (ref2val x)         #() return the final value of 'x', by value.
+
+    )--"_cambda () ,"wrong result computed"); // compute the factorial of 7.
+```
+
+
 ## Factorial
 
 A more important example is to compute factorial with this library, demonstrating recursion via [`fix`](https://en.wikipedia.org/wiki/Fixed-point_combinator#The_factorial_function).
