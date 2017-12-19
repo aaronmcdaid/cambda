@@ -256,8 +256,8 @@ void README_md_tests()
         ([]
             [fact]
             (lambda
-                [(& rec) n]
-                [ (if {n < 1} [ 1 ] [ {n * (rec {n - 1})} ]) ]
+                [(& fact) n]
+                [ (if {n < 1} [ 1 ] [ {n * (fact {n - 1})} ]) ]
             ))
 
         (lambda [N] [

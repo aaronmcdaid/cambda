@@ -11,7 +11,8 @@ In C++14, lambdas are very useful but they have some restrictions. They can't be
     constexpr auto a = "15"_cambda();            // a is 15
     constexpr auto b = "(+ 8 7)"_cambda();       // Function call. This is addition. b is 15
     constexpr auto c = "(* 8 7)"_cambda();       // Multiplication
-    constexpr auto d = "{8 * 7}"_cambda();       // If there are two args, use {} instead of () for infix notation
+    constexpr auto d = "{8 * 7}"_cambda();       // If there are two args, use {} instead
+                                                 // of () for infix notation
     constexpr auto e = "{ {8 * 7} + {6 * 3} }"_cambda();  // Nested application
 
     static_assert(a == 15 ,"");
@@ -150,18 +151,17 @@ A more important example is to compute factorial with this library, demonstratin
 
 ```
 static_assert(5040 ==
-    // Use a raw string literal (C++11) to specify multiline strings
     R"--(
         (lambda [N] [
             (fix    (typeof 0)                  #() 'fix' requires us to specify the return type,
-                                                #() due to challenges getting recurive return
+                                                #() due to challenges getting recursive return
                                                 #() type deduction to work in C++.
                     (lambda
-                        [(& rec) n]
+                        [(& fact) n]
                         [
                             (if {n < 1}
                                 [ 1 ]
-                                [ {n * (rec {n - 1})} ]
+                                [ {n * (fact {n - 1})} ]
                                 )
                         ])
                     (ref2val N)                 #() Pass in, by value, the number we want
@@ -172,6 +172,80 @@ static_assert(5040 ==
             ()      // 'execute' the 'cambda', which simply returns the anonymous function
             (7)     // This line actually calls the anonymous function
 ,""); // compute the factorial of 7.
+```
+
+## Sorting
+
+Quicksort, implemented in cambda. And tested at compile time:
+
+```
+constexpr bool
+test_quicksort()
+{
+    constexpr auto quicksort_cambda =
+        R"--(
+    (lambda [(& arr)]
+    [
+        ([] [swap]      (lambda [(& x) (& y)] #() define a 'swap' function. Captures by reference
+            [
+                    ([] [tmp] x)
+                    {x = y}
+                    {y = tmp}
+            ]))
+        ([] [partition] (lambda [b e]
+            [
+                (while
+                    [{{b != e} && {{b + 1} != e}}]
+                    [(if
+                        {(* {b + 1}) < (* b)}   #() dereference the iterators
+                        [
+                            (swap (* {b + 1}) (* b))
+                            (++ b)
+                            ()              #() return a value of 'nil_t' from this branch of the if
+                        ]
+                        [
+                            (-- e)
+                            (swap (* {b + 1}) (* e))
+                            ()              #() return a value of 'nil_t' from this branch of the if
+                        ]
+                    )]
+                )
+                (ref2val b)                 #() return the iterator to the pivot (by value)
+            ]))
+        ([] [quicksort]     (lambda [(& rec) b0 e0]
+            [(if {b0 != e0} [               #() check if the range to be sorted is non-empty
+                ([] [iterator.to.pivot] (partition b0 e0))  #() partition into two parts
+                (if {b0 != iterator.to.pivot}               #() if before the pivot is non.empty
+                    [
+                        (rec b0 iterator.to.pivot) #() recursive call
+                    ])
+                (if {e0 != {iterator.to.pivot + 1}}         #() if after the pivot is non.empty
+                    [
+                        (rec {iterator.to.pivot + 1} e0       ) #() recursive call
+                    ])
+                ()
+            ])]))
+
+        #() The lines above define the necessary functions. The next line
+        #() calls 'fix' to actually do the sorting. 'fix' is used to
+        #() enable recursion in this language
+
+        (fix
+            (typeof ())     #() 'fix' needs to know the return type, in this case simply 'nil_t'
+            quicksort
+            (std::begin arr)
+            (std::end   arr)
+            )
+    ])
+        )--"_cambda();
+
+        int a[] = {9,8,7,6,5,3,2};
+        quicksort_cambda(a);
+
+        return cambda_utils::equal_array(a, (int[]){2,3,5,6,7,8,9});
+}
+
+static_assert(test_quicksort() ,"");
 ```
 
 
@@ -288,7 +362,8 @@ The following are equivalent:
 ```
 auto lambda_from_cpp = [](auto x, auto y) { return x+y; };
 auto lambda_from_cambda = "(lambda [x y] [{x + y}])"_cambda();
-lambda_from_cpp(5,6) == lambda_from_cambda(5,6)
+
+assert(lambda_from_cpp(5,6) == lambda_from_cambda(5,6));  // #include <cassert>
 ```
 
 ## range_based_for
