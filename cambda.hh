@@ -1435,29 +1435,6 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
             };
         };
 
-        template< typename LibToForward
-                , typename MultiStatement
-                , typename ...BindingName>
-        struct lambda_val_capturing_struct
-        {
-            LibToForward m_lib; // may be an &-ref  (in fact, in tests so far, it always is
-            // in fact, we should probably treat m_lib as an &-ref always, even if
-            // it isn't, in order to allow multi-call lambdas
-            //static_assert( std::is_reference<LibToForward>{} ,"");
-
-            template< typename ...T>
-            constexpr auto
-            operator() (T && ... x) &
-            ->decltype(multi_statement_execution< MultiStatement >
-                        :: eval( cambda::combine_libraries(m_lib, char_pack__to__binding_name(grouped_t<'(', types_t<cambda_utils::char_pack<'='>, BindingName>>{}) = std::forward<decltype(x)>(x) ...)) )
-            {
-                static_assert(sizeof...(x) == sizeof...(BindingName) ,"");
-                return multi_statement_execution< MultiStatement >
-                        :: eval( cambda::combine_libraries(m_lib, char_pack__to__binding_name(grouped_t<'(', types_t<cambda_utils::char_pack<'='>, BindingName>>{}) = std::forward<decltype(x)>(x) ...));
-
-            };
-        };
-
         template< typename ...BindingName
                 , typename LibToForward
                 , typename ...QuotedExpression
@@ -1474,21 +1451,6 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
             return lambda_capturing_struct<LibToForward, types_t<QuotedExpression...>, BindingName...> {std::forward<LibToForward>(l2f)};
         }
 
-        template< typename ...BindingName
-                , typename LibToForward
-                , typename ...QuotedExpression
-                , class...
-                , typename Lnonref = std::remove_reference_t<LibToForward>
-                >
-        auto constexpr
-        apply_after_simplification  (LibToForward && l2f, decltype( "lambda.val"_charpack )
-                                    , cambda::grouped_t<'[', types_t<BindingName...>>
-                                    , cambda::grouped_t<'[', types_t<QuotedExpression...>>
-                                    ) const
-        ->         lambda_val_capturing_struct<LibToForward, types_t<QuotedExpression...>, BindingName...>
-        {
-            return lambda_val_capturing_struct<LibToForward, types_t<QuotedExpression...>, BindingName...> {std::forward<LibToForward>(l2f)};
-        }
 
 
         template< typename T

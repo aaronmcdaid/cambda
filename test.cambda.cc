@@ -310,12 +310,12 @@ test_quicksort()
                     {x = y}
                     {y = tmp}
             ]))
-        ([] [partition] (lambda [b e]   #() 'lambda.val' to take 'b' and 'e' by value, not by 'decltype(auto)'
+        ([] [partition] (lambda [b e]
             [
                 (while
                     [{{b != e} && {{b + 1} != e}}]
                     [(if
-                        {(* {b + 1}) < (* b)}
+                        {(* {b + 1}) < (* b)}   #() dereference the iterators
                         [
                             (swap (* {b + 1}) (* b))
                             (++ b)
