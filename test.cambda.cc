@@ -166,7 +166,7 @@ int main() {
         (lambda [N] [
             (fix    (typeof 0)
                     (lambda
-                        [rec n]
+                        [(& rec) n]
                         [
                             (if {n < 1}
                                 [ 1 ]
@@ -305,7 +305,7 @@ test_quicksort()
 {
     constexpr auto quicksort_cambda =
         R"--(
-    (lambda [arr]
+    (lambda [(& arr)]
     [
         ([] [swap]      (lambda [(& x) (& y)] #() define a 'swap' function. Captures by reference
             [
@@ -313,7 +313,7 @@ test_quicksort()
                     {x = y}
                     {y = tmp}
             ]))
-        ([] [partition] (lambda.val [b e]   #() 'lambda.val' to take 'b' and 'e' by value, not by 'decltype(auto)'
+        ([] [partition] (lambda [(= b) (= e)]   #() 'lambda.val' to take 'b' and 'e' by value, not by 'decltype(auto)'
             [
                 (while
                     [{{b != e} && {{b + 1} != e}}]
@@ -333,7 +333,7 @@ test_quicksort()
                 )
                 (ref2val b)                 #() return the iterator to the pivot (by value)
             ]))
-        ([] [quicksort]     (lambda [(& rec) b0 e0]
+        ([] [quicksort]     (lambda [(& rec) (= b0) (= e0)]
             [(if {b0 != e0} [               #() check if the range to be sorted is non-empty
                 ([] [iterator.to.pivot] (partition b0 e0))  #() partition into two parts
                 (if {b0 != iterator.to.pivot}               #() if before the pivot is non.empty
