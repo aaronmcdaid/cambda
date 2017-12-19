@@ -51,7 +51,7 @@ test_lambda_with_binding()
     int y = 0;
     (void)y;
     auto cambda_lambda_bound = "(lambda [x] [{y = 2} {x * x}])"_cambda
-        ["y"_binding = y]
+        ["y"_binding &= y]
         ()
         ;
     auto res = cambda_lambda_bound(10);
@@ -199,8 +199,8 @@ test_if_with_side_effects()
 {
     int x = -1;
     int y = -1;
-    "(if truec [(assign x 3)] [(assign x 5)])"_cambda["x"_binding = x]();
-    "(if falsec[(assign x 300)] [(assign x 500)])"_cambda["x"_binding = y]();
+    "(if truec [(assign x 3)] [(assign x 5)])"_cambda["x"_binding &= x]();
+    "(if falsec[(assign x 300)] [(assign x 500)])"_cambda["x"_binding &= y]();
     return x + y;
 }
 static_assert(test_if_with_side_effects() == 503 ,"");
@@ -213,8 +213,8 @@ test_ifNonConstant_with_side_effects()
     int y = -1;
     bool bt = true;
     bool bf = false;
-    "(if bt  [(assign x 3)] [(assign x 5)])"_cambda       ["bt"_binding = bt, "x"_binding = x]();
-    "(if bf  [(assign x 300)] [(assign x 500)])"_cambda   ["bf"_binding = bf, "x"_binding = y]();
+    "(if bt  [(assign x 3)] [(assign x 5)])"_cambda       ["bt"_binding = bt, "x"_binding &= x]();
+    "(if bf  [(assign x 300)] [(assign x 500)])"_cambda   ["bf"_binding = bf, "x"_binding &= y]();
     return x + y;
 }
 static_assert(test_ifNonConstant_with_side_effects() == 503 ,"");
@@ -236,7 +236,7 @@ test_range_based_for()
                 )
             )
             )--"_cambda
-            ["test_data"_binding = test_data]
+            ["test_data"_binding &= test_data]
             ();
         return test_data[0]+test_data[1]+test_data[2];
 }
@@ -254,7 +254,7 @@ test_while()
                 (< y max)       ]
             [   {y = {y + 1}}
                 {y = {y + 2}}   ])
-    )--"_cambda["y"_binding = y]();
+    )--"_cambda["y"_binding &= y]();
     return y;
 }
 static_assert(test_while() == 102 ,"");
