@@ -1664,12 +1664,9 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
                 fix_holder(F& f) : m_f(f)   {}
 
                 constexpr auto
-                operator() (D && ... t)
+                operator() (D    ... t)
                 ->ReturnType
-                {
-
-                    return exec(m_f, *this,   std::forward<D>(t)...);
-                }
+                { return exec(m_f, *this,   std::forward<D>(t)...); }
 
                 // This ('exec') must be defined after 'operator()';
                 // no idea why, but older clang (3.8) hangs in constexpr otherwise

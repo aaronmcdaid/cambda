@@ -335,11 +335,11 @@ test_quicksort()
                 ([] [iterator.to.pivot] (partition b0 e0))  #() partition into two parts
                 (if {b0 != iterator.to.pivot}               #() if before the pivot is non.empty
                     [
-                        (rec (ref2val b0) (ref2val iterator.to.pivot)) #() recursive call
+                        (rec b0 iterator.to.pivot) #() recursive call
                     ])
                 (if {e0 != {iterator.to.pivot + 1}}         #() if after the pivot is non.empty
                     [
-                        (rec {iterator.to.pivot + 1} (ref2val e0       )) #() recursive call
+                        (rec {iterator.to.pivot + 1} e0       ) #() recursive call
                     ])
                 ()
             ])]))
