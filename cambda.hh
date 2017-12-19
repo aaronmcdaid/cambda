@@ -1163,7 +1163,7 @@ namespace cambda {
     template<char ...c>
     auto constexpr
     char_pack__to__binding_name(cambda_utils::char_pack<c...>)
-    -> binding_name<capture_policy:: byEither, c...>
+    -> binding_name<capture_policy:: byValue, c...>
     {return {};}
     template<char ...c>
     auto constexpr
@@ -1220,13 +1220,14 @@ namespace cambda {
     struct multi_statement_execution< types_t<grouped_t<'(',types_t<grouped_t<'[',types_t<>>, grouped_t<'[',types_t<BindingName>>, BindingExpression>>, B, C...>>
     {
         template< typename LibToForward
+                , typename DecltypeOfTheBoundValue      = decltype( cambda::simplify(BindingExpression{}, std::declval<LibToForward>()) )
                 , typename TypeOfTheBoundValue_AsLvalue = decltype( cambda::simplify(BindingExpression{}, std::declval<LibToForward>()) ) &
                 >
         auto constexpr static
         eval  (LibToForward && lib)
         ->decltype(multi_statement_execution<types_t< B, C...  >>
                     ::eval(cambda::combine_libraries    (   std::forward<LibToForward>(lib)
-                                                        ,   char_pack__to__binding_name(BindingName{}) = std::declval<TypeOfTheBoundValue_AsLvalue>()))  )
+                                                        ,   char_pack__to__binding_name(BindingName{}) = std::declval<DecltypeOfTheBoundValue>()))  )
         {
 
             decltype(auto) // not-an r-ref. May be l-ref though
@@ -1239,12 +1240,13 @@ namespace cambda {
             static_assert(std::is_same
                             <   decltype(bound_value)
                             ,   decltype(cambda::simplify(BindingExpression{}, std::forward<LibToForward>(lib)))    >{} ,"Argh, what does decltype(auto) do on vars?");
+            static_assert(!std::is_lvalue_reference<decltype(bound_value)>{} ,""); // TODO: this is probably too strict
             static_assert(!std::is_rvalue_reference<decltype(bound_value)>{} ,""); // TODO: this is probably too strict
             static_assert(std::is_same<TypeOfTheBoundValue_AsLvalue, decltype((bound_value))>{} ,"");
 
             return multi_statement_execution<types_t< B, C...  >>
                     ::eval(cambda::combine_libraries    (   std::forward<LibToForward>(lib)
-                                                        ,   char_pack__to__binding_name(BindingName{}) = bound_value));
+                                                        ,   char_pack__to__binding_name(BindingName{}) = std::forward<DecltypeOfTheBoundValue>(bound_value)));
         }
     };
 
