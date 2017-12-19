@@ -1339,6 +1339,7 @@ MACRO_FOR_SIMPLE_BINARY_INFIX_OPERATION( "&&"_charpack  , && )
 MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(    "++"_charpack,  ++  )
 MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(    "--"_charpack,  --  )
 MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
+MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
         template<typename T
                 , typename LibToForward >
         auto constexpr
