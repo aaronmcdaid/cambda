@@ -675,9 +675,18 @@ namespace cambda {
         Lib1 lib1;
         Lib2 lib2;
 
-        constexpr auto getlib1()    const   -> decltype(auto) { return std::forward<std::add_const_t<Lib1>>(lib1); }
-        constexpr auto getlib1()            -> decltype(auto) { return std::forward<                 Lib1 >(lib1); }
-
+        template< typename Self>
+        constexpr auto static
+        getlib1(Self && self)
+        -> decltype(auto)
+        {
+            static_assert(!std::is_rvalue_reference<Lib1>{} ,"");
+            using ReturnType = std::conditional_t   <   std::is_lvalue_reference<Lib1>{}
+                                                    ,   decltype((self.lib1))
+                                                    ,   std::remove_reference_t<decltype((self.lib1))>
+                                                    >;
+            return std::forward<ReturnType>(self.lib1);
+        }
         template< typename Self>
         constexpr auto static
         getlib2(Self && self)
@@ -714,8 +723,8 @@ namespace cambda {
                 >
         auto constexpr
         apply_after_simplification( T && ... t)
-        ->decltype(id{}(this)->getlib1(). apply_after_simplification(std::forward<T>(t)...)  )
-        {   return     (this)->getlib1(). apply_after_simplification(std::forward<T>(t)...); }
+        ->decltype(id{}(this)->getlib1(*this). apply_after_simplification(std::forward<T>(t)...)  )
+        {   return     (this)->getlib1(*this). apply_after_simplification(std::forward<T>(t)...); }
 
         template< typename ... T
                 , typename id = cambda_utils::id_t
@@ -733,8 +742,8 @@ namespace cambda {
                 >
         auto constexpr
         apply_after_simplification( T && ... t) const
-        ->decltype(id{}(this)->getlib1(). apply_after_simplification(std::forward<T>(t)...)  )
-        {   return     (this)->getlib1(). apply_after_simplification(std::forward<T>(t)...); }
+        ->decltype(id{}(this)->getlib1(*this). apply_after_simplification(std::forward<T>(t)...)  )
+        {   return     (this)->getlib1(*this). apply_after_simplification(std::forward<T>(t)...); }
 
         template< typename ... T
                 , typename id = cambda_utils::id_t
@@ -756,8 +765,8 @@ namespace cambda {
                 >
         auto constexpr static
         static_get_simple_named_value(Self && self, cambda_utils::char_pack<cs...> name)
-        ->decltype(std::forward<Self>(self).getlib1().static_get_simple_named_value(std::forward<Self>(self).getlib1(), name)  )
-        {   return std::forward<Self>(self).getlib1().static_get_simple_named_value(std::forward<Self>(self).getlib1(), name); }
+        ->decltype(self.getlib1(std::forward<Self>(self)).static_get_simple_named_value(self.getlib1(std::forward<Self>(self)), name)  )
+        {   return self.getlib1(std::forward<Self>(self)).static_get_simple_named_value(self.getlib1(std::forward<Self>(self)), name); }
         template< typename Self
                 , char ... cs
                 , typename id = cambda_utils::id_t
