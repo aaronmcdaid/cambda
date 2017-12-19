@@ -1489,58 +1489,6 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
 
 
         /*
-         * 'let' - this will be complex
-         */
-        template< typename LibToForward
-                , typename SingleOne
-                >
-        auto constexpr
-        apply_after_simplification  (LibToForward && lib, decltype( "let"_charpack )
-                            , cambda::grouped_t<'[', types_t<SingleOne>>
-                            ) const
-        ->decltype(auto)
-        {
-                return cambda::simplify
-                        (   SingleOne{}
-                            , std::forward<LibToForward>(lib)
-                        );
-        }
-
-        template< typename LibToForward
-                , typename BindingName
-                , typename BoundExpression
-                , typename ... TheRest
-                >
-        auto constexpr
-        apply_after_simplification  (LibToForward && lib, decltype( "let"_charpack )
-                            , cambda::grouped_t<'[', types_t<BindingName, BoundExpression, TheRest...>>
-                            ) const
-        ->decltype(auto)
-        {
-            static_assert(sizeof...(TheRest) % 2 == 1 ,"A 'let' must always have an odd number of arguments");
-
-            decltype(auto) // not-an r-ref. May be l-ref though
-                bound_value = cambda::simplify(BoundExpression{}, std::forward<LibToForward>(lib));
-            static_assert(!std::is_rvalue_reference<decltype(bound_value)>{} ,"");
-            // Note: we treat bound_value as an lvalue from here on, and allow it to be
-            // taken as l-reference. This means that 'bound_value' is the storage,
-            // assuming storage is required.
-
-
-            return cambda::simplify
-                        (   cambda::grouped_t<'('
-                                    , types_t<cambda_utils::char_pack<'l','e','t'>
-                                             ,cambda::grouped_t<'[', types_t<
-                                                    TheRest...
-                                             >>>
-                                    >{}
-                        ,   cambda::combine_libraries   (   std::forward<LibToForward>(lib)
-                                                        ,   char_pack__to__binding_name(BindingName{}) = bound_value)
-                        );
-        }
-
-
-        /*
          * 'begin'
          */
         template< typename LibToForward
