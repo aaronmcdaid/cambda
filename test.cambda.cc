@@ -135,30 +135,109 @@ void README_md_tests()
     /* This next line isn't accepted in C++14, whereas cambdas are useable in unevaluated contexts
     static_assert( [](auto x, auto y){ return x+y;}   (20,30) == 50   ,"20+30 should equal 50");
     */
-};
 
-int main() {
-    int x=0;
-    "(assign x 1234)"_cambda ["x"_binding = x] ();
-    // x is now equal to 1234
-
-    std:: cout << "x = " << x << " should be 1234" << '\n';
-#if 1
-    constexpr auto lambda_from_cambda = "(lambda [x y] [{x + y}])"_cambda();
-    static_assert  (11 == lambda_from_cambda(5,6) ,"");
-#endif
-
-    auto product =
-    "(mult 3c 4c)"_cambda
-        ["mult"_binding = [](auto x, auto y){return std::integral_constant<int, x.value*y.value>{};}]
-        ();
-    static_assert(product.value == 12 ,"");
-
-#if 1
-    static_assert(5040 ==
     /* For complex cambdas, it's good to use raw string
      * literals (C++11) to enable multi-line strings.
      */
+    static_assert(42 ==
+    R"--(
+        #()     A single-line comment is introduced by #().
+        #()     strings are surrounded by single-quotes.
+
+        #()     Each expression is evaluated in turn, and only
+        #()     the last one is returned
+
+        #()     New bindings can be introduced with ([] [name] value)
+
+        ([] [six] 6)
+
+        ([] [seven] 7)
+
+        {six * seven}   #() returns 42
+    )--"_cambda () ,""); // compute the factorial of 7.
+
+    static_assert(49 ==
+    R"--(
+        #()     The 'lambda' function can create an anonymous function,
+        #()     and we use a  #()  to give it a name
+
+        ([] [square] (lambda [x] [{x * x}]))
+
+        (square 7)
+    )--"_cambda () ,""); // compute the factorial of 7.
+
+    static_assert(174 ==
+    R"--(
+        #()     This is an example of a lambda that takes two arguments.
+        #()     Also, the body of a lambda can have multiple statements.
+
+        ([]
+            [sum.of.square.and.cube]
+                (lambda
+                    [x y]       #() ... the two argument names
+                    [           #() A multi-line lambda body starts here
+
+                            #() First, two bindings inside the lambda
+                            ([] [x.squared] {x * x})
+                            ([] [y.cubed] {y * {y * y}})
+
+                            #() Then, the return-expression from the lambda
+                            {x.squared + y.cubed}
+                    ]           #() ... end the lambda body
+                )
+        )
+
+        (sum.of.square.and.cube 7 5)    #() returns 174 (7*7 + 5*5*5)
+    )--"_cambda () ,"wrong result computed"); // compute the factorial of 7.
+
+    static_assert(3.14 ==
+    R"--(
+        #()     'if' evaluates one of two expressions
+
+        (if {5 > 3} [3.14] [2.718])
+
+    )--"_cambda () ,"wrong result computed"); // compute the factorial of 7.
+
+    static_assert(12 ==
+    R"--(
+
+    #() Begin with x==0
+
+    ([] [x] 0)
+
+    #() Now a while loop
+
+    (while
+        [{x < 10}]          #() condition for 'while'
+        [{x = {x + 3}}]     #() add 3 to 'x' each time
+    )
+
+    #() We can't simply return 'x' here because it will return #() by
+    #() reference for simple names. It kind of like this C++ code:
+    #()         return std::forward<decltype(x)>(x);
+    #() ... which would return a reference to a temporary.
+
+    #() Therefore, we call a function ('ref2val') which simply
+    #() returns it by value.
+
+    (ref2val x)         #() return the final value of 'x', by value.
+
+    )--"_cambda () ,"wrong result computed"); // compute the factorial of 7.
+
+    static_assert("HelloWorld"_charpack ==
+    R"--(
+        #()     a single-line comment is introduced by #().
+        #()     strings are surrounded by single-quotes.
+
+        #()     Appending "c" to the end of the string gives
+        #()     a compile-time string (char_pack<chars...>)
+
+        #()     ++ concatenates two strings.
+
+        {'Hello'c ++ 'World'c}
+    )--"_cambda () ,""); // compute the factorial of 7.
+
+    static_assert(5040 ==
     R"--(
 
         ([]
@@ -177,7 +256,24 @@ int main() {
 
     )--"_cambda ()(7)
     ,""); // compute the factorial of 7.
+};
+
+int main() {
+    int x=0;
+    "(assign x 1234)"_cambda ["x"_binding = x] ();
+    // x is now equal to 1234
+
+    std:: cout << "x = " << x << " should be 1234" << '\n';
+#if 1
+    constexpr auto lambda_from_cambda = "(lambda [x y] [{x + y}])"_cambda();
+    static_assert  (11 == lambda_from_cambda(5,6) ,"");
 #endif
+
+    auto product =
+    "(mult 3c 4c)"_cambda
+        ["mult"_binding = [](auto x, auto y){return std::integral_constant<int, x.value*y.value>{};}]
+        ();
+    static_assert(product.value == 12 ,"");
 
     constexpr
     auto z =
