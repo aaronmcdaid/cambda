@@ -143,9 +143,6 @@ int main() {
     // x is now equal to 1234
 
     std:: cout << "x = " << x << " should be 1234" << '\n';
-
-    constexpr auto lambda_from_cambd  = "(lambda [x] [x])"_cambda();
-    (void)lambda_from_cambd;
 #if 1
     constexpr auto lambda_from_cambda = "(lambda [x y] [{x + y}])"_cambda();
     static_assert  (11 == lambda_from_cambda(5,6) ,"");
@@ -313,7 +310,7 @@ test_quicksort()
                     {x = y}
                     {y = tmp}
             ]))
-        ([] [partition] (lambda [(= b) (= e)]   #() 'lambda.val' to take 'b' and 'e' by value, not by 'decltype(auto)'
+        ([] [partition] (lambda [b e]   #() 'lambda.val' to take 'b' and 'e' by value, not by 'decltype(auto)'
             [
                 (while
                     [{{b != e} && {{b + 1} != e}}]
@@ -333,7 +330,7 @@ test_quicksort()
                 )
                 (ref2val b)                 #() return the iterator to the pivot (by value)
             ]))
-        ([] [quicksort]     (lambda [(& rec) (= b0) (= e0)]
+        ([] [quicksort]     (lambda [(& rec) b0 e0]
             [(if {b0 != e0} [               #() check if the range to be sorted is non-empty
                 ([] [iterator.to.pivot] (partition b0 e0))  #() partition into two parts
                 (if {b0 != iterator.to.pivot}               #() if before the pivot is non.empty
