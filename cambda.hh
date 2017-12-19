@@ -671,9 +671,22 @@ namespace cambda {
     template< char ... cs
             , typename Self >
     auto constexpr
-    Get_simple_named_value(Self && self, cambda_utils::char_pack<cs...> name)
+    Get_simple_named_value__priority_overload(Self && self, cambda_utils::char_pack<cs...> name)
     ->decltype(std::forward<Self>(self). get_simple_named_value(name)  )
     {   return std::forward<Self>(self). get_simple_named_value(name); }
+    template< char ... cs
+            , typename Self >
+    auto constexpr
+    Get_simple_named_value__priority_overload(Self && self, cambda_utils::char_pack<cs...> name)
+    ->decltype(self.static_get_simple_named_value(std::forward<Self>(self), name)  )
+    {   return self.static_get_simple_named_value(std::forward<Self>(self), name); }
+
+    template< char ... cs
+            , typename Self >
+    auto constexpr
+    Get_simple_named_value(Self && self, cambda_utils::char_pack<cs...> name)
+    ->decltype(Get_simple_named_value__priority_overload(std::forward<Self>(self), name)  )
+    {   return Get_simple_named_value__priority_overload(std::forward<Self>(self), name); }
 
     template< typename Lib1
             , typename Lib2 >
@@ -1532,15 +1545,15 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
          * truec and falsec
          */
 
-        template<char ... c>
-        auto constexpr
-        get_simple_named_value  ( decltype( "truec"_charpack ) ) const
+        template<typename Self, char ... c>
+        auto constexpr static
+        static_get_simple_named_value  ( Self &&, decltype( "truec"_charpack ) )
         ->  std::true_type
         {   return {}; }
 
-        template<char ... c>
-        auto constexpr
-        get_simple_named_value  ( decltype( "falsec"_charpack ) ) const
+        template<typename Self, char ... c>
+        auto constexpr static
+        static_get_simple_named_value  ( Self &&,decltype( "falsec"_charpack ) )
         ->  std::false_type
         {   return {}; }
 
