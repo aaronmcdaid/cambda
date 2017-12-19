@@ -1159,6 +1159,18 @@ namespace cambda {
                                         >;
             return binded_name_with_valueOrReference<BoundStorageType, c...>{std::forward<V>(v)};
         }
+
+        template<typename V>
+        auto constexpr
+        operator &= (V && v)
+        ->decltype(auto)
+        {
+            static_assert(!std::is_rvalue_reference<V>{} ,"");
+            using BoundStorageType = V &; // in operator &=, we ignore the capture_policy and just
+                                            // store as an lvalue
+            static_assert(std::is_lvalue_reference<V>{} ," operator&=() should be used only with lvalues");
+            return binded_name_with_valueOrReference<BoundStorageType, c...>{std::forward<V>(v)};
+        }
     };
     template<char ...c>
     auto constexpr
