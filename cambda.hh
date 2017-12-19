@@ -1123,8 +1123,7 @@ namespace cambda {
         }
     };
 
-    enum class capture_policy   { byEither // capture as T&&, but store as T
-                                , byLvalueReference // strictly T&
+    enum class capture_policy   { byLvalueReference // strictly T&
                                 , byValue // std::decay_t<T&&>
                                 };
 
@@ -1150,12 +1149,9 @@ namespace cambda {
         {
             static_assert(!std::is_rvalue_reference<V>{} ,"");
             using BoundStorageType = std::conditional_t
-                                        < cap == capture_policy:: byEither
-                                        , V
-                                        , std::conditional_t< cap == capture_policy:: byLvalueReference
-                                                            , V & // other, cap == capture_policy:: byLvalueReference
-                                                            , std::decay_t<V> // other, cap == capture_policy:: byValue
-                                                            >
+                                        < cap == capture_policy:: byLvalueReference
+                                        , V &
+                                        , std::decay_t<V>
                                         >;
             return binded_name_with_valueOrReference<BoundStorageType, c...>{std::forward<V>(v)};
         }
@@ -1191,7 +1187,7 @@ namespace cambda {
     template<typename T, T ... chars>
     constexpr auto
     operator"" _binding () {
-        return binding_name<capture_policy:: byEither, chars...>{};
+        return binding_name<capture_policy:: byValue, chars...>{};
     }
 
     template< typename CodeType>
