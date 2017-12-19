@@ -18,11 +18,38 @@ In C++14, lambdas are very useful but they have some restrictions. They can't be
     static_assert(b == 15 ,"");
     static_assert(c == 56 ,"");
     static_assert(d == 56 ,"");
-    static_assert(e == 64 ,"");
+    static_assert(e == 74 ,"");
     static_assert("(lambda [x y] [{x + y}])"_cambda() (20,30) == 50   ,"20+30 should equal 50");
 ```
 
+The last example there is important, as it demonstrating something that can't be done with normal lambdas in C++14:
+```
+    // The following won't compile in C++14
+    static_assert([](int x, int y){return x+y;}  (20,30) == 50   ,"20+30 should equal 50");
+```
+
+There are many tests like those in `test.cambda.cc`. In fact, if you're interested in using this library, I suggested compiling that file first to ensure it compiles cleanly.
+
+```
+    g++     -std=c++14 -Wno-gnu-string-literal-operator-template test.cambda.cc
+    /* or */
+    clang++ -std=c++14 -Wno-gnu-string-literal-operator-template test.cambda.cc
+```
+
+This requires gcc (>= 5.1) or clang (>= 3.5). If you can get it working elsewhere, please tell me!
+
 ## Including in your project
+
+Just include `cambda.hh`
+
+```
+    #include "cambda.hh"
+    using cambda::operator"" _cambda;
+    using cambda::operator"" _binding;
+```
+
+When compiling, add these flags `-std=c++14 -Wno-gnu-string-literal-operator-template`.
+
 
 ## Motivation
 
@@ -50,7 +77,7 @@ static_assert(squared_cambda == 225 ,"");
 
 This uses the *string-literal-operator-template* extension, but otherwise I believe it's standard C++14.
 That extension isn't strictly necessary, we can build a preprocessor macro to work around it (*TODO* explain this!).
-This has been tested on `clang version 3.8.0`, `g++ (GCC) 7.2.0` and `g++ (GCC) 5.5.0`.
+This has been developed on `clang version 3.8.0`, `g++ (GCC) 7.2.0` and `g++ (GCC) 5.5.0`.
 Using gcc.godbolt.org suggests that clang >= 3.5 and g++ >= 5.1 are sufficient - more testing required.
 I suggest passing the `-Wno-gnu-string-literal-operator-template` argument to these compilers to suppress a warning that you
 might get about the fact this is an extension.
