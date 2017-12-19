@@ -668,6 +668,13 @@ namespace cambda {
     static_assert(std::is_same<int const,   std::add_const<int>::type     >{} ,"");
     static_assert(std::is_same<int &    ,   std::add_const<int&>::type     >{} ,"");
 
+    template< char ... cs
+            , typename Self >
+    auto constexpr
+    Get_simple_named_value(Self && self, cambda_utils::char_pack<cs...> name)
+    ->decltype(std::forward<Self>(self). get_simple_named_value(name)  )
+    {   return std::forward<Self>(self). get_simple_named_value(name); }
+
     template< typename Lib1
             , typename Lib2 >
     struct library_combiner
@@ -744,8 +751,8 @@ namespace cambda {
                 >
         auto constexpr
         get_simple_named_value( cambda_utils::char_pack<cs...> name)
-        ->decltype(id{}(this)->getlib1(). get_simple_named_value(name)  )
-        {   return     (this)->getlib1(). get_simple_named_value(name); }
+        ->decltype(Get_simple_named_value(this->getlib1(), name) )
+        {   return Get_simple_named_value(this->getlib1(), name); }
 
         template< char ... cs
                 , typename id = cambda_utils::id_t
@@ -753,8 +760,8 @@ namespace cambda {
                 >
         auto constexpr
         get_simple_named_value( cambda_utils::char_pack<cs...> name)
-        ->decltype(id{}(this)->getlib2(). get_simple_named_value(name)  )
-        {   return     (this)->getlib2(). get_simple_named_value(name); }
+        ->decltype(Get_simple_named_value(this->getlib2(), name) )
+        {   return Get_simple_named_value(this->getlib2(), name); }
         // ... same as above, but const.
         template< char ... cs
                 , typename id = cambda_utils::id_t
@@ -762,8 +769,8 @@ namespace cambda {
                 >
         auto constexpr
         get_simple_named_value( cambda_utils::char_pack<cs...> name) const
-        ->decltype(id{}(this)->getlib1(). get_simple_named_value(name)  )
-        {   return     (this)->getlib1(). get_simple_named_value(name); }
+        ->decltype(Get_simple_named_value(this->getlib1(), name) )
+        {   return Get_simple_named_value(this->getlib1(), name); }
 
         template< char ... cs
                 , typename id = cambda_utils::id_t
@@ -771,8 +778,8 @@ namespace cambda {
                 >
         auto constexpr
         get_simple_named_value( cambda_utils::char_pack<cs...> name) const
-        ->decltype(id{}(this)->getlib2(). get_simple_named_value(name)  )
-        {   return     (this)->getlib2(). get_simple_named_value(name); }
+        ->decltype(Get_simple_named_value(this->getlib2(), name) )
+        {   return Get_simple_named_value(this->getlib2(), name); }
     };
 
 
@@ -956,8 +963,8 @@ namespace cambda {
         static auto constexpr
         has_get_simple_named_value_helper(cambda_utils::priority_tag<2>)
         -> decltype(void(
-                        std::declval<Lib&>().
-                    get_simple_named_value(
+                    Get_simple_named_value(
+                        std::declval<Lib&>(),
                         std::declval<Name&>())
                     )
                 ,   std:: true_type{}
@@ -998,9 +1005,9 @@ namespace cambda {
                 >
         static auto constexpr
         simplify(Name name, L && lib)
-        ->decltype(std::forward<L>(lib).get_simple_named_value(name) )
+        ->decltype(Get_simple_named_value(std::forward<L>(lib), name) )
         {
-            return std::forward<L>(lib).get_simple_named_value(name);
+            return Get_simple_named_value(std::forward<L>(lib), name);
         }
 
         template<typename L>
