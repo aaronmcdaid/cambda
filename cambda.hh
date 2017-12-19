@@ -1191,20 +1191,12 @@ namespace cambda {
 
         static_assert(!std::is_rvalue_reference<T>{}, "");
 
-        auto constexpr
-        get_simple_named_value  ( cambda_utils::char_pack<c...> )
-        ->decltype((m_x))
+        template<typename Self>
+        auto constexpr static
+        static_get_simple_named_value  (Self && self, cambda_utils::char_pack<c...> )
+        ->decltype((self.m_x))
         {
-            static_assert(std::is_lvalue_reference<decltype((m_x))>{} ,"");
-            return m_x;
-        }
-
-        auto constexpr
-        get_simple_named_value  ( cambda_utils::char_pack<c...> ) const
-        ->decltype((m_x))
-        {
-            static_assert(std::is_lvalue_reference<decltype((m_x))>{} ,"");
-            return m_x;
+            return self.m_x;
         }
     };
 
