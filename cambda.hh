@@ -1125,6 +1125,7 @@ namespace cambda {
 
     enum class capture_policy   { byEither // capture as T&&, but store as T
                                 , byLvalueReference // strictly T&
+                                , byValue // std::decay_t<T&&>
                                 };
 
     template< typename B
@@ -1151,7 +1152,10 @@ namespace cambda {
             using BoundStorageType = std::conditional_t
                                         < cap == capture_policy:: byEither
                                         , V
-                                        , V & // other, cap == capture_policy:: byLvalueReference
+                                        , std::conditional_t< cap == capture_policy:: byLvalueReference
+                                                            , V & // other, cap == capture_policy:: byLvalueReference
+                                                            , std::decay_t<V> // other, cap == capture_policy:: byValue
+                                                            >
                                         >;
             return binded_name_with_valueOrReference<BoundStorageType, c...>{std::forward<V>(v)};
         }
@@ -1165,6 +1169,11 @@ namespace cambda {
     auto constexpr
     char_pack__to__binding_name(grouped_t<'(', types_t<cambda_utils::char_pack<'&'>, cambda_utils::char_pack<c...>>>)
     -> binding_name<capture_policy:: byLvalueReference, c...>
+    {return {};}
+    template<char ...c>
+    auto constexpr
+    char_pack__to__binding_name(grouped_t<'(', types_t<cambda_utils::char_pack<'='>, cambda_utils::char_pack<c...>>>)
+    -> binding_name<capture_policy:: byValue, c...>
     {return {};}
 
     template<typename T, T ... chars>
@@ -1430,11 +1439,11 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
             constexpr auto
             operator() (T && ... x) &
             ->decltype(multi_statement_execution< MultiStatement >
-                        :: eval( cambda::combine_libraries(m_lib, char_pack__to__binding_name(BindingName{}) = std::forward<std::decay_t<decltype(x)>>(x) ...)) )
+                        :: eval( cambda::combine_libraries(m_lib, char_pack__to__binding_name(grouped_t<'(', types_t<cambda_utils::char_pack<'='>, BindingName>>{}) = std::forward<decltype(x)>(x) ...)) )
             {
                 static_assert(sizeof...(x) == sizeof...(BindingName) ,"");
                 return multi_statement_execution< MultiStatement >
-                        :: eval( cambda::combine_libraries(m_lib, char_pack__to__binding_name(BindingName{}) = std::forward<std::decay_t<decltype(x)>>(x) ...));
+                        :: eval( cambda::combine_libraries(m_lib, char_pack__to__binding_name(grouped_t<'(', types_t<cambda_utils::char_pack<'='>, BindingName>>{}) = std::forward<decltype(x)>(x) ...));
 
             };
         };
