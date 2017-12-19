@@ -1046,9 +1046,9 @@ namespace cambda {
                 >
         static auto constexpr
         simplify(Name name, L && lib)
-        ->decltype(Get_simple_named_value(std::forward<L>(lib), name) )
+        ->decltype(lib.static_get_simple_named_value(std::forward<L>(lib), name) )
         {
-            return Get_simple_named_value(std::forward<L>(lib), name);
+            return lib.static_get_simple_named_value(std::forward<L>(lib), name);
         }
 
         template<typename L
@@ -1058,9 +1058,9 @@ namespace cambda {
                 >
         static auto constexpr
         simplify(Name name, L && lib)
-        ->decltype(Get_simple_named_value(std::forward<L>(lib), name) )
+        ->decltype(std::forward<L>(lib).get_simple_named_value(name) )
         {
-            return Get_simple_named_value(std::forward<L>(lib), name);
+            return std::forward<L>(lib).get_simple_named_value(name);
         }
 
         template<typename L>
