@@ -183,48 +183,68 @@ constexpr bool
 test_quicksort()
 {
     constexpr auto quicksort_cambda =
-        R"--(
-    (lambda [(& arr)]
+    R"--(
+
+    #() define a 'swap' function.
+    ([] [swap]  (lambda [(& x) (& y)]       #() (& x)  means capture by reference
+        [
+                ([] [tmp] x)
+                {x = y}
+                {y = tmp}
+        ]))
+
+    #() 'partition': Takes two iterators, begin and end of a non-empty range
+    #() The first value in the input range is the 'pivot'. This function
+    #() rearranges the data such that the pivot is ordered after all the data
+    #() points that are smaller than it, and ordered before larger data points.
+    #()
+    #() The 'quicksort' function will then be able to recursively call
+    #() 'partition' on each of these two sub-ranges until everything is sorted.
+
+    ([] [partition] (lambda [b e]
+        [
+            (while
+                [{{b != e} && {{b + 1} != e}}]
+                [(if
+                    {(* {b + 1}) < (* b)}   #() dereference the iterators
+                    [
+                        (swap (* {b + 1}) (* b))
+                        (++ b)
+                        ()              #() return a value of 'nil_t' from this branch of the if
+                    ]
+                    [
+                        (-- e)
+                        (swap (* {b + 1}) (* e))
+                        ()              #() return a value of 'nil_t' from this branch of the if
+                    ]
+                )]
+            )
+            (ref2val b)                 #() return the iterator to the pivot (by value)
+        ]))
+
+    #() As 'quicksort' will need to be recursive, it takes an extra argument which
+    #() can be called to do the recursion. 'fix' will then pass quicksort "to itself"
+
+    ([] [quicksort]     (lambda [(& quicksort') b0 e0]
+        [(if {b0 != e0} [               #() check if the range to be sorted is non-empty
+            ([] [iterator.to.pivot] (partition b0 e0))  #() partition into two parts
+            (if {b0 != iterator.to.pivot}               #() if before the pivot is non.empty
+                [
+                    (quicksort' b0 iterator.to.pivot) #() recursive call
+                ])
+            (if {e0 != {iterator.to.pivot + 1}}         #() if after the pivot is non.empty
+                [
+                    (quicksort' {iterator.to.pivot + 1} e0       ) #() recursive call
+                ])
+            ()
+        ])]))
+
+    #() Finally, we can put all this together to return an anonymous
+    #() function which takes an array by reference and sorts it in place
+
+    (lambda [(& arr)]                       #() capture an array by reference
     [
-        ([] [swap]      (lambda [(& x) (& y)] #() define a 'swap' function. Captures by reference
-            [
-                    ([] [tmp] x)
-                    {x = y}
-                    {y = tmp}
-            ]))
-        ([] [partition] (lambda [b e]
-            [
-                (while
-                    [{{b != e} && {{b + 1} != e}}]
-                    [(if
-                        {(* {b + 1}) < (* b)}   #() dereference the iterators
-                        [
-                            (swap (* {b + 1}) (* b))
-                            (++ b)
-                            ()              #() return a value of 'nil_t' from this branch of the if
-                        ]
-                        [
-                            (-- e)
-                            (swap (* {b + 1}) (* e))
-                            ()              #() return a value of 'nil_t' from this branch of the if
-                        ]
-                    )]
-                )
-                (ref2val b)                 #() return the iterator to the pivot (by value)
-            ]))
-        ([] [quicksort]     (lambda [(& rec) b0 e0]
-            [(if {b0 != e0} [               #() check if the range to be sorted is non-empty
-                ([] [iterator.to.pivot] (partition b0 e0))  #() partition into two parts
-                (if {b0 != iterator.to.pivot}               #() if before the pivot is non.empty
-                    [
-                        (rec b0 iterator.to.pivot) #() recursive call
-                    ])
-                (if {e0 != {iterator.to.pivot + 1}}         #() if after the pivot is non.empty
-                    [
-                        (rec {iterator.to.pivot + 1} e0       ) #() recursive call
-                    ])
-                ()
-            ])]))
+
 
         #() The lines above define the necessary functions. The next line
         #() calls 'fix' to actually do the sorting. 'fix' is used to
@@ -237,7 +257,8 @@ test_quicksort()
             (std::end   arr)
             )
     ])
-        )--"_cambda();
+
+    )--"_cambda();
 
         int a[] = {9,8,7,6,5,3,2};
         quicksort_cambda(a);
