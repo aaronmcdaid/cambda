@@ -1,21 +1,5 @@
 #include<iostream>
 #include"cambda.hh"
-
-using cambda::operator"" _cambda;
-using cambda::operator"" _binding;
-
-constexpr auto a = "15"_cambda();            // a is 15
-constexpr auto b = "(+ 8 7)"_cambda();       // Function call. This is addition. b is 15
-constexpr auto c = "(* 8 7)"_cambda();       // Multiplication
-constexpr auto d = "{8 * 7}"_cambda();       // If there are two args, use {} instead
-constexpr auto e = "{ {8 * 7} + {6 * 3} }"_cambda();  // Nested application
-
-static_assert(a == 15   ,"");
-static_assert(b == 15   ,"");
-static_assert(c == 56   ,"");
-static_assert(d == 56   ,"");
-static_assert(e == 74   ,"");
-
 namespace CAMBDA_MACRO_support
 {
     constexpr
@@ -203,7 +187,19 @@ namespace CAMBDA_MACRO_support
  * Macros defined above. The remainder of this file is for testing
  */
 
-static_assert(CAMBDA_MACRO("{7 + 8}")() == 15 ,"");
+constexpr auto a = CAMBDA_MACRO("15")();            // a is 15
+constexpr auto b = CAMBDA_MACRO("(+ 8 7)")();       // Function call. This is addition. b is 15
+constexpr auto c = CAMBDA_MACRO("(* 8 7)")();       // Multiplication
+constexpr auto d = CAMBDA_MACRO("{8 * 7}")();       // If there are two args, use {} instead
+constexpr auto e = CAMBDA_MACRO("{ {8 * 7} + {6 * 3} }")();  // Nested application
+
+static_assert(a == 15   ,"");
+static_assert(b == 15   ,"");
+static_assert(c == 56   ,"");
+static_assert(d == 56   ,"");
+static_assert(e == 74   ,"");
+
+
 static_assert(56088 == CAMBDA_MACRO( R"--(
                             ([] [left] 123)
                             ([] [right] 456)
@@ -215,8 +211,8 @@ auto constexpr
 test_lambda_with_binding()
 {
     int y = 0;
-    (void)y;
-    auto cambda_lambda_bound = "(lambda [x] [{y = 2} {x * x}])"_cambda
+    auto cambda_lambda_bound =
+        CAMBDA_MACRO("(lambda [x] [{y = 2} {x * x}])")
         [BINDING_MACRO("y") &= y]
         ()
         ;
