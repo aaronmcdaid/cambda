@@ -1284,7 +1284,7 @@ namespace cambda {
     };
     template<typename AST, typename Lib>
     auto constexpr
-    make_cambda_object_from_the_string_literal(AST & ast, Lib & lib)
+    make_cambda_object_from_the_string_literal(AST ast, Lib & lib)
     -> cambda_object_from_the_string_literal<AST
                                             ,Lib&
                                             >
