@@ -173,18 +173,22 @@ namespace CAMBDA_MACRO_support
         ONE_HUNDRED_LOOKUPS(string_literal, base_offset+800)  \
         ONE_HUNDRED_LOOKUPS(string_literal, base_offset+900)
 
+#define CAMBDA_MACRO(string_literal)                                    \
+    (   CAMBDA_MACRO_support::temporary_holder_for_pack_of_characters < \
+        ONE_THOUSAND_LOOKUPS( string_literal ,0) '\0'>{}                \
+        .compiled_CAMBDA_object()                                       )
+
+
+
+
+    static_assert(CAMBDA_MACRO("{7 + 8}")() == 15 ,"");
+    static_assert(56088 == CAMBDA_MACRO( R"--(
+                                ([] [left] 123)
+                                ([] [right] 456)
+                                (* left right)
+                                )--")() ,"");
 
 int main()
 {
-    constexpr
-        auto f =
-            CAMBDA_MACRO_support::temporary_holder_for_pack_of_characters < ONE_THOUSAND_LOOKUPS(
-R"--({7 + 8})--"
-,0) '\0'>{}.compiled_CAMBDA_object()();
-    std::cout << f << '\n';
     // We do nothing here, this is just to be compiled to confirm that static_assert's worked
-
-    static_assert(CAMBDA_MACRO_support::temporary_holder_for_pack_of_characters < ONE_THOUSAND_LOOKUPS(
-R"--({7 + 8})--"
-,0) '\0'>{}.compiled_CAMBDA_object()() == 15 ,"");
 }
