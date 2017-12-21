@@ -2,6 +2,7 @@
 #include"cambda.hh"
 
 using cambda::operator"" _cambda;
+using cambda::operator"" _binding;
 
 constexpr auto a = "15"_cambda();            // a is 15
 constexpr auto b = "(+ 8 7)"_cambda();       // Function call. This is addition. b is 15
@@ -134,6 +135,19 @@ namespace CAMBDA_MACRO_support
                             ::cambda::parse_ast(trailing_nulls_removed)
                         , ::cambda::starter_lib_v);
         }
+
+        template<char ... non_null_chars>
+        constexpr static
+        auto compiled_BINDING_object(cambda_utils::char_pack<non_null_chars...>)
+        {
+            return ::cambda::binding_name<::cambda::capture_policy:: byValue, non_null_chars...>{};
+        }
+
+        constexpr static
+        auto compiled_BINDING_object()
+        {
+            return compiled_BINDING_object(trailing_nulls_removed);
+        }
     };
 }
 
@@ -178,15 +192,39 @@ namespace CAMBDA_MACRO_support
         ONE_THOUSAND_LOOKUPS( string_literal ,0) '\0'>{}                \
         .compiled_CAMBDA_object()                                       )
 
+#define BINDING_MACRO(string_literal)                                   \
+    (   CAMBDA_MACRO_support::temporary_holder_for_pack_of_characters < \
+        ONE_THOUSAND_LOOKUPS( string_literal ,0) '\0'>{}                \
+        .compiled_BINDING_object()                                      )
 
 
 
-    static_assert(CAMBDA_MACRO("{7 + 8}")() == 15 ,"");
-    static_assert(56088 == CAMBDA_MACRO( R"--(
-                                ([] [left] 123)
-                                ([] [right] 456)
-                                (* left right)
-                                )--")() ,"");
+/*
+ * Macros defined above. The remainder of this file is for testing
+ */
+
+static_assert(CAMBDA_MACRO("{7 + 8}")() == 15 ,"");
+static_assert(56088 == CAMBDA_MACRO( R"--(
+                            ([] [left] 123)
+                            ([] [right] 456)
+                            (* left right)
+                            )--")
+        () ,"");
+
+auto constexpr
+test_lambda_with_binding()
+{
+    int y = 0;
+    (void)y;
+    auto cambda_lambda_bound = "(lambda [x] [{y = 2} {x * x}])"_cambda
+        [BINDING_MACRO("y") &= y]
+        ()
+        ;
+    auto res = cambda_lambda_bound(10);
+    return y * res;
+
+}
+static_assert(test_lambda_with_binding() == 200 ,"");
 
 int main()
 {
