@@ -16,11 +16,13 @@ namespace testing_namespace_empty_library {
     {
 
         template< typename LibToForward
+                , typename Self
                 , typename Ti
                 , typename Tj >
         auto constexpr
         apply_after_simplification
-            ( LibToForward &&
+            ( Self &&
+            , LibToForward &&
             , decltype( "+"_charpack )
             , Ti && i
             , Tj && j) const
