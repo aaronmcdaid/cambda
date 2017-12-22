@@ -1139,12 +1139,6 @@ namespace cambda {
         { return {}; }
     };
 
-    template<typename AST, typename Lib>
-    auto constexpr
-    simplify(AST ast, Lib && l)
-    ->decltype(call_the_simplifier(ast, std::forward<Lib>(l))  )
-    {   return call_the_simplifier(ast, std::forward<Lib>(l)); }
-
     template<typename T, char ...c>
     struct binded_name_with_valueOrReference
     {
@@ -1239,9 +1233,9 @@ namespace cambda {
         template<typename LibToForward>
         auto constexpr static
         eval(LibToForward && l2f)
-        -> decltype(cambda::simplify (   SingleOne{} ,   std::forward<LibToForward>(l2f))   )
+        -> decltype(cambda::call_the_simplifier (   SingleOne{} ,   std::forward<LibToForward>(l2f))   )
         {
-            return  cambda::simplify (   SingleOne{} ,   std::forward<LibToForward>(l2f));
+            return  cambda::call_the_simplifier (   SingleOne{} ,   std::forward<LibToForward>(l2f));
         }
     };
 
@@ -1256,7 +1250,7 @@ namespace cambda {
         ->decltype(multi_statement_execution<types_t<B...>> :: eval( std::forward<LibToForward>(lib) ) )
         {
 
-            cambda::simplify (   A{} ,   std::forward<LibToForward>(lib));
+            cambda::call_the_simplifier (   A{} ,   std::forward<LibToForward>(lib));
             return multi_statement_execution<types_t<B...>> :: eval( std::forward<LibToForward>(lib) );
         }
     };
@@ -1268,8 +1262,8 @@ namespace cambda {
     struct multi_statement_execution< types_t<grouped_t<'(',types_t<grouped_t<'[',types_t<>>, grouped_t<'[',types_t<BindingName>>, BindingExpression>>, B, C...>>
     {
         template< typename LibToForward
-                , typename DecltypeOfTheBoundValue      = decltype( cambda::simplify(BindingExpression{}, std::declval<LibToForward>()) )
-                , typename TypeOfTheBoundValue_AsLvalue = decltype( cambda::simplify(BindingExpression{}, std::declval<LibToForward>()) ) &
+                , typename DecltypeOfTheBoundValue      = decltype( cambda::call_the_simplifier(BindingExpression{}, std::declval<LibToForward>()) )
+                , typename TypeOfTheBoundValue_AsLvalue = decltype( cambda::call_the_simplifier(BindingExpression{}, std::declval<LibToForward>()) ) &
                 >
         auto constexpr static
         eval  (LibToForward && lib)
@@ -1279,13 +1273,13 @@ namespace cambda {
         {
 
             decltype(auto) // not-an r-ref. May be l-ref though
-                bound_value = cambda::simplify(BindingExpression{}, std::forward<LibToForward>(lib));
+                bound_value = cambda::call_the_simplifier(BindingExpression{}, std::forward<LibToForward>(lib));
 
             // 'bound_value' is the storage, assuming storage is required.
 
             static_assert(std::is_same
                             <   decltype(bound_value)
-                            ,   decltype(cambda::simplify(BindingExpression{}, std::forward<LibToForward>(lib)))    >{} ,"Argh, what does decltype(auto) do on vars?");
+                            ,   decltype(cambda::call_the_simplifier(BindingExpression{}, std::forward<LibToForward>(lib)))    >{} ,"Argh, what does decltype(auto) do on vars?");
             static_assert(!std::is_rvalue_reference<decltype(bound_value)>{} ,""); // TODO: this is probably too strict
             static_assert(std::is_same<TypeOfTheBoundValue_AsLvalue, decltype((bound_value))>{} ,"");
 
