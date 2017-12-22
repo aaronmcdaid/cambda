@@ -1246,9 +1246,7 @@ namespace cambda {
             decltype(auto) // not-an r-ref. May be l-ref though
                 bound_value = cambda::simplify(BindingExpression{}, std::forward<LibToForward>(lib));
 
-            // Note: we treat bound_value as an lvalue from here on, and allow it to be
-            // taken as l-reference. This means that 'bound_value' is the storage,
-            // assuming storage is required.
+            // 'bound_value' is the storage, assuming storage is required.
 
             static_assert(std::is_same
                             <   decltype(bound_value)
