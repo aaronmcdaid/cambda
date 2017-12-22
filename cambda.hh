@@ -412,15 +412,16 @@ namespace cambda {
 
     template<typename T>
     auto
-    get_last_type( types_t<T> )
+    get_last_type( ::cambda:: types_t<T> )
     -> T
     { return {}; }
 
     template<typename S, typename T, typename ... U>
     auto
-    get_last_type( types_t<S, T, U...> )
-    ->decltype( get_last_type(std::declval< types_t<T,U...> >()) )
-    { return {}; }
+    get_last_type(  ::cambda::types_t<S, T, U...> )
+    {
+        return get_last_type( ::cambda::types_t<T,U...> {});
+    }
 
 
     template<typename T>
@@ -432,12 +433,13 @@ namespace cambda {
     template<typename S, typename T, typename ... U>
     auto
     drop_last_type( types_t<S, T, U...> )
-    ->
-        // recursively call, i.e. ignoring S:
+    {
+        using return_type =
         typename decltype( drop_last_type(std::declval< types_t<T,U...> >()) )
                 // , but then prepend S to the result:
-              ::template prepend<S>
-    { return{}; }
+              ::template prepend<S>;
+        return return_type{};
+    }
 
 
     // a few toString overloads just to print the output after parsing to help debugging
