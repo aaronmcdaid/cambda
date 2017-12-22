@@ -1309,10 +1309,11 @@ namespace cambda {
     template< typename Libs, typename AST, typename Lib>
     struct cambda_object_from_the_string_literal
     {
-        Libs & libs;
+        Libs   libs; // Shouldn't be an &-ref. Maybe be a tuple of &-refs though
         AST m_ast;
         Lib lib; // may be a &-ref
 
+        static_assert(!std::is_reference<Libs>{} ,"");
         static_assert(is_valid_tuple_of_libs_v<Libs>         ,"");
 
         template< typename id = cambda_utils:: id_t>
