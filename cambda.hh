@@ -291,7 +291,21 @@ namespace cambda {
     };
 
 
+
+
+    /*
+     * UDL for _charpack. Convenient in this header file, no need to use
+     * it from outside.
+     */
+    template<typename T, T ... chars>
+    constexpr auto
+    operator"" _charpack ()
+    -> cambda_utils:: char_pack<chars...>
+    { return {}; }
+
     /* Now to finally start on the parsing. First, tokenizing */
+
+    //namespace parsing {
 
     bool constexpr is_whitespace    (char c) { return c==' ' || c=='\t' || c=='\n'; }
     bool constexpr is_opener        (char c) { return c=='(' || c=='[' || c=='{'; }
@@ -305,6 +319,25 @@ namespace cambda {
                                                 }
                                                 return -1; // should never get here
     }
+
+
+    /*
+     * grouped_t
+     * =========
+     *  The contents of any (...), {...}, or [...] will
+     *  be stored in this.
+     */
+    template< char c
+            , typename T // T will always be an instance of types_t<U...>. See assertion below
+            >
+    struct grouped_t {
+        static_assert(is_opener(c) ,"");
+        constexpr static char my_closer = opener_to_closer(c);
+        static_assert(my_closer != -1 ,"");
+
+        // finally, we confirm T is an instance of types_t<U...>
+        static_assert(std::is_same<void, typename T::is_a_types_t_object>{} ,"");
+    };
 
     template< typename C >
     auto constexpr
@@ -377,12 +410,6 @@ namespace cambda {
     }
 
 
-    template<typename T, T ... chars>
-    constexpr auto
-    operator"" _charpack ()
-    -> cambda_utils:: char_pack<chars...>
-    { return {}; }
-
     template<typename T>
     auto
     get_last_type( types_t<T> )
@@ -411,28 +438,6 @@ namespace cambda {
                 // , but then prepend S to the result:
               ::template prepend<S>
     { return{}; }
-
-
-    /*
-     * grouped_t
-     * =========
-     *  The contents of any (...), {...}, or [...] will
-     *  be stored in this.
-     */
-    template< char c
-            , typename T // T will always be an instance of types_t<U...>. See assertion below
-            >
-    struct grouped_t {
-        static_assert(is_opener(c) ,"");
-        constexpr static char my_closer =
-            c=='(' ? ')' :
-            c=='{' ? '}' :
-            c=='[' ? ']' : '?';
-        static_assert(my_closer != '?' ,"");
-
-        // finally, we confirm T is an instance of types_t<U...>
-        static_assert(std::is_same<void, typename T::is_a_types_t_object>{} ,"");
-    };
 
 
     // a few toString overloads just to print the output after parsing to help debugging
