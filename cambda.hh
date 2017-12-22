@@ -272,13 +272,13 @@ struct type_t {
 
 /* my_forward_as_tuple
  * ===================
- *  Writing this simply because std::forward_as_tuple isn't constexpr in C++14
+ * Not for &&-refs. Values and &-refs are OK though
  */
 template<typename ... T>
 constexpr auto
 my_forward_as_tuple(T && ... t)
--> std::tuple<T&& ...>
-{ return std::tuple<T&& ...>{ std::forward<T>(t) ... }; }
+-> std::tuple<T ...>
+{ return std::tuple<T ...>{ std::forward<T>(t) ... }; }
 
 
 } // namespace cambda_utils
@@ -703,10 +703,10 @@ namespace cambda {
     template<typename ... T>
     struct is_valid_tuple_of_libs<std::tuple<T...>>
     {
-        static_assert(  std::min(std::initializer_list<bool>{ std::is_reference<T>{}                        ... }  ) ,""); // all are refs (l-ref or r-ref)
+        static_assert(  std::min(std::initializer_list<bool>{!std::is_rvalue_reference<T>{}                 ... }  ) ,""); // all are refs (l-ref or r-ref)
         static_assert(  std::min(std::initializer_list<bool>{ is_valid_member_of_a_tuple_of_libs<T>::value  ... }  ) ,""); // no 'combiners' allowed
         constexpr static
-        bool value =    std::min(std::initializer_list<bool>{ std::is_reference<T>{}                        ... }  )
+        bool value =    std::min(std::initializer_list<bool>{!std::is_rvalue_reference<T>{}                 ... }  )
                      && std::min(std::initializer_list<bool>{ is_valid_member_of_a_tuple_of_libs<T>::value  ... }  );
     };
 
@@ -1170,6 +1170,10 @@ namespace cambda {
         }
     };
 
+    template<typename T, char ... c>
+    struct is_valid_member_of_a_tuple_of_libs<binded_name_with_valueOrReference<T, c...> >
+    { constexpr static bool value = true; };
+
     enum class capture_policy   { byLvalueReference // strictly T&
                                 , byValue // std::decay_t<T&&>
                                 };
@@ -1324,6 +1328,10 @@ namespace cambda {
         operator[] (Binding && binding_to_insert) && // the '&&' is important, allows us to 'move' from this->lib
         -> decltype(auto)
         {
+            static_assert(is_valid_member_of_a_tuple_of_libs<Binding> :: value ,"");
+            //auto cc = cambda_utils::my_forward_as_tuple(std::forward<Binding>(binding_to_insert));
+            //static_assert( is_valid_tuple_of_libs_v<decltype(cc)> ,"");
+
             return cambda_object_from_the_string_literal    <   Libs // TODO: extend this
                                                             ,   AST
                                                             ,   decltype(
