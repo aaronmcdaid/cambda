@@ -696,15 +696,23 @@ namespace cambda {
     struct is_valid_member_of_a_tuple_of_libs
     { constexpr static bool value = false; };
 
+    template<typename>
+    struct is_valid_tuple_of_libs
+    { constexpr static bool value = false; };
+
     template<typename ... T>
-    bool constexpr
-    is_valid_tuple_of_libs( std::tuple<T...> )
+    struct is_valid_tuple_of_libs<std::tuple<T...>>
     {
         static_assert(  std::min(std::initializer_list<bool>{ std::is_reference<T>{}                        ... }  ) ,""); // all are refs (l-ref or r-ref)
         static_assert(  std::min(std::initializer_list<bool>{ is_valid_member_of_a_tuple_of_libs<T>::value  ... }  ) ,""); // no 'combiners' allowed
-        return          std::min(std::initializer_list<bool>{ std::is_reference<T>{}                        ... }  )
+        constexpr static
+        bool value =    std::min(std::initializer_list<bool>{ std::is_reference<T>{}                        ... }  )
                      && std::min(std::initializer_list<bool>{ is_valid_member_of_a_tuple_of_libs<T>::value  ... }  );
-    }
+    };
+
+    template<typename ... T>
+    constexpr bool
+    is_valid_tuple_of_libs_v = is_valid_tuple_of_libs<std::tuple<T...>>::value;
 
 
     template< typename Lib1
@@ -1317,13 +1325,17 @@ namespace cambda {
             //return *this;
         }
     };
-    template<typename AST, typename Lib>
+    template<typename AST, typename Lib
+            , typename AllLibs
+            , typename RemainingLibs    >
     auto constexpr
-    make_cambda_object_from_the_string_literal(AST ast, Lib & lib)
+    make_cambda_object_from_the_string_literal(AllLibs & , RemainingLibs & , AST ast, Lib & lib)
     -> cambda_object_from_the_string_literal<AST
                                             ,Lib&
                                             >
-    { return {ast, lib}; }
+    {
+        return {ast, lib};
+    }
     struct starter_lib {
         int ignore;
         constexpr starter_lib() : ignore(0) {} // a default constructor, just because clang requires them for constexpr objects
@@ -1789,22 +1801,16 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
     struct is_valid_member_of_a_tuple_of_libs<empty const &>
     { constexpr static bool value = true; };
 
-    template<typename AST>
-    auto constexpr
-    simplify(AST ast)
-    ->decltype(auto)
-    {
-        constexpr auto libs_tuple = cambda_utils::my_forward_as_tuple(empty_v, starter_lib_v);
-        static_assert(is_valid_tuple_of_libs(libs_tuple) ,"");
-        return simplify(ast, starter_lib_v);
-    }
-
     template<typename T, T ... chars>
     constexpr auto
     operator"" _cambda ()
     {
         auto ast = ::cambda::parsing::parse_ast(cambda_utils:: char_pack<chars...>{});
-        return ::cambda::make_cambda_object_from_the_string_literal(ast, starter_lib_v);
+
+        constexpr auto libs_tuple = cambda_utils::my_forward_as_tuple(empty_v, starter_lib_v);
+        //static_assert(is_valid_tuple_of_libs_v<decltype(libs_tuple)> ,"");
+
+        return ::cambda::make_cambda_object_from_the_string_literal(libs_tuple, libs_tuple, ast, starter_lib_v);
     }
 
     template<typename T, T ... chars>
@@ -1812,7 +1818,11 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
     operator"" _cambda_empty_library ()
     {
         auto ast = ::cambda::parsing::parse_ast(cambda_utils:: char_pack<chars...>{});
-        return ::cambda::make_cambda_object_from_the_string_literal(ast, empty_v);
+
+        constexpr auto libs_tuple = cambda_utils::my_forward_as_tuple(empty_v);
+        //static_assert(is_valid_tuple_of_libs_v<decltype(libs_tuple)> ,"");
+
+        return ::cambda::make_cambda_object_from_the_string_literal(libs_tuple, libs_tuple, ast, empty_v);
     }
 
 }
