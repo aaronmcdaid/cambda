@@ -303,9 +303,9 @@ namespace cambda {
     -> cambda_utils:: char_pack<chars...>
     { return {}; }
 
-    /* Now to finally start on the parsing. First, tokenizing */
-
-    //namespace parsing {
+namespace parsing {
+    // Open up the 'parsing' namespace for a few lines here,
+    // these few functions are useful when defining 'grouped_T'
 
     bool constexpr is_whitespace    (char c) { return c==' ' || c=='\t' || c=='\n'; }
     bool constexpr is_opener        (char c) { return c=='(' || c=='[' || c=='{'; }
@@ -320,6 +320,7 @@ namespace cambda {
                                                 return -1; // should never get here
     }
 
+} // namespace parsing
 
     /*
      * grouped_t
@@ -331,13 +332,18 @@ namespace cambda {
             , typename T // T will always be an instance of types_t<U...>. See assertion below
             >
     struct grouped_t {
-        static_assert(is_opener(c) ,"");
-        constexpr static char my_closer = opener_to_closer(c);
+        static_assert(parsing::is_opener(c) ,"");
+        constexpr static char my_closer = parsing::opener_to_closer(c);
         static_assert(my_closer != -1 ,"");
 
         // finally, we confirm T is an instance of types_t<U...>
         static_assert(std::is_same<void, typename T::is_a_types_t_object>{} ,"");
     };
+
+
+    /* Now to finally start on the parsing. First, tokenizing */
+
+namespace parsing {
 
     template< typename C >
     auto constexpr
@@ -619,9 +625,10 @@ namespace cambda {
         // next_and_future::rest is the distant future, which must be parsed here too
 
         using mygroup_with_the_closer = typename next_and_future::me;
+        static_assert(std::is_same<void, typename mygroup_with_the_closer :: is_a_types_t_object>{} ,"");
 
         // Check that the openers and closers "match". See the static_assert
-        using my_closer = decltype(get_last_type(mygroup_with_the_closer{}));
+        using my_closer = decltype(::cambda::parsing::get_last_type(mygroup_with_the_closer{}));
 
         static_assert( my_closer::size() == 1 ,""); // it must be one character ...
         static_assert( is_closer(my_closer::at(0)) ,""); // .. one of    })]
@@ -645,18 +652,20 @@ namespace cambda {
         return parse_many_things<types_t<T...>> {};
     }
 
+
     template<typename E>
     auto constexpr
     parse_ast(E )
     {
         //using all_the_terms_t = typename parse_flat_list_of_terms<E, 0>::all_the_terms; /*This was the broken version - clang doesn't like this*/
-        using all_the_terms_t = typename all_the_terms_as_types<E>::all_the_terms_t;
+        using all_the_terms_t = typename parsing::all_the_terms_as_types<E>::all_the_terms_t;
 
-        auto parsed =  parser( all_the_terms_t{} );
+        auto parsed =  parsing::parser( all_the_terms_t{} );
         static_assert(std::is_same< typename decltype(parsed) :: rest , types_t<>>{} ,"");
         using x = typename decltype(parsed) :: me;
         return x{};
     }
+}// namespace parsing
 
 
 } // namespace ?
@@ -823,8 +832,8 @@ namespace cambda {
     template<char first_digit, char ...c>
     struct simplifier   < cambda_utils::char_pack<first_digit, c...>
                         , cambda_utils::void_t<std::enable_if_t<
-                            is_digit_constexpr(first_digit)
-                            && is_digit_constexpr(cambda_utils::char_pack<first_digit, c...> :: last())
+                            parsing::is_digit_constexpr(first_digit)
+                            && parsing::is_digit_constexpr(cambda_utils::char_pack<first_digit, c...> :: last())
                           >>>
     {
         template<typename L>
@@ -837,7 +846,7 @@ namespace cambda {
     template<char first_digit, char ...c>
     struct simplifier   < cambda_utils::char_pack<first_digit, c...>
                         , cambda_utils::void_t<std::enable_if_t<
-                            is_digit_constexpr(first_digit)
+                            parsing::is_digit_constexpr(first_digit)
                             && cambda_utils::char_pack<first_digit, c...> :: last() == 'c'
                           >>>
     {
@@ -984,12 +993,12 @@ namespace cambda {
     template<typename Name>
     struct simplifier   < Name
                         , cambda_utils::void_t<std::enable_if_t<
-                                !( is_digit_constexpr(Name::at(0)) )
+                                !( parsing::is_digit_constexpr(Name::at(0)) )
                              && !( '\'' ==            Name::at(0)  )
                           >>>
     {
-        static_assert(!is_grouper(Name::at(0))          ,"");
-        static_assert(!is_digit_constexpr(Name::at(0))  ,"");
+        static_assert(!parsing::is_grouper(Name::at(0))          ,"");
+        static_assert(!parsing::is_digit_constexpr(Name::at(0))  ,"");
         static_assert( '\'' !=            Name::at(0)   ,"");
 
         template<typename L
@@ -1727,7 +1736,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
     constexpr auto
     operator"" _cambda ()
     {
-        auto ast = parse_ast(cambda_utils:: char_pack<chars...>{});
+        auto ast = ::cambda::parsing::parse_ast(cambda_utils:: char_pack<chars...>{});
         return ::cambda::make_cambda_object_from_the_string_literal(ast, starter_lib_v);
     }
 
@@ -1741,7 +1750,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
     constexpr auto
     operator"" _cambda_empty_library ()
     {
-        auto ast = parse_ast(cambda_utils:: char_pack<chars...>{});
+        auto ast = ::cambda::parsing::parse_ast(cambda_utils:: char_pack<chars...>{});
         return ::cambda::make_cambda_object_from_the_string_literal(ast, empty_v);
     }
 
