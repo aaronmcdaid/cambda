@@ -212,40 +212,34 @@ equal_array (   T const (&l) [N1]
  */
 namespace detail {
 template< size_t N
-        , size_t offset = 0 // add this to every entry
         , typename = void > /* this is pointless, just to allow me to make a very general specialization */
 struct scalable_make_index_sequence_helper;
 
-template<size_t offset>
-struct scalable_make_index_sequence_helper<0, offset>
+template<>
+struct scalable_make_index_sequence_helper<0>
 { using type = std::index_sequence<>; };
 
-template<size_t offset>
-struct scalable_make_index_sequence_helper<1, offset>
-{ using type = std::index_sequence<offset+0>; };
+template<>
+struct scalable_make_index_sequence_helper<1>
+{ using type = std::index_sequence<0>; };
 
-template<size_t offset>
-struct scalable_make_index_sequence_helper<2, offset>
-{ using type = std::index_sequence<offset+0, offset+1>; };
-
-template< size_t ... Ls
+template< size_t add_me_to_the_right_hand_side
+        , size_t ... Ls
         , size_t ... Rs >
 auto
 concat_index_packs  (   std::index_sequence<Ls...>
                     ,   std::index_sequence<Rs...>  )
--> std::index_sequence<Ls..., Rs...>
+-> std::index_sequence<Ls..., add_me_to_the_right_hand_side + Rs...>
 { return {}; }
 
-template<size_t N, size_t offset>
-struct scalable_make_index_sequence_helper<N, offset>
+template<size_t N>
+struct scalable_make_index_sequence_helper<N>
 {
-    static_assert(N > 2, "");
+    static_assert(N >= 2, "");
     constexpr static size_t mid = N/2;
-    using left = typename
-        scalable_make_index_sequence_helper<   mid, offset    > :: type;
-    using right_shifted = typename
-        scalable_make_index_sequence_helper< N-mid, offset+mid> :: type;
-    using type = decltype(concat_index_packs(left{}, right_shifted{}));
+    using left          = typename scalable_make_index_sequence_helper<   mid > :: type;
+    using right_shifted = typename scalable_make_index_sequence_helper< N-mid   > :: type;
+    using type          = decltype(concat_index_packs<mid>(left{}, right_shifted{}));
 
 };
 } // namespace detail
@@ -258,6 +252,7 @@ static_assert(std::is_same< scalable_make_index_sequence<1> , std::make_index_se
 static_assert(std::is_same< scalable_make_index_sequence<2> , std::make_index_sequence<2> >{} ,"");
 static_assert(std::is_same< scalable_make_index_sequence<3> , std::make_index_sequence<3> >{} ,"");
 static_assert(std::is_same< scalable_make_index_sequence<4> , std::make_index_sequence<4> >{} ,"");
+static_assert(std::is_same< scalable_make_index_sequence<42 > , std::make_index_sequence<42 > >{} ,"");
 static_assert(std::is_same< scalable_make_index_sequence<200> , std::make_index_sequence<200> >{} ,"");
 
 
@@ -292,7 +287,7 @@ namespace cambda {
             // a one-line comment begins with whitespace followed by #{},
             // and runs until the the end of the line
             //  (foo bar)       #{} this is a comment
-            // If you, for some reason, what this to not be interpreted as a comment,
+            // If you, for some reason, want this to not be interpreted as a comment,
             // then put a space after the '#', or between the '{' and '}'
             if  (   C::at(o) == '#'
                  && C::at(o+1) == '('
@@ -304,7 +299,7 @@ namespace cambda {
         }
 
 
-        size_t start = o;
+        size_t const start = o;
 
         // then, check if we're at the end
         if(C::at(o) == '\0')
@@ -319,6 +314,9 @@ namespace cambda {
         // The contents of a literal are entirely read in raw, except that two
         // consecutive single-quotes are interpreted as one such quote.
         // This allows any string to be specified
+        //
+        // A trailing  c  on the end means a "constant string",
+        // kind of like std::integral_constant for strings
         if(C::at(o) == '\'') {
             ++o;
             while(true)
@@ -339,12 +337,13 @@ namespace cambda {
             return std::make_pair(start, o);
         }
 
-        // finally, we just have a string of non-special characters.
+        // if we get this far, we just have a string of non-special characters.
         // We must read them all in
         while (C::at(o) != '\0' && !is_whitespace(C::at(o)) && !is_grouper(C::at(o)))
             ++o;
         return std:: make_pair(start, o);
     }
+
 
     template<typename T, T ... chars>
     constexpr auto
@@ -352,15 +351,20 @@ namespace cambda {
     -> cambda_utils:: char_pack<chars...>
     { return {}; }
 
-    template<char c>    using c_char    = std::integral_constant<char, c>;
-    template<int c>     using c_int     = std::integral_constant<int, c>;
-    template<size_t c>  using c_sizet   = std::integral_constant<size_t, c>;
-
     // now, a 'type_t' type template for the 'typeof' function in cambda
     template<typename T>
     struct type_t {
         using type = T;
     };
+
+
+    /* types_t
+     * =======
+     *  This is used a lot in this. It's simply to store a list of
+     *  types. The AST (Abstract Syntax Tree) that is parsed from the
+     *  input string is represented as an empty object whose type
+     *  encodes everything. A set of recursive 'types_t' instantiations.
+     */
 
     template<typename ... T>
     struct types_t {
@@ -368,6 +372,8 @@ namespace cambda {
         using prepend = types_t<Prepend, T...>;
 
         constexpr static size_t size = sizeof...(T);
+
+        using is_a_types_t_object = void; // no really needed. Just to help an assertion in 'grouped_t'
     };
 
     template<typename T>
@@ -400,7 +406,15 @@ namespace cambda {
     { return{}; }
 
 
-    template<char c, typename T>
+    /*
+     * grouped_t
+     * =========
+     *  The contents of any (...), {...}, or [...] will
+     *  be stored in this.
+     */
+    template< char c
+            , typename T // T will always be an instance of types_t<U...>. See assertion below
+            >
     struct grouped_t {
         static_assert(is_opener(c) ,"");
         constexpr static char my_closer =
@@ -408,6 +422,9 @@ namespace cambda {
             c=='{' ? '}' :
             c=='[' ? ']' : '?';
         static_assert(my_closer != '?' ,"");
+
+        // finally, we confirm T is an instance of types_t<U...>
+        static_assert(std::is_same<void, typename T::is_a_types_t_object>{} ,"");
     };
 
 
@@ -417,24 +434,17 @@ namespace cambda {
 
     template<char ... c>
     std::string
-    toString( cambda_utils::char_pack<c...> s, int indent = 0)
-    {
-        (void)indent;
-        return s.c_str0();
-    }
+    toString( cambda_utils::char_pack<c...> s, int = 0)
+    { return s.c_str0(); }
 
     std::string
     toString( types_t<> , int = 0)
-    {
-        return "";
-    }
+    { return ""; }
 
     template<typename S>
     std::string
     toString( types_t<S> , int indent = 0)
-    {
-        return toString( S{}, indent);
-    }
+    { return toString( S{}, indent); }
 
     template<typename R, typename S, typename ...T>
     std::string
@@ -449,8 +459,7 @@ namespace cambda {
     std::string
     toString(grouped_t<c,T> grp, int indent = 0)
     {
-        return
-                    std::string{c}
+        return      std::string{c}
                 +   std::string(indent_each_time-1, ' ')
                 +   toString(T{}, indent+indent_each_time)
                 +   std::string{grp.my_closer} // the closer appears on the same line as the last item
@@ -458,6 +467,86 @@ namespace cambda {
     }
 
 
+
+    template<typename E>
+    constexpr static size_t
+    count_the_terms(E e)
+    {
+        size_t n = 0;
+        size_t o = 0;
+        while(true) {
+            auto tk = find_next_token(e, o);
+            if(tk.first == tk.second)
+                break;
+            o = tk.second;
+            ++n;
+        }
+        return n;
+    }
+
+    template< size_t number_of_terms >
+    struct all_token_pairs_t
+    {
+        size_t starts[number_of_terms+1]; // extra one for the special zero-width 'end' token
+        size_t ends  [number_of_terms+1];
+    };
+
+    template< size_t number_of_terms
+            , typename E>
+    auto constexpr
+    get_all_token_pairs(E e)
+    -> all_token_pairs_t<number_of_terms>
+    {
+        auto first_token = find_next_token(e, 0);
+        all_token_pairs_t<number_of_terms> res{};
+        res.starts[0] = first_token.first;
+        res.ends  [0] = first_token.second;
+        for(size_t i = 1; i<=number_of_terms; ++i)
+        {
+            auto next_token = find_next_token(e, res.ends[i-1]);
+            res.starts[i] = next_token.first;
+            res.ends  [i] = next_token.second;
+        }
+        return res;
+    }
+
+    template<typename E>
+    struct all_the_terms_as_types
+    {
+        constexpr all_the_terms_as_types(){}
+
+        constexpr static E e {};
+
+        constexpr static auto number_of_terms = count_the_terms(e);
+        constexpr static auto all_token_pairs = get_all_token_pairs<number_of_terms>(e);
+        static_assert(all_token_pairs.starts[number_of_terms] == all_token_pairs.ends[number_of_terms] ,"");
+        static_assert(all_token_pairs.starts[number_of_terms-1] < all_token_pairs.ends[number_of_terms-1] ,"");
+
+        template<size_t I, size_t ...J>
+        static auto constexpr
+        just_one_token_as_a_string(std::index_sequence<J...>)
+        {
+            constexpr size_t offset_of_first_char_of_this_token = all_token_pairs.starts[I];
+            return cambda_utils::char_pack< E::at(offset_of_first_char_of_this_token + J) ... >{};
+        }
+
+        template<size_t ...I>
+        static auto constexpr
+        every_token_as_a_string(std::index_sequence<I...>)
+        {
+            return types_t<
+                decltype(just_one_token_as_a_string<I>(
+                            std::make_index_sequence<
+                                                    all_token_pairs.ends[I]
+                                                    -all_token_pairs.starts[I]
+                                                    >{}))
+                ... // across all the tokens
+                >{};
+        }
+
+        using all_the_terms_t = decltype(every_token_as_a_string( cambda_utils::scalable_make_index_sequence<number_of_terms>{} ));
+
+    };
 
     /* parse_many_things.
      * =================
@@ -503,7 +592,7 @@ namespace cambda {
         using rest  = types_t<T...>;
     };
 
-    // while '('/'{'/'[' open the list. This is more complex:
+    // ... but '('/'{'/'[' open the list. This is more complex:
     template<char o, typename ... T>
     struct parse_many_things<types_t<
             cambda_utils::char_pack<o>, T...
@@ -543,91 +632,11 @@ namespace cambda {
     }
 
     template<typename E>
-    constexpr static size_t
-    count_the_terms(E e)
-    {
-        size_t n = 0;
-        size_t o = 0;
-        while(true) {
-            auto tk = find_next_token(e, o);
-            if(tk.first == tk.second)
-                break;
-            o = tk.second;
-            ++n;
-        }
-        return n;
-    }
-
-    template< size_t number_of_terms >
-    struct all_token_pairs_t
-    {
-        size_t starts[number_of_terms+1]; // extra one for the special zero-width 'end' token
-        size_t ends  [number_of_terms+1];
-    };
-
-    template< size_t number_of_terms
-            , typename E>
-    auto constexpr
-    get_all_token_pairs(E e)
-    -> all_token_pairs_t<number_of_terms>
-    {
-        auto first_token = find_next_token(e, 0);
-        all_token_pairs_t<number_of_terms> res{};
-        res.starts[0] = first_token.first;
-        res.ends  [0] = first_token.second;
-        for(size_t i = 1; i<=number_of_terms; ++i)
-        {
-            auto next_token = find_next_token(e, res.ends[i-1]);
-            res.starts[i] = next_token.first;
-            res.ends  [i] = next_token.second;
-        }
-        return res;
-    }
-
-    template<typename E>
-    struct flatten_again
-    {
-        constexpr flatten_again(){}
-
-        constexpr static E e {};
-
-        constexpr static auto number_of_terms = count_the_terms(e);
-        constexpr static auto all_token_pairs = get_all_token_pairs<number_of_terms>(e);
-        static_assert(all_token_pairs.starts[number_of_terms] == all_token_pairs.ends[number_of_terms] ,"");
-        static_assert(all_token_pairs.starts[number_of_terms-1] < all_token_pairs.ends[number_of_terms-1] ,"");
-
-        template<size_t I, size_t ...J>
-        static auto constexpr
-        just_one_token_as_a_string(std::index_sequence<J...>)
-        {
-            constexpr size_t offset_of_first_char_of_this_token = all_token_pairs.starts[I];
-            return cambda_utils::char_pack< E::at(offset_of_first_char_of_this_token + J) ... >{};
-        }
-
-        template<size_t ...I>
-        static auto constexpr
-        every_token_as_a_string(std::index_sequence<I...>)
-        {
-            return types_t<
-                decltype(just_one_token_as_a_string<I>(
-                            std::make_index_sequence<
-                                                    all_token_pairs.ends[I]
-                                                    -all_token_pairs.starts[I]
-                                                    >{}))
-                ... // across all the tokens
-                >{};
-        }
-
-        using all_the_terms_t = decltype(every_token_as_a_string( cambda_utils::scalable_make_index_sequence<number_of_terms>{} ));
-
-    };
-
-    template<typename E>
     auto constexpr
     parse_ast(E )
     {
         //using all_the_terms_t = typename parse_flat_list_of_terms<E, 0>::all_the_terms; /*This was the broken version - clang doesn't like this*/
-        using all_the_terms_t = typename flatten_again<E>::all_the_terms_t;
+        using all_the_terms_t = typename all_the_terms_as_types<E>::all_the_terms_t;
 
         auto parsed =  parser( all_the_terms_t{} );
         static_assert(std::is_same< typename decltype(parsed) :: rest , types_t<>>{} ,"");
