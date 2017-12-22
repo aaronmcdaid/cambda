@@ -644,8 +644,6 @@ namespace cambda {
         return x{};
     }
 
-    static_assert(std::is_same<int const,   std::add_const<int>::type     >{} ,"");
-    static_assert(std::is_same<int &    ,   std::add_const<int&>::type     >{} ,"");
 
     template< typename Lib1
             , typename Lib2 >
