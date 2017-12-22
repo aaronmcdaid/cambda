@@ -30,32 +30,21 @@ struct char_pack {
     constexpr static char   at(size_t i)        { return c_str0_[i]; }
 
     constexpr static char   last()              { return c_str0_[ size()-1 ]; }
-    /*
-    template<typename ...C>
-    constexpr static size_t find_first_of(C ... targets) {
-        for(size_t i=0; i<   1+ size(); ++i) {
-            if( !utils:: and_all( at(i) != targets ... ))
-                return i;
-        }
-        return -1;
-    }
-    template<size_t l>
-    constexpr static auto   substr(void) {
-        return
-        make_a_pack_and_apply_it<l, size_t>([](auto ... idxs) {
-            return utils:: char_pack< char_pack:: at(idxs) ... >{};
-        });
-    }
-    template<size_t b, size_t e>
-    constexpr static auto   substr(void) {
-        static_assert( e>=b ,"");
-        return
-        make_a_pack_and_apply_it<e-b, size_t>([](auto ... idxs) {
-            return utils:: char_pack< char_pack:: at(b+idxs) ... >{};
-        });
-    }
-    */
+
+    auto constexpr
+    operator==(cambda_utils:: char_pack<chars...> )
+    -> std::true_type
+    { return {}; }
+
+    template<char ... other_chars>
+    auto constexpr
+    operator==( cambda_utils:: char_pack<other_chars...> )
+    -> std::false_type
+    { return {}; }
 };
+template<char ... chars>
+constexpr char   char_pack<chars...>:: c_str0_[]; // storage for this data member
+
 template< typename Stream, char ... c>
 Stream &
 operator<<(Stream &o, cambda_utils::char_pack<c...> s)
@@ -64,33 +53,28 @@ operator<<(Stream &o, cambda_utils::char_pack<c...> s)
     return o;
 }
 
-template<char ... chars>
-constexpr char   char_pack<chars...>:: c_str0_[];
-
 constexpr
-int char_pack_to_int(cambda_utils::char_pack<>, int prefix_already_processed)
+int char_pack_to_number(cambda_utils::char_pack<>, int prefix_already_processed)
 { return prefix_already_processed; }
 
 // this is to deal with literals such as '15c', which should be returned as
 // std::integral_constant<int, 15>{} from the simplifier
 constexpr
-int char_pack_to_int(cambda_utils::char_pack<'c'>, int prefix_already_processed)
+int char_pack_to_number(cambda_utils::char_pack<'c'>, int prefix_already_processed)
 { return prefix_already_processed; }
 
 template<char one_digit>
 constexpr
-double char_pack_to_int(cambda_utils::char_pack<'.', one_digit>, int prefix_already_processed)
-{
-    return prefix_already_processed + 0.1 * (one_digit-'0');
-}
+double char_pack_to_number(cambda_utils::char_pack<'.', one_digit>, int prefix_already_processed)
+{ return prefix_already_processed + 0.1 * (one_digit-'0'); }
 
 template<char digit1, char digit2, char ... digits>
 constexpr
-double char_pack_to_int(cambda_utils::char_pack<'.', digit1, digit2, digits...>, int prefix_already_processed)
+double char_pack_to_number(cambda_utils::char_pack<'.', digit1, digit2, digits...>, int prefix_already_processed)
 {
     return prefix_already_processed
                 + 0.1 * (digit1-'0')
-                + 0.1 * char_pack_to_int(cambda_utils::char_pack<'.', digit2, digits...>{}, 0)
+                + 0.1 * char_pack_to_number(cambda_utils::char_pack<'.', digit2, digits...>{}, 0)
                 ;
 }
 
@@ -99,11 +83,10 @@ template<char next_digit
         , typename = std::enable_if_t< (next_digit >= '0' && next_digit <= '9') >
         >
 constexpr auto
-char_pack_to_int(cambda_utils::char_pack<next_digit, c...>, int prefix_already_processed = 0)
-//-> std::enable_if_t< (next_digit >= '0' && next_digit <= '9'),double>
+char_pack_to_number(cambda_utils::char_pack<next_digit, c...>, int prefix_already_processed = 0)
 {
     static_assert( next_digit >= '0' && next_digit <= '9' ,"");
-    return  char_pack_to_int(cambda_utils::char_pack<c...>{}, 10*prefix_already_processed + (next_digit-'0'));
+    return  char_pack_to_number(cambda_utils::char_pack<c...>{}, 10*prefix_already_processed + (next_digit-'0'));
 }
 
 
@@ -137,14 +120,21 @@ struct id_t
 };
 
 
-namespace impl {
-    template<typename ...T>
-    struct voider { using type = void; };
-}
+/*
+ * void_t
+ * ======
+ */
+
+namespace detail { template<typename ...T> struct voider { using type = void; }; }
 
 template<typename ...T>
-using void_t = typename impl:: voider<T...>:: type;
+using void_t = typename detail:: voider<T...>:: type;
 
+
+/* concat_nontype_pack and reverse_pack
+ * ===================     ============
+ *  Some utilities for packs of non-types
+ */
 
 template< typename T
         , typename L
@@ -161,20 +151,14 @@ struct concat_nontype_pack  < T
                         , tmplt<right...>>
 {   using type = tmplt<left..., right...>; };
 
-
-
-
-template< typename T
-        , typename Pack >
+template< typename T , typename Pack >
 struct reverse_pack;
 
-template< typename T
-        , template<T...> class tmplt >
+template< typename T , template<T...> class tmplt >
 struct reverse_pack<T, tmplt<> >
 { using type = tmplt<>; };
 
-template< typename T
-        , template<T...> class tmplt
+template< typename T , template<T...> class tmplt
         , T first
         , T ... c>
 struct reverse_pack<T, tmplt<first,c...>>
@@ -184,21 +168,9 @@ struct reverse_pack<T, tmplt<first,c...>>
 };
 
 
-
-template<char ... cs>
-auto constexpr
-operator==( cambda_utils:: char_pack<cs...>
-          , cambda_utils:: char_pack<cs...> )
--> std::true_type
-{ return {}; }
-
-template<char ... c1, char ... c2>
-auto constexpr
-operator==( cambda_utils:: char_pack<c1...>
-          , cambda_utils:: char_pack<c2...> )
--> std::false_type
-{ return {}; }
-
+/* equal_string_array and equal_array
+ * ==================     ===========
+ */
 
 constexpr bool
 equal_string_array  (   const char *l
@@ -215,9 +187,7 @@ equal_string_array  (   const char *l
     }
 }
 
-template< typename T
-        , size_t N1, size_t N2
-        >
+template< typename T , size_t N1, size_t N2 >
 constexpr bool
 equal_array (   T const (&l) [N1]
             ,   T const (&r) [N2] )
@@ -242,20 +212,20 @@ equal_array (   T const (&l) [N1]
  */
 namespace detail {
 template< size_t N
-        , typename = void /* this is pointless, just to allow me to make a very general specialization */
-        , size_t offset = 0> // add this to every entry
+        , size_t offset = 0 // add this to every entry
+        , typename = void > /* this is pointless, just to allow me to make a very general specialization */
 struct scalable_make_index_sequence_helper;
 
 template<size_t offset>
-struct scalable_make_index_sequence_helper<0, void, offset>
+struct scalable_make_index_sequence_helper<0, offset>
 { using type = std::index_sequence<>; };
 
 template<size_t offset>
-struct scalable_make_index_sequence_helper<1, void, offset>
+struct scalable_make_index_sequence_helper<1, offset>
 { using type = std::index_sequence<offset+0>; };
 
 template<size_t offset>
-struct scalable_make_index_sequence_helper<2, void, offset>
+struct scalable_make_index_sequence_helper<2, offset>
 { using type = std::index_sequence<offset+0, offset+1>; };
 
 template< size_t ... Ls
@@ -267,14 +237,14 @@ concat_index_packs  (   std::index_sequence<Ls...>
 { return {}; }
 
 template<size_t N, size_t offset>
-struct scalable_make_index_sequence_helper<N, void, offset>
+struct scalable_make_index_sequence_helper<N, offset>
 {
     static_assert(N > 2, "");
     constexpr static size_t mid = N/2;
     using left = typename
-        scalable_make_index_sequence_helper<   mid,void,offset    > :: type;
+        scalable_make_index_sequence_helper<   mid, offset    > :: type;
     using right_shifted = typename
-        scalable_make_index_sequence_helper< N-mid,void,offset+mid> :: type;
+        scalable_make_index_sequence_helper< N-mid, offset+mid> :: type;
     using type = decltype(concat_index_packs(left{}, right_shifted{}));
 
 };
@@ -291,9 +261,9 @@ static_assert(std::is_same< scalable_make_index_sequence<4> , std::make_index_se
 static_assert(std::is_same< scalable_make_index_sequence<200> , std::make_index_sequence<200> >{} ,"");
 
 
-
-
 } // namespace cambda_utils
+
+
 
 namespace cambda {
     bool constexpr is_whitespace    (char c) { return c==' ' || c=='\t' || c=='\n'; }
@@ -835,7 +805,7 @@ namespace cambda {
         template<typename L>
         static auto constexpr
         simplify(cambda_utils::char_pack<first_digit, c...> digits, L && )
-        { return cambda_utils::char_pack_to_int(digits); }
+        { return cambda_utils::char_pack_to_number(digits); }
     };
 
     // simplifier for digits with trailing 'c', for an integral constant
@@ -849,7 +819,7 @@ namespace cambda {
         template<typename L>
         static auto constexpr
         simplify(cambda_utils::char_pack<first_digit, c...> , L &&)
-        { return std::integral_constant<int, cambda_utils::char_pack_to_int(cambda_utils::char_pack<first_digit, c...>{})>{}; }
+        { return std::integral_constant<int, cambda_utils::char_pack_to_number(cambda_utils::char_pack<first_digit, c...>{})>{}; }
     };
 
     namespace detail {
