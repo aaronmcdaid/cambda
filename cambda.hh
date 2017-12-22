@@ -5,6 +5,8 @@
  */
 
 #include<utility>
+#include<tuple>
+#include<algorithm> // just for std::min
 #include<string>
 
 using std::size_t;
@@ -266,6 +268,18 @@ template<typename T>
 struct type_t {
     using type = T;
 };
+
+
+/* my_forward_as_tuple
+ * ===================
+ *  Writing this simply because std::forward_as_tuple isn't constexpr in C++14
+ */
+template<typename ... T>
+constexpr auto
+my_forward_as_tuple(T && ... t)
+-> std::tuple<T&& ...>
+{ return std::tuple<T&& ...>{ std::forward<T>(t) ... }; }
+
 
 } // namespace cambda_utils
 
@@ -670,6 +684,27 @@ namespace parsing {
 
 } // namespace ?
 namespace cambda {
+
+
+    /* is_valid_member_of_a_tuple_of_libs
+     * ==================================
+     *  This starts the new (Xmas 2017) approach to replace the combiners
+     *  By default, return false. Define other specializations later in this
+     *  file, as required.
+     */
+    template<typename>
+    struct is_valid_member_of_a_tuple_of_libs
+    { constexpr static bool value = false; };
+
+    template<typename ... T>
+    bool constexpr
+    is_valid_tuple_of_libs( std::tuple<T...> )
+    {
+        static_assert(  std::min(std::initializer_list<bool>{ std::is_reference<T>{}                        ... }  ) ,""); // all are refs (l-ref or r-ref)
+        static_assert(  std::min(std::initializer_list<bool>{ is_valid_member_of_a_tuple_of_libs<T>::value  ... }  ) ,""); // no 'combiners' allowed
+        return          std::min(std::initializer_list<bool>{ std::is_reference<T>{}                        ... }  )
+                     && std::min(std::initializer_list<bool>{ is_valid_member_of_a_tuple_of_libs<T>::value  ... }  );
+    }
 
 
     template< typename Lib1
@@ -1744,14 +1779,31 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
 
     };
 
+    struct empty {
+        int ignore;
+        constexpr empty() : ignore(0) {}
+    };
 
     constexpr starter_lib starter_lib_v;
+    constexpr empty empty_v;
+
+    template<>
+    struct is_valid_member_of_a_tuple_of_libs<starter_lib const &>
+    { constexpr static bool value = true; };
+
+    template<>
+    struct is_valid_member_of_a_tuple_of_libs<empty const &>
+    { constexpr static bool value = true; };
 
     template<typename AST>
     auto constexpr
     simplify(AST ast)
     ->decltype(auto)
-    {   return simplify(ast, starter_lib_v); }
+    {
+        constexpr auto libs_tuple = cambda_utils::my_forward_as_tuple(empty_v, starter_lib_v);
+        static_assert(is_valid_tuple_of_libs(libs_tuple) ,"");
+        return simplify(ast, starter_lib_v);
+    }
 
     template<typename T, T ... chars>
     constexpr auto
@@ -1761,12 +1813,6 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
         return ::cambda::make_cambda_object_from_the_string_literal(ast, starter_lib_v);
     }
 
-    struct empty {
-        int ignore;
-        constexpr empty() : ignore(0) {}
-
-    };
-    constexpr empty empty_v;
     template<typename T, T ... chars>
     constexpr auto
     operator"" _cambda_empty_library ()
