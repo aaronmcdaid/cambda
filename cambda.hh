@@ -256,11 +256,43 @@ static_assert(std::is_same< scalable_make_index_sequence<42 > , std::make_index_
 static_assert(std::is_same< scalable_make_index_sequence<200> , std::make_index_sequence<200> >{} ,"");
 
 
+
+/* type_t
+ * ======
+ *  Used only for the 'typeof' cambda function. Handy though,
+ *  it can be accepted by 'fix'
+ */
+template<typename T>
+struct type_t {
+    using type = T;
+};
+
 } // namespace cambda_utils
 
 
 
 namespace cambda {
+    /* types_t
+     * =======
+     *  This is used a lot in this. It's simply to store a list of
+     *  types. The AST (Abstract Syntax Tree) that is parsed from the
+     *  input string is represented as an empty object whose type
+     *  encodes everything. A set of recursive 'types_t' instantiations.
+     */
+
+    template<typename ... T>
+    struct types_t {
+        template<typename Prepend>
+        using prepend = types_t<Prepend, T...>;
+
+        constexpr static size_t size = sizeof...(T);
+
+        using is_a_types_t_object = void; // no really needed. Just to help an assertion in 'grouped_t'
+    };
+
+
+    /* Now to finally start on the parsing. First, tokenizing */
+
     bool constexpr is_whitespace    (char c) { return c==' ' || c=='\t' || c=='\n'; }
     bool constexpr is_opener        (char c) { return c=='(' || c=='[' || c=='{'; }
     bool constexpr is_closer        (char c) { return c==')' || c==']' || c=='}'; }
@@ -350,31 +382,6 @@ namespace cambda {
     operator"" _charpack ()
     -> cambda_utils:: char_pack<chars...>
     { return {}; }
-
-    // now, a 'type_t' type template for the 'typeof' function in cambda
-    template<typename T>
-    struct type_t {
-        using type = T;
-    };
-
-
-    /* types_t
-     * =======
-     *  This is used a lot in this. It's simply to store a list of
-     *  types. The AST (Abstract Syntax Tree) that is parsed from the
-     *  input string is represented as an empty object whose type
-     *  encodes everything. A set of recursive 'types_t' instantiations.
-     */
-
-    template<typename ... T>
-    struct types_t {
-        template<typename Prepend>
-        using prepend = types_t<Prepend, T...>;
-
-        constexpr static size_t size = sizeof...(T);
-
-        using is_a_types_t_object = void; // no really needed. Just to help an assertion in 'grouped_t'
-    };
 
     template<typename T>
     auto
@@ -643,6 +650,10 @@ namespace cambda {
         using x = typename decltype(parsed) :: me;
         return x{};
     }
+
+
+} // namespace ?
+namespace cambda {
 
 
     template< typename Lib1
@@ -1297,7 +1308,7 @@ namespace cambda {
         auto constexpr
         apply_after_simplification  (LibToForward &&, decltype( "typeof"_charpack )
                             , T&& ) const
-        -> type_t<T>
+        -> ::cambda_utils::type_t<T>
         { return {}; }
 
         // id
@@ -1641,7 +1652,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
                 >
         auto constexpr
         apply_after_simplification  (LibToForward && , decltype( "fix"_charpack )
-                            , type_t<ReturnType>
+                            , ::cambda_utils::type_t<ReturnType>
                             , F && f
                             , D && ... d
                             ) const
