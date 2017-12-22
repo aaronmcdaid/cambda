@@ -1302,11 +1302,14 @@ namespace cambda {
         }
     };
 
-    template<typename AST, typename Lib>
+    template< typename Libs, typename AST, typename Lib>
     struct cambda_object_from_the_string_literal
     {
+        Libs & libs;
         AST m_ast;
         Lib lib; // may be a &-ref
+
+        static_assert(is_valid_tuple_of_libs_v<Libs>         ,"");
 
         template< typename id = cambda_utils:: id_t>
         constexpr auto
@@ -1321,25 +1324,26 @@ namespace cambda {
         operator[] (Binding && binding_to_insert) && // the '&&' is important, allows us to 'move' from this->lib
         -> decltype(auto)
         {
-            return cambda_object_from_the_string_literal<AST, decltype(
-                        combine_libraries(std::forward<Lib>(lib), std::forward<Binding>(binding_to_insert))
-                    )>
-            {m_ast
-                        , combine_libraries(std::forward<Lib>(lib), std::forward<Binding>(binding_to_insert))
-            };
+            return cambda_object_from_the_string_literal    <   Libs // TODO: extend this
+                                                            ,   AST
+                                                            ,   decltype(
+                                                                    combine_libraries(std::forward<Lib>(lib), std::forward<Binding>(binding_to_insert))
+                                                                        )>
+            { libs, m_ast , combine_libraries(std::forward<Lib>(lib), std::forward<Binding>(binding_to_insert)) };
             //return *this;
         }
     };
     template<typename AST, typename Lib
             , typename Libs    >
     auto constexpr
-    make_cambda_object_from_the_string_literal(Libs & , AST ast, Lib & lib)
-    -> cambda_object_from_the_string_literal<AST
+    make_cambda_object_from_the_string_literal(Libs & libs, AST ast, Lib & lib)
+    -> cambda_object_from_the_string_literal<Libs
+                                            ,AST
                                             ,Lib&
                                             >
     {
         static_assert(is_valid_tuple_of_libs_v<Libs>         ,"");
-        return {ast, lib};
+        return {libs, ast, lib};
     }
     struct starter_lib {
         int ignore;
