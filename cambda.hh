@@ -1329,16 +1329,22 @@ namespace cambda {
         operator[] (Binding && binding_to_insert) && // the '&&' is important, allows us to 'move' from this->lib
         -> decltype(auto)
         {
-            static_assert(is_valid_member_of_a_tuple_of_libs<Binding> :: value ,"");
-            //auto cc = cambda_utils::my_forward_as_tuple(std::forward<Binding>(binding_to_insert));
-            //static_assert( is_valid_tuple_of_libs_v<decltype(cc)> ,"");
+            static_assert(!std::is_reference<Binding>{} ,"");
 
-            return cambda_object_from_the_string_literal    <   Libs // TODO: extend this
+            static_assert(is_valid_member_of_a_tuple_of_libs<Binding> :: value ,"");
+
+            auto new_libs = std::tuple_cat(
+                    libs ,
+                    cambda_utils::my_forward_as_tuple(Binding{binding_to_insert}) // copy it, not move it. TODO: change to move later
+                    );
+            static_assert( is_valid_tuple_of_libs_v<decltype(new_libs)> ,"");
+
+            return cambda_object_from_the_string_literal    <   decltype(new_libs) // TODO: extend this
                                                             ,   AST
                                                             ,   decltype(
                                                                     combine_libraries(std::forward<Lib>(lib), std::forward<Binding>(binding_to_insert))
                                                                         )>
-            { libs, m_ast , combine_libraries(std::forward<Lib>(lib), std::forward<Binding>(binding_to_insert)) };
+            { new_libs, m_ast , combine_libraries(std::forward<Lib>(lib), std::forward<Binding>(binding_to_insert)) };
             //return *this;
         }
     };
