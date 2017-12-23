@@ -691,9 +691,6 @@ namespace cambda {
     };
     constexpr empty empty_v;
 
-    constexpr
-    std::tuple<empty const &> empty_place_holder_libs{empty_v}; // TODO: remove this 'empty_place_holder_libs'
-
 
     /* is_valid_member_of_a_tuple_of_libs
      * ==================================
@@ -1076,17 +1073,20 @@ namespace cambda {
             return lib.static_get_simple_named_value(std::forward<L>(lib), name);
         }
 
-        template<typename L>
+        template<typename Libs, typename L>
         struct gather_args_later
         {
+            static_assert(is_valid_tuple_of_libs_v<Libs> ,"");
+
+            Libs & m_libs_reference; // a reference to a tuple (members may be non-refs)
             Name m_f;
             L && m_lib; // L may, or may not, be &-
 
             template<typename ...T>
             auto constexpr
-            operator()  ( T && ...t) && // && means, I think, we are entitled to forward 'm_lib' out
-            ->decltype( std::forward<L>(m_lib).apply_after_simplification(std::forward<L>(m_lib), cambda::empty_place_holder_libs, std::forward<L>(m_lib), m_f , std::forward<T>(t) ... )  )
-            {   return  std::forward<L>(m_lib).apply_after_simplification(std::forward<L>(m_lib), cambda::empty_place_holder_libs, std::forward<L>(m_lib), m_f , std::forward<T>(t) ... ); }
+            operator()  ( T && ...t) && // && means, I think, we are entitled to forward 'm_lib' out, and the 'm_libs_reference' will still be good
+            ->decltype( std::forward<L>(m_lib).apply_after_simplification(std::forward<L>(m_lib), m_libs_reference, std::forward<L>(m_lib), m_f , std::forward<T>(t) ... )  )
+            {   return  std::forward<L>(m_lib).apply_after_simplification(std::forward<L>(m_lib), m_libs_reference, std::forward<L>(m_lib), m_f , std::forward<T>(t) ... ); }
         };
 
         template<typename L, typename Libs
@@ -1094,8 +1094,9 @@ namespace cambda {
                 , std::enable_if_t< b, std::integral_constant<int,__LINE__>>* =nullptr
                 >
         static auto constexpr
-        simplify(Libs &,Name f, L && lib) -> gather_args_later<L> {
-            return {std::move(f), std::forward<L>(lib)};
+        simplify(Libs & libs_to_be_stored_by_reference,Name f, L && lib) -> gather_args_later<Libs, L> {
+            static_assert(is_valid_tuple_of_libs_v<Libs> ,"");
+            return {libs_to_be_stored_by_reference, std::move(f), std::forward<L>(lib)};
         }
     };
 
@@ -1513,11 +1514,15 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
         { return cambda_utils::char_pack<l..., r...>{}; }
 
 
-        template< typename LibToForward
+        template< typename Libs
+                , typename LibToForward
                 , typename MultiStatement
                 , typename ...BindingName>
         struct lambda_capturing_struct
         {
+            static_assert(is_valid_tuple_of_libs_v<Libs> ,"");
+
+            Libs libs; // this might store a copy of some of the libs
             LibToForward m_lib; // may be an &-ref  (in fact, in tests so far, it always is
             // in fact, we should probably treat m_lib as an &-ref always, even if
             // it isn't, in order to allow multi-call lambdas
@@ -1529,11 +1534,11 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
             constexpr auto
             operator() (T && ... x) &
             ->decltype(multi_statement_execution< MultiStatement >
-                        :: eval(cambda::empty_place_holder_libs, cambda::combine_libraries(m_lib, char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...)) )
+                        :: eval(libs, cambda::combine_libraries(m_lib, char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...)) )
             {
                 static_assert(sizeof...(x) == sizeof...(BindingName) ,"");
                 return multi_statement_execution< MultiStatement >
-                        :: eval(cambda::empty_place_holder_libs, cambda::combine_libraries(m_lib, char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...));
+                        :: eval(libs, cambda::combine_libraries(m_lib, char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...));
 
             };
 
@@ -1541,11 +1546,11 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
             constexpr auto
             operator() (T && ... x) const &
             ->decltype(multi_statement_execution<MultiStatement>
-                            ::eval(cambda::empty_place_holder_libs, cambda::combine_libraries   (m_lib, char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...))   )
+                            ::eval(libs, cambda::combine_libraries   (m_lib, char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...))   )
             {
                 static_assert(sizeof...(x) == sizeof...(BindingName) ,"");
                 return  multi_statement_execution<MultiStatement>
-                            ::eval(cambda::empty_place_holder_libs, cambda::combine_libraries   (m_lib, char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...))   ;
+                            ::eval(libs, cambda::combine_libraries   (m_lib, char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...))   ;
 
             };
         };
@@ -1559,13 +1564,13 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
                 , typename Lnonref = std::remove_reference_t<LibToForward>
                 >
         auto constexpr
-        apply_after_simplification  (Self &&, Libs &, LibToForward && l2f, decltype( "lambda"_charpack )
+        apply_after_simplification  (Self &&, Libs & libs, LibToForward && l2f, decltype( "lambda"_charpack )
                                     , cambda::grouped_t<'[', types_t<BindingName...>>
                                     , cambda::grouped_t<'[', types_t<QuotedExpression...>>
                                     ) const
-        ->         lambda_capturing_struct<LibToForward, types_t<QuotedExpression...>, BindingName...>
+        ->         lambda_capturing_struct<Libs, LibToForward, types_t<QuotedExpression...>, BindingName...>
         {
-            return lambda_capturing_struct<LibToForward, types_t<QuotedExpression...>, BindingName...> {std::forward<LibToForward>(l2f)};
+            return lambda_capturing_struct<Libs, LibToForward, types_t<QuotedExpression...>, BindingName...> {libs, std::forward<LibToForward>(l2f)};
         }
 
 
