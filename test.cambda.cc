@@ -16,18 +16,23 @@ namespace testing_namespace_empty_library {
     {
 
         template< typename LibToForward
+                , typename Libs
                 , typename Self
                 , typename Ti
                 , typename Tj >
         auto constexpr
         apply_after_simplification
             ( Self &&
+            , Libs &
             , LibToForward &&
             , decltype( "+"_charpack )
             , Ti && i
             , Tj && j) const
         ->decltype(std::forward<Ti>(i) + std::forward<Tj>(j) )
-        {   return std::forward<Ti>(i) + std::forward<Tj>(j); }
+        {
+            static_assert(cambda::is_valid_tuple_of_libs_v<Libs> ,"");
+            return std::forward<Ti>(i) + std::forward<Tj>(j);
+        }
     };
 
     constexpr auto b = "(+ 7 8)"_cambda_empty_library["+"_binding = plus]();
