@@ -685,6 +685,15 @@ namespace parsing {
 } // namespace ?
 namespace cambda {
 
+    struct empty {
+        int ignore;
+        constexpr empty() : ignore(0) {}
+    };
+    constexpr empty empty_v;
+
+    constexpr
+    std::tuple<empty const &> empty_place_holder_libs{empty_v}; // TODO: remove this 'empty_place_holder_libs'
+
 
     /* is_valid_member_of_a_tuple_of_libs
      * ==================================
@@ -1247,9 +1256,10 @@ namespace cambda {
     template< typename SingleOne >
     struct multi_statement_execution< types_t<SingleOne> >
     {
-        template<typename LibToForward>
+        template<typename LibToForward
+                , typename Libs >
         auto constexpr static
-        eval(LibToForward && l2f)
+        eval(Libs &, LibToForward && l2f)
         -> decltype(cambda::call_the_simplifier (   SingleOne{} ,   std::forward<LibToForward>(l2f))   )
         {
             return  cambda::call_the_simplifier (   SingleOne{} ,   std::forward<LibToForward>(l2f));
@@ -1261,14 +1271,14 @@ namespace cambda {
             >
     struct multi_statement_execution< types_t<A, B...>>
     {
-        template< typename LibToForward >
+        template< typename Libs, typename LibToForward >
         auto constexpr static
-        eval  (LibToForward && lib)
-        ->decltype(multi_statement_execution<types_t<B...>> :: eval( std::forward<LibToForward>(lib) ) )
+        eval  (Libs & libs, LibToForward && lib)
+        ->decltype(multi_statement_execution<types_t<B...>> :: eval( libs, std::forward<LibToForward>(lib) ) )
         {
 
             cambda::call_the_simplifier (   A{} ,   std::forward<LibToForward>(lib));
-            return multi_statement_execution<types_t<B...>> :: eval( std::forward<LibToForward>(lib) );
+            return multi_statement_execution<types_t<B...>> :: eval( libs, std::forward<LibToForward>(lib) );
         }
     };
     template< typename BindingName
@@ -1279,13 +1289,14 @@ namespace cambda {
     struct multi_statement_execution< types_t<grouped_t<'(',types_t<grouped_t<'[',types_t<>>, grouped_t<'[',types_t<BindingName>>, BindingExpression>>, B, C...>>
     {
         template< typename LibToForward
+                , typename Libs
                 , typename DecltypeOfTheBoundValue      = decltype( cambda::call_the_simplifier(BindingExpression{}, std::declval<LibToForward>()) )
                 , typename TypeOfTheBoundValue_AsLvalue = decltype( cambda::call_the_simplifier(BindingExpression{}, std::declval<LibToForward>()) ) &
                 >
         auto constexpr static
-        eval  (LibToForward && lib)
+        eval  (Libs & libs, LibToForward && lib) // TODO: add in the extra binding
         ->decltype(multi_statement_execution<types_t< B, C...  >>
-                    ::eval(cambda::combine_libraries    (   std::forward<LibToForward>(lib)
+                    ::eval(libs, cambda::combine_libraries    (   std::forward<LibToForward>(lib)
                                                         ,   char_pack__to__binding_name(BindingName{}) = std::declval<DecltypeOfTheBoundValue>()))  )
         {
 
@@ -1301,7 +1312,7 @@ namespace cambda {
             static_assert(std::is_same<TypeOfTheBoundValue_AsLvalue, decltype((bound_value))>{} ,"");
 
             return multi_statement_execution<types_t< B, C...  >>
-                    ::eval(cambda::combine_libraries    (   std::forward<LibToForward>(lib)
+                    ::eval(libs, cambda::combine_libraries    (   std::forward<LibToForward>(lib)
                                                         ,   char_pack__to__binding_name(BindingName{}) = std::forward<DecltypeOfTheBoundValue>(bound_value)));
         }
     };
@@ -1321,7 +1332,7 @@ namespace cambda {
         operator() () &&
         -> decltype(auto)
         {
-            return ::cambda:: multi_statement_execution<decltype(m_ast)> :: eval( std::forward<Lib> (lib));
+            return ::cambda:: multi_statement_execution<decltype(m_ast)> :: eval( libs, std::forward<Lib> (lib));
         }
 
         template<typename Binding>
@@ -1500,15 +1511,17 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
             // it isn't, in order to allow multi-call lambdas
             //static_assert( std::is_reference<LibToForward>{} ,"");
 
+            //static_assert(is_valid_tuple_of_libs_v<decltype(m_libs)> ,"");
+
             template< typename ...T>
             constexpr auto
             operator() (T && ... x) &
             ->decltype(multi_statement_execution< MultiStatement >
-                        :: eval( cambda::combine_libraries(m_lib, char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...)) )
+                        :: eval(cambda::empty_place_holder_libs, cambda::combine_libraries(m_lib, char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...)) )
             {
                 static_assert(sizeof...(x) == sizeof...(BindingName) ,"");
                 return multi_statement_execution< MultiStatement >
-                        :: eval( cambda::combine_libraries(m_lib, char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...));
+                        :: eval(cambda::empty_place_holder_libs, cambda::combine_libraries(m_lib, char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...));
 
             };
 
@@ -1516,11 +1529,11 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
             constexpr auto
             operator() (T && ... x) const &
             ->decltype(multi_statement_execution<MultiStatement>
-                            ::eval(cambda::combine_libraries   (m_lib, char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...))   )
+                            ::eval(cambda::empty_place_holder_libs, cambda::combine_libraries   (m_lib, char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...))   )
             {
                 static_assert(sizeof...(x) == sizeof...(BindingName) ,"");
                 return  multi_statement_execution<MultiStatement>
-                            ::eval(cambda::combine_libraries   (m_lib, char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...))   ;
+                            ::eval(cambda::empty_place_holder_libs, cambda::combine_libraries   (m_lib, char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...))   ;
 
             };
         };
@@ -1655,10 +1668,10 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
                             , cambda::grouped_t<'[', types_t<QuotedExpressionFalse...>>
                             ) const
         ->decltype(multi_statement_execution<types_t<QuotedExpressionTrue...>>
-                    :: eval(   std::forward<LibToForward>(l2f) )    )
+                    :: eval(cambda::empty_place_holder_libs,   std::forward<LibToForward>(l2f) )    )
         {
             return multi_statement_execution<types_t<QuotedExpressionTrue...>>
-                    :: eval(   std::forward<LibToForward>(l2f) );
+                    :: eval(cambda::empty_place_holder_libs,   std::forward<LibToForward>(l2f) );
         }
 
         // 'if' with false
@@ -1674,10 +1687,10 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
                             , cambda::grouped_t<'[', types_t<QuotedExpressionFalse...>>
                             ) const
         ->decltype(multi_statement_execution<types_t<QuotedExpressionFalse...>>
-                    ::eval( std::forward<LibToForward>(l2f) )   )
+                    ::eval(cambda::empty_place_holder_libs, std::forward<LibToForward>(l2f) )   )
         {
             return multi_statement_execution<types_t<QuotedExpressionFalse...>>
-                    ::eval( std::forward<LibToForward>(l2f) );
+                    ::eval(cambda::empty_place_holder_libs, std::forward<LibToForward>(l2f) );
         }
 
         // 'if' with bool
@@ -1692,13 +1705,13 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
                             , cambda::grouped_t<'[', types_t<QuotedExpressionTrue...>>
                             , cambda::grouped_t<'[', types_t<QuotedExpressionFalse...>>
                             ) const
-        ->decltype(b    ?   multi_statement_execution<types_t<QuotedExpressionTrue...>>  ::eval(   std::forward<LibToForward>(l2f) )
-                        :   multi_statement_execution<types_t<QuotedExpressionFalse...>> ::eval(   std::forward<LibToForward>(l2f) ))
+        ->decltype(b    ?   multi_statement_execution<types_t<QuotedExpressionTrue...>>  ::eval(cambda::empty_place_holder_libs,   std::forward<LibToForward>(l2f) )
+                        :   multi_statement_execution<types_t<QuotedExpressionFalse...>> ::eval(cambda::empty_place_holder_libs,   std::forward<LibToForward>(l2f) ))
         {
                 if(b)
-                    return multi_statement_execution<types_t<QuotedExpressionTrue...>>  ::eval(   std::forward<LibToForward>(l2f) );
+                    return multi_statement_execution<types_t<QuotedExpressionTrue...>>  ::eval(cambda::empty_place_holder_libs,   std::forward<LibToForward>(l2f) );
                 else
-                    return multi_statement_execution<types_t<QuotedExpressionFalse...>> ::eval(   std::forward<LibToForward>(l2f) );
+                    return multi_statement_execution<types_t<QuotedExpressionFalse...>> ::eval(cambda::empty_place_holder_libs,   std::forward<LibToForward>(l2f) );
         }
 
         // 'if' with bool and just one branch
@@ -1714,7 +1727,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
         -> nil_t
         {
                 if(b)
-                    multi_statement_execution<types_t<QuotedExpressionTrue...>>  ::eval(   std::forward<LibToForward>(l2f) );
+                    multi_statement_execution<types_t<QuotedExpressionTrue...>>  ::eval(cambda::empty_place_holder_libs,   std::forward<LibToForward>(l2f) );
                 return {};
         }
 
@@ -1732,9 +1745,9 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
                             ) const
         ->void
         {
-            while(  multi_statement_execution<types_t<QuotedExpressionCondition...>> :: eval( std::forward<LibToForward>(l2f)))
+            while(  multi_statement_execution<types_t<QuotedExpressionCondition...>> :: eval(cambda::empty_place_holder_libs, std::forward<LibToForward>(l2f)))
             {
-                    multi_statement_execution<types_t<QuotedExpressionBody...>> :: eval( std::forward<LibToForward>(l2f));
+                    multi_statement_execution<types_t<QuotedExpressionBody...>> :: eval(cambda::empty_place_holder_libs, std::forward<LibToForward>(l2f));
             }
         }
 
@@ -1809,13 +1822,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
 
     };
 
-    struct empty {
-        int ignore;
-        constexpr empty() : ignore(0) {}
-    };
-
     constexpr starter_lib starter_lib_v;
-    constexpr empty empty_v;
 
     template<>
     struct is_valid_member_of_a_tuple_of_libs<starter_lib const &>
