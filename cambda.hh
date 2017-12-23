@@ -1524,27 +1524,41 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
 
             //static_assert(is_valid_tuple_of_libs_v<decltype(m_libs)> ,"");
 
-            template< typename ...T>
+            template< typename ...T
+                    , typename NewLibs =
+                        decltype(std::tuple_cat ( libs , cambda_utils::my_forward_as_tuple( char_pack__to__binding_name(BindingName{}) = std::declval<T>() ...)))
+                    >
             constexpr auto
             operator() (T && ... x) &
             ->decltype(multi_statement_execution< MultiStatement >
-                        :: eval(libs, cambda::combine_libraries(m_lib, char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...)) )
+                        :: eval(std::declval<NewLibs&>(), cambda::combine_libraries(m_lib, char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...)) )
             {
                 static_assert(sizeof...(x) == sizeof...(BindingName) ,"");
+
+                auto new_libs = std::tuple_cat ( libs , cambda_utils::my_forward_as_tuple( char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...));
+                static_assert(std::is_same<decltype((new_libs)), NewLibs&>{} ,"");
+
                 return multi_statement_execution< MultiStatement >
-                        :: eval(libs, cambda::combine_libraries(m_lib, char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...));
+                        :: eval(new_libs, cambda::combine_libraries(m_lib, char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...));
 
             };
 
-            template< typename ...T>
+            template< typename ...T
+                    , typename NewLibs =
+                        decltype(std::tuple_cat ( libs , cambda_utils::my_forward_as_tuple( char_pack__to__binding_name(BindingName{}) = std::declval<T>() ...)))
+                    >
             constexpr auto
             operator() (T && ... x) const &
             ->decltype(multi_statement_execution<MultiStatement>
-                            ::eval(libs, cambda::combine_libraries   (m_lib, char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...))   )
+                            ::eval(std::declval<NewLibs&>(), cambda::combine_libraries   (m_lib, char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...))   )
             {
                 static_assert(sizeof...(x) == sizeof...(BindingName) ,"");
+
+                auto new_libs = std::tuple_cat ( libs , cambda_utils::my_forward_as_tuple( char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...));
+                static_assert(std::is_same<decltype((new_libs)), NewLibs&>{} ,"");
+
                 return  multi_statement_execution<MultiStatement>
-                            ::eval(libs, cambda::combine_libraries   (m_lib, char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...))   ;
+                            ::eval(new_libs, cambda::combine_libraries   (m_lib, char_pack__to__binding_name(BindingName{}) = std::forward<decltype(x)>(x) ...))   ;
 
             };
         };
