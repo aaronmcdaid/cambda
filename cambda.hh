@@ -1048,6 +1048,42 @@ namespace cambda {
 
     }
 
+    template< size_t IndexOfWhichLib
+            , typename Libs
+            , typename Lib
+            , typename ... T
+            >
+    constexpr auto
+    search_through_the_libs(cambda_utils::priority_tag<2>, Libs & libs, Lib && combined_lib, T && ... t)
+    -> decltype(std::get<IndexOfWhichLib>(std::move(libs))
+            .apply_after_simplification(
+                std::get<IndexOfWhichLib>(std::move(libs))
+                , libs
+                , std::forward<Lib>(combined_lib)
+                , std::forward<T>(t) ...
+            )   )
+    {
+         return std::get<IndexOfWhichLib>(std::move(libs))
+            .apply_after_simplification(
+                std::get<IndexOfWhichLib>(std::move(libs))
+                , libs
+                , std::forward<Lib>(combined_lib)
+                , std::forward<T>(t) ...
+            );
+    }
+
+    template< size_t IndexOfWhichLib
+            , typename Libs
+            , typename Lib
+            , typename ... T
+            >
+    constexpr auto
+    search_through_the_libs(cambda_utils::priority_tag<1>, Libs & libs, Lib && combined_lib, T && ... t)
+    -> decltype(auto)
+    {
+        return search_through_the_libs<IndexOfWhichLib+1>(cambda_utils::priority_tag<9>{}, libs, std::forward<Lib>(combined_lib), std::forward<T>(t) ... );
+    }
+
     // simplifier for names.
     // Two overloads, one for where 'get_simple_named_value' is present, and one
     // to capture-and-store-and-forward to 'apply_after_simplification' later
@@ -1090,7 +1126,7 @@ namespace cambda {
             auto constexpr
             operator()  ( T && ...t) && // && means, I think, we are entitled to forward 'm_lib' out, and the 'm_libs_reference' will still be good
             ->decltype( std::forward<L>(m_lib).apply_after_simplification(std::forward<L>(m_lib), m_libs_reference, std::forward<L>(m_lib), m_f , std::forward<T>(t) ... )  )
-            {   return  std::forward<L>(m_lib).apply_after_simplification(std::forward<L>(m_lib), m_libs_reference, std::forward<L>(m_lib), m_f , std::forward<T>(t) ... ); }
+            {   return search_through_the_libs<0>(cambda_utils::priority_tag<9>{}, m_libs_reference, std::forward<L>(m_lib), m_f, std::forward<T>(t)...); }
         };
 
         template<typename L, typename Libs
