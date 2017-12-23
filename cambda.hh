@@ -685,12 +685,6 @@ namespace parsing {
 } // namespace ?
 namespace cambda {
 
-    struct empty {
-        int ignore;
-        constexpr empty() : ignore(0) {}
-    };
-    constexpr empty empty_v;
-
 
     /* is_valid_member_of_a_tuple_of_libs
      * ==================================
@@ -1850,7 +1844,13 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
 
     };
 
+    struct empty {
+        int ignore;
+        constexpr empty() : ignore(0) {}
+    };
+
     constexpr starter_lib starter_lib_v;
+    constexpr empty empty_v;
 
     template<>
     struct is_valid_member_of_a_tuple_of_libs<starter_lib const &>
