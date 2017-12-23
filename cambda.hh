@@ -881,11 +881,14 @@ namespace cambda {
 
 
 
-    template<typename T, typename Lib>
+    template<typename Libs, typename T, typename Lib>
     constexpr auto
-    call_the_simplifier(T t, Lib && l)
-    ->decltype(simplifier<T>::simplify(t, std::forward<Lib>(l))  )
-    {   return simplifier<T>::simplify(t, std::forward<Lib>(l)); }
+    call_the_simplifier(Libs &libs, T t, Lib && l)
+    ->decltype(simplifier<T>::simplify(libs, t, std::forward<Lib>(l))  )
+    {
+        static_assert(is_valid_tuple_of_libs_v<Libs> ,"");
+        return simplifier<T>::simplify(libs, t, std::forward<Lib>(l));
+    }
 
 
 
@@ -897,9 +900,9 @@ namespace cambda {
                             && parsing::is_digit_constexpr(cambda_utils::char_pack<first_digit, c...> :: last())
                           >>>
     {
-        template<typename L>
+        template<typename L, typename Libs>
         static auto constexpr
-        simplify(cambda_utils::char_pack<first_digit, c...> digits, L && )
+        simplify(Libs &, cambda_utils::char_pack<first_digit, c...> digits, L && )
         { return cambda_utils::char_pack_to_number(digits); }
     };
 
@@ -911,9 +914,9 @@ namespace cambda {
                             && cambda_utils::char_pack<first_digit, c...> :: last() == 'c'
                           >>>
     {
-        template<typename L>
+        template<typename L, typename Libs>
         static auto constexpr
-        simplify(cambda_utils::char_pack<first_digit, c...> , L &&)
+        simplify(Libs &, cambda_utils::char_pack<first_digit, c...> , L &&)
         { return std::integral_constant<int, cambda_utils::char_pack_to_number(cambda_utils::char_pack<first_digit, c...>{})>{}; }
     };
 
@@ -991,9 +994,9 @@ namespace cambda {
                                    && '\'' ==         StringLiteral::last()
                           >>>
     {
-        template<typename L>
+        template<typename L, typename Libs>
         static auto constexpr
-        simplify(StringLiteral sl, L &&)
+        simplify(Libs &,StringLiteral sl, L &&)
         { return detail::parse_string_literal(sl).c_str0(); }
     };
 
@@ -1005,9 +1008,9 @@ namespace cambda {
                                    && 'c' ==          StringLiteral::last()
                           >>>
     {
-        template<typename L>
+        template<typename L, typename Libs>
         static auto constexpr
-        simplify(StringLiteral sl, L &&)
+        simplify(Libs &,StringLiteral sl, L &&)
         {
             (void)sl;
             return  detail::parse_string_literal(
@@ -1062,12 +1065,12 @@ namespace cambda {
         static_assert(!parsing::is_digit_constexpr(Name::at(0))  ,"");
         static_assert( '\'' !=            Name::at(0)   ,"");
 
-        template<typename L
+        template<typename L, typename Libs
                 , bool b = detail::has_static_get_simple_named_value<Name, L>()
                 , std::enable_if_t<b, std::integral_constant<int,__LINE__>>* =nullptr
                 >
         static auto constexpr
-        simplify(Name name, L && lib)
+        simplify(Libs &,Name name, L && lib)
         ->decltype(lib.static_get_simple_named_value(std::forward<L>(lib), name) )
         {
             return lib.static_get_simple_named_value(std::forward<L>(lib), name);
@@ -1086,12 +1089,12 @@ namespace cambda {
             {   return  std::forward<L>(m_lib).apply_after_simplification(std::forward<L>(m_lib), cambda::empty_place_holder_libs, std::forward<L>(m_lib), m_f , std::forward<T>(t) ... ); }
         };
 
-        template<typename L
+        template<typename L, typename Libs
                 , bool b = !detail::has_static_get_simple_named_value<Name, L>()
                 , std::enable_if_t< b, std::integral_constant<int,__LINE__>>* =nullptr
                 >
         static auto constexpr
-        simplify(Name f, L && lib) -> gather_args_later<L> {
+        simplify(Libs &,Name f, L && lib) -> gather_args_later<L> {
             return {std::move(f), std::forward<L>(lib)};
         }
     };
@@ -1103,12 +1106,13 @@ namespace cambda {
                         >
     {
         template<typename id = cambda_utils::id_t
+                , typename Libs
                 , typename L >
         static auto constexpr
-        simplify(grouped_t<'(', types_t<Func, Args...> >, L && lib)
-        ->decltype(call_the_simplifier(Func{}, id{}(std::forward<L>(lib))) ( call_the_simplifier(Args{}, id{}(std::forward<L>(lib)))...)  )
+        simplify(Libs & libs, grouped_t<'(', types_t<Func, Args...> >, L && lib)
+        ->decltype(call_the_simplifier(libs, Func{}, id{}(std::forward<L>(lib))) ( call_the_simplifier(libs, Args{}, id{}(std::forward<L>(lib)))...)  )
         {
-            return call_the_simplifier(Func{},      std::forward<L>(lib) ) ( call_the_simplifier(Args{},      std::forward<L>(lib)) ...);
+            return call_the_simplifier(libs, Func{},      std::forward<L>(lib) ) ( call_the_simplifier(libs, Args{},      std::forward<L>(lib)) ...);
         }
     };
 
@@ -1118,9 +1122,9 @@ namespace cambda {
     struct simplifier   < grouped_t<'[', types_t<Args...   >>
                         >
     {
-        template<typename L>
+        template<typename L, typename Libs>
         static auto constexpr
-        simplify(grouped_t<'[', types_t<Args...> > quoted, L &&)
+        simplify(Libs &,grouped_t<'[', types_t<Args...> > quoted, L &&)
         ->decltype(auto)
         {
             return quoted;
@@ -1135,17 +1139,17 @@ namespace cambda {
                         >
     {
         template< typename id = cambda_utils:: id_t
-                , typename L
+                , typename L, typename Libs
                 , class ...
                 > // we must perfect forward here to avoid a bug in older gcc (5.5.0) where the while loop wasn't repeating
         static auto constexpr
-        simplify(grouped_t<'{', types_t<Arg1, Func, Arg2> >, L && lib)
+        simplify(Libs & libs,grouped_t<'{', types_t<Arg1, Func, Arg2> >, L && lib)
         ->decltype(simplifier       < grouped_t<'(', types_t<Func, Arg1, Arg2>> >
-                        :: simplify ( grouped_t<'(', types_t<Func, Arg1, Arg2>> {} , id{}(std::forward<L>(lib)))
+                        :: simplify ( libs, grouped_t<'(', types_t<Func, Arg1, Arg2>> {} , id{}(std::forward<L>(lib)))
                 )
         {
             return simplifier       < grouped_t<'(', types_t<Func, Arg1, Arg2>> >
-                        :: simplify ( grouped_t<'(', types_t<Func, Arg1, Arg2>> {} ,      std::forward<L>(lib) )
+                        :: simplify ( libs, grouped_t<'(', types_t<Func, Arg1, Arg2>> {} ,      std::forward<L>(lib) )
                 ;
         }
     };
@@ -1154,9 +1158,9 @@ namespace cambda {
     template<>
     struct simplifier   < grouped_t<'(', types_t<>   > >
     {
-        template<typename L>
+        template<typename L, typename Libs>
         static auto constexpr
-        simplify(grouped_t<'(', types_t<> >, L &&)
+        simplify(Libs &, grouped_t<'(', types_t<> >, L &&)
         -> nil_t
         { return {}; }
     };
@@ -1259,10 +1263,10 @@ namespace cambda {
         template<typename LibToForward
                 , typename Libs >
         auto constexpr static
-        eval(Libs &, LibToForward && l2f)
-        -> decltype(cambda::call_the_simplifier (   SingleOne{} ,   std::forward<LibToForward>(l2f))   )
+        eval(Libs & libs, LibToForward && l2f)
+        -> decltype(cambda::call_the_simplifier (libs,   SingleOne{} ,   std::forward<LibToForward>(l2f))   )
         {
-            return  cambda::call_the_simplifier (   SingleOne{} ,   std::forward<LibToForward>(l2f));
+            return  cambda::call_the_simplifier (libs,   SingleOne{} ,   std::forward<LibToForward>(l2f));
         }
     };
 
@@ -1277,7 +1281,7 @@ namespace cambda {
         ->decltype(multi_statement_execution<types_t<B...>> :: eval( libs, std::forward<LibToForward>(lib) ) )
         {
 
-            cambda::call_the_simplifier (   A{} ,   std::forward<LibToForward>(lib));
+            cambda::call_the_simplifier (libs,   A{} ,   std::forward<LibToForward>(lib));
             return multi_statement_execution<types_t<B...>> :: eval( libs, std::forward<LibToForward>(lib) );
         }
     };
@@ -1290,8 +1294,8 @@ namespace cambda {
     {
         template< typename LibToForward
                 , typename Libs
-                , typename DecltypeOfTheBoundValue      = decltype( cambda::call_the_simplifier(BindingExpression{}, std::declval<LibToForward>()) )
-                , typename TypeOfTheBoundValue_AsLvalue = decltype( cambda::call_the_simplifier(BindingExpression{}, std::declval<LibToForward>()) ) &
+                , typename DecltypeOfTheBoundValue      = decltype( cambda::call_the_simplifier(std::declval<Libs&>(), BindingExpression{}, std::declval<LibToForward>()) )
+                , typename TypeOfTheBoundValue_AsLvalue = decltype( cambda::call_the_simplifier(std::declval<Libs&>(), BindingExpression{}, std::declval<LibToForward>()) ) &
                 >
         auto constexpr static
         eval  (Libs & libs, LibToForward && lib) // TODO: add in the extra binding
@@ -1301,13 +1305,13 @@ namespace cambda {
         {
 
             decltype(auto) // not-an r-ref. May be l-ref though
-                bound_value = cambda::call_the_simplifier(BindingExpression{}, std::forward<LibToForward>(lib));
+                bound_value = cambda::call_the_simplifier(libs, BindingExpression{}, std::forward<LibToForward>(lib));
 
             // 'bound_value' is the storage, assuming storage is required.
 
             static_assert(std::is_same
                             <   decltype(bound_value)
-                            ,   decltype(cambda::call_the_simplifier(BindingExpression{}, std::forward<LibToForward>(lib)))    >{} ,"Argh, what does decltype(auto) do on vars?");
+                            ,   decltype(cambda::call_the_simplifier(libs, BindingExpression{}, std::forward<LibToForward>(lib)))    >{} ,"Argh, what does decltype(auto) do on vars?");
             static_assert(!std::is_rvalue_reference<decltype(bound_value)>{} ,""); // TODO: this is probably too strict
             static_assert(std::is_same<TypeOfTheBoundValue_AsLvalue, decltype((bound_value))>{} ,"");
 
