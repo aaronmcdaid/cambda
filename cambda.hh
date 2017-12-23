@@ -1040,6 +1040,12 @@ namespace cambda {
         -> decltype(auto)
         { return detail:: has_static_get_simple_named_value_helper<Name,Lib>(cambda_utils::priority_tag<9>{}); }
 
+        template<typename Name, typename ... OneLibAmongMany>
+        static auto constexpr
+        one_of_these_has_static_get_simple_named_value(std::tuple<OneLibAmongMany...> const &)
+        -> std::integral_constant<bool, std::max(std::initializer_list<bool>{ has_static_get_simple_named_value<Name, OneLibAmongMany>() ...})>
+        { return {}; }
+
     }
 
     // simplifier for names.
@@ -1061,9 +1067,13 @@ namespace cambda {
                 , std::enable_if_t<b, std::integral_constant<int,__LINE__>>* =nullptr
                 >
         static auto constexpr
-        simplify(Libs &,Name name, L && lib)
+        simplify(Libs & libs,Name name, L && lib)
         ->decltype(lib.static_get_simple_named_value(std::forward<L>(lib), name) )
         {
+            static_assert(is_valid_tuple_of_libs_v<Libs> ,"");
+            auto B = detail::one_of_these_has_static_get_simple_named_value<Name>(libs);
+            (void)B;
+            static_assert(B  ,"");
             return lib.static_get_simple_named_value(std::forward<L>(lib), name);
         }
 
@@ -1090,6 +1100,9 @@ namespace cambda {
         static auto constexpr
         simplify(Libs & libs_to_be_stored_by_reference,Name f, L && lib) -> gather_args_later<Libs, L> {
             static_assert(is_valid_tuple_of_libs_v<Libs> ,"");
+            auto B = detail::one_of_these_has_static_get_simple_named_value<Name>(libs_to_be_stored_by_reference);
+            (void)B;
+            static_assert(!B  ,"");
             return {libs_to_be_stored_by_reference, std::move(f), std::forward<L>(lib)};
         }
     };
