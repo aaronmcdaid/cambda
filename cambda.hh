@@ -281,6 +281,27 @@ my_forward_as_tuple(T && ... t)
 { return std::tuple<T ...>{ std::forward<T>(t) ... }; }
 
 
+template<typename>
+struct template_unpack_types {};
+
+template    <   template <class...> class Tmpl
+            ,   typename ... T  >
+struct template_unpack_types< Tmpl <T...>>
+{
+    using type = template_unpack_types;
+
+    template< typename F>
+    auto static
+    apply(F f) // call function 'f', with each T in turn
+    -> decltype(auto)
+    {
+        return f(cambda_utils::type_t<T>{} ...);
+    }
+}; // 'type' is just itself
+
+template<typename T>
+using template_unpack_t = typename template_unpack_types<T>::type;
+
 } // namespace cambda_utils
 
 
