@@ -1424,7 +1424,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
                 , typename Self >
         auto constexpr
         apply_after_simplification  (Self &&, Libs &, decltype( "&"_charpack       ) , T& t) const
-        ->  T*         // TODO: is this redundant? Two unary '&' overloads?
+        ->  T*
         {   return &t; }
 
 
