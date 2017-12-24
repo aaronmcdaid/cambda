@@ -1043,6 +1043,32 @@ namespace cambda {
         return cambda::search_through_the_libs_and_apply<next_index>(cambda_utils::priority_tag<9>{}, libs, std::forward<Lib>(combined_lib), std::forward<T>(t) ... );
     }
 
+
+    template< size_t IndexOfWhichLib, typename Libs, typename Name>
+    auto constexpr
+    search_through_the_libs_and_lookup_get_simple_named_value(cambda_utils::priority_tag<2>, Libs & libs, Name name)
+    ->decltype( std::get<IndexOfWhichLib>(std::move(libs))
+                .static_get_simple_named_value(
+                std::get<IndexOfWhichLib>(std::move(libs))
+                        , name))
+    {
+            return
+                std::get<IndexOfWhichLib>(std::move(libs))
+                .static_get_simple_named_value(
+                std::get<IndexOfWhichLib>(std::move(libs))
+                        , name);
+    }
+
+    template< size_t IndexOfWhichLib, typename Libs, typename Name>
+    auto constexpr
+    search_through_the_libs_and_lookup_get_simple_named_value(cambda_utils::priority_tag<1>, Libs & libs, Name name)
+    ->decltype(auto)
+    {
+        constexpr size_t sz = std::tuple_size<Libs>::value;
+        static_assert(IndexOfWhichLib+1 < sz ,"");
+        return search_through_the_libs_and_lookup_get_simple_named_value<IndexOfWhichLib+1>(cambda_utils::priority_tag<9>{}, libs, name);
+    }
+
     // simplifier for names.
     // Two overloads, one for where 'get_simple_named_value' is present, and one
     // to capture-and-store-and-forward to 'apply_after_simplification' later
@@ -1062,11 +1088,11 @@ namespace cambda {
                 , std::enable_if_t<b_type::value, std::integral_constant<int,__LINE__>>* =nullptr
                 >
         static auto constexpr
-        simplify(Libs &, Name name, L && lib)
-        ->decltype(lib.static_get_simple_named_value(std::forward<L>(lib), name) )
+        simplify(Libs & libs, Name name, L &&)
+        ->decltype(cambda::search_through_the_libs_and_lookup_get_simple_named_value<0>(cambda_utils::priority_tag<9>{}, libs, name))
         {
             static_assert(is_valid_tuple_of_libs_v<Libs> ,"");
-            return lib.static_get_simple_named_value(std::forward<L>(lib), name);
+            return cambda::search_through_the_libs_and_lookup_get_simple_named_value<0>(cambda_utils::priority_tag<9>{}, libs, name);
         }
 
         template<typename Libs, typename L>
