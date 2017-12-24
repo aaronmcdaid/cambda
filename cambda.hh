@@ -1218,31 +1218,22 @@ namespace cambda {
                 , typename DecltypeOfTheBoundValue      = decltype( cambda::call_the_simplifier(std::declval<Libs&>(), BindingExpression{}) )
                 , typename NewLibs                      = decltype( std::tuple_cat
                                     (   std::declval<Libs&>()
-                                    ,   cambda_utils::my_forward_as_tuple(char_pack__to__binding_name(BindingName{}) = std::declval<DecltypeOfTheBoundValue>())))
+                                    ,   cambda_utils::my_forward_as_tuple(char_pack__to__binding_name(BindingName{})
+                                            = cambda::call_the_simplifier(std::declval<Libs&>(), BindingExpression{})
+                                        )))
                 >
         auto constexpr static
-        eval  (Libs & libs) // TODO: add in the extra binding
+        eval  (Libs & libs)
         ->decltype(multi_statement_execution<types_t< B, C...  >>
                     ::eval(std::declval<NewLibs&>())  )
         {
 
-            decltype(auto) // not-an r-ref. May be l-ref though
-                bound_value = cambda::call_the_simplifier(libs, BindingExpression{});
+            auto new_libs = std::tuple_cat ( libs , cambda_utils::my_forward_as_tuple(char_pack__to__binding_name(BindingName{}) = cambda::call_the_simplifier(libs, BindingExpression{})));
 
-            auto new_libs = std::tuple_cat ( libs , cambda_utils::my_forward_as_tuple(char_pack__to__binding_name(BindingName{}) = std::forward<DecltypeOfTheBoundValue>(bound_value)));
-            static_assert(std::is_same<decltype((new_libs)), NewLibs&>{} ,"");
+            static_assert(std::is_same<decltype(new_libs), NewLibs>{} ,"");
             static_assert(is_valid_tuple_of_libs_v<NewLibs> ,"");
-            (void)new_libs;
 
-            // 'bound_value' is the storage, assuming storage is required.
-
-            static_assert(std::is_same
-                            <   decltype(bound_value)
-                            ,   decltype(cambda::call_the_simplifier(libs, BindingExpression{}))    >{} ,"Argh, what does decltype(auto) do on vars?");
-            static_assert(!std::is_rvalue_reference<decltype(bound_value)>{} ,""); // TODO: this is probably too strict
-
-            return multi_statement_execution<types_t< B, C...  >>
-                    ::eval(new_libs);
+            return multi_statement_execution<types_t< B, C...  >> ::eval(new_libs);
         }
     };
 
@@ -1291,11 +1282,11 @@ namespace cambda {
 
             auto new_libs = std::tuple_cat(
                     libs ,
-                    cambda_utils::my_forward_as_tuple(Binding{binding_to_insert}) // copy it, not move it. TODO: change to move later
+                    cambda_utils::my_forward_as_tuple(std::forward<Binding>(binding_to_insert))
                     );
             static_assert( is_valid_tuple_of_libs_v<decltype(new_libs)> ,"");
 
-            return cambda_object_from_the_string_literal    <   decltype(new_libs) // TODO: extend this
+            return cambda_object_from_the_string_literal    <   decltype(new_libs)
                                                             ,   AST>
             { new_libs, m_ast };
             //return *this;
