@@ -686,16 +686,6 @@ namespace parsing {
 namespace cambda {
 
 
-    /* is_valid_member_of_a_tuple_of_libs
-     * ==================================
-     *  This starts the new (Xmas 2017) approach to replace the combiners
-     *  By default, return false. Define other specializations later in this
-     *  file, as required.
-     */
-    template<typename>
-    struct is_valid_member_of_a_tuple_of_libs
-    { constexpr static bool value = false; };
-
     template<typename>
     struct is_valid_tuple_of_libs
     { constexpr static bool value = false; };
@@ -704,10 +694,8 @@ namespace cambda {
     struct is_valid_tuple_of_libs<std::tuple<T...>>
     {
         static_assert(  std::min(std::initializer_list<bool>{!std::is_rvalue_reference<T>{}                 ... }  ) ,""); // all are refs (l-ref or r-ref)
-        static_assert(  std::min(std::initializer_list<bool>{ is_valid_member_of_a_tuple_of_libs<T>::value  ... }  ) ,""); // no 'combiners' allowed
         constexpr static
-        bool value =    std::min(std::initializer_list<bool>{!std::is_rvalue_reference<T>{}                 ... }  )
-                     && std::min(std::initializer_list<bool>{ is_valid_member_of_a_tuple_of_libs<T>::value  ... }  );
+        bool value =    std::min(std::initializer_list<bool>{!std::is_rvalue_reference<T>{}                 ... }  );
     };
 
     template<typename ... T>
@@ -917,7 +905,6 @@ namespace cambda {
             )   )
     {
         static_assert(is_valid_tuple_of_libs_v<Libs> ,"");
-        static_assert(is_valid_member_of_a_tuple_of_libs<decltype( std::get<IndexOfWhichLib>(std::move(libs)) )>::value ,"");
         return std::get<IndexOfWhichLib>(std::move(libs))
             .apply_after_simplification(
                std::get<IndexOfWhichLib>(std::move(libs))
@@ -1114,10 +1101,6 @@ namespace cambda {
         }
     };
 
-    template<typename T, char ... c>
-    struct is_valid_member_of_a_tuple_of_libs<binded_name_with_valueOrReference<T, c...> >
-    { constexpr static bool value = true; };
-
     enum class capture_policy   { byLvalueReference // strictly T&
                                 , byValue // std::decay_t<T&&>
                                 };
@@ -1266,8 +1249,6 @@ namespace cambda {
         -> decltype(auto)
         {
             static_assert(!std::is_reference<Binding>{} ,"");
-
-            static_assert(is_valid_member_of_a_tuple_of_libs<Binding> :: value ,"");
 
             auto new_libs = std::tuple_cat(
                     libs ,
@@ -1761,14 +1742,6 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
 
     constexpr starter_lib starter_lib_v;
     constexpr empty empty_v;
-
-    template<>
-    struct is_valid_member_of_a_tuple_of_libs<starter_lib const &>
-    { constexpr static bool value = true; };
-
-    template<>
-    struct is_valid_member_of_a_tuple_of_libs<empty const &>
-    { constexpr static bool value = true; };
 
     template<typename T, T ... chars>
     constexpr auto

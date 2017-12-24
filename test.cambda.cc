@@ -15,8 +15,7 @@ namespace testing_namespace_empty_library {
     struct a_lib_with_plus
     {
 
-        template< typename LibToForward
-                , typename Libs
+        template< typename Libs
                 , typename Self
                 , typename Ti
                 , typename Tj >
@@ -24,7 +23,6 @@ namespace testing_namespace_empty_library {
         apply_after_simplification
             ( Self &&
             , Libs &
-            , LibToForward &&
             , decltype( "+"_charpack )
             , Ti && i
             , Tj && j) const
@@ -37,8 +35,8 @@ namespace testing_namespace_empty_library {
 
     constexpr auto b = "(+ 7 8)"_cambda_empty_library["+"_binding = plus]();
     static_assert(b == 15 ,"");
-    //constexpr auto c = "(+ 7 8)"_cambda_empty_library[a_lib_with_plus{}](); // TODO: reenable this test
-    //static_assert(c == 15 ,"");
+    constexpr auto c = "(+ 7 8)"_cambda_empty_library[a_lib_with_plus{}]();
+    static_assert(c == 15 ,"");
 }
 
 constexpr auto a = "15"_cambda();            // a is 15
