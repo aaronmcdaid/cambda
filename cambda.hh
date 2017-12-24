@@ -1052,6 +1052,18 @@ namespace cambda {
             , typename Libs
             , typename Lib
             , typename ... T
+            , bool b = IndexOfWhichLib >= std::tuple_size<Libs>{}
+            , std::enable_if_t<b>* =nullptr
+            >
+    constexpr auto
+    this_lib_entry_has_it(cambda_utils::priority_tag<3>, Libs &, Lib &&, T && ... )
+    -> std::false_type
+    { return {}; }
+
+    template< size_t IndexOfWhichLib
+            , typename Libs
+            , typename Lib
+            , typename ... T
             >
     constexpr auto
     this_lib_entry_has_it(cambda_utils::priority_tag<2>, Libs & libs, Lib && combined_lib, T && ... t)
