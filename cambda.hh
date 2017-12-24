@@ -1226,6 +1226,22 @@ namespace cambda {
         }
     };
 
+
+    /* is_a_stdtuple
+     * =============
+     *  Test is a given type is std::tuple<T...>
+     */
+    template<typename T>
+    struct is_a_stdtuple { constexpr static bool value = false; };
+
+    template<typename ... T>
+    struct is_a_stdtuple<std::tuple<T...>> { constexpr static bool value = true; };
+
+    /* cambda_object_from_the_string_literal
+     * =====================================
+     *  A compiled object, ready to accept bindings
+     */
+
     template< typename Libs, typename AST>
     struct cambda_object_from_the_string_literal
     {
@@ -1249,6 +1265,7 @@ namespace cambda {
         operator[] (Binding && binding_to_insert) && // the '&&' is important, allows us to 'move' from this->lib
         -> decltype(auto)
         {
+            static_assert(!is_a_stdtuple<std::decay_t<decltype(binding_to_insert)>>::value ,"");
             static_assert(!std::is_reference<Binding>{} ,"");
             static_assert(!is_valid_tuple_of_libs_v<Binding> ,"");
 
@@ -1270,6 +1287,8 @@ namespace cambda {
         operator[] (MoreLibs && binding_to_insert) && // the '&&' is important, allows us to 'move' from this->lib
         -> decltype(auto)
         {
+            static_assert( is_a_stdtuple<std::decay_t<decltype(binding_to_insert)>>::value ,"");
+
             static_assert(!std::is_reference<MoreLibs>{} ,"");
             static_assert( is_valid_tuple_of_libs_v<MoreLibs> ,"");
 
