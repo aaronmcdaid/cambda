@@ -1063,6 +1063,8 @@ namespace cambda {
                 , std::forward<T>(t) ...
             )   )
     {
+        static_assert(is_valid_tuple_of_libs_v<Libs> ,"");
+        static_assert(is_valid_member_of_a_tuple_of_libs<decltype( std::get<IndexOfWhichLib>(std::move(libs)) )>::value ,"");
         return std::get<IndexOfWhichLib>(std::move(libs))
             .apply_after_simplification(
                std::get<IndexOfWhichLib>(std::move(libs))
