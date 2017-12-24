@@ -1058,17 +1058,14 @@ namespace cambda {
         static_assert( '\'' !=            Name::at(0)   ,"");
 
         template<typename L, typename Libs
-                , bool b = detail::has_static_get_simple_named_value<Name, L>()
-                , std::enable_if_t<b, std::integral_constant<int,__LINE__>>* =nullptr
+                , typename b_type = decltype(detail::one_of_these_has_static_get_simple_named_value<Name>(std::declval<Libs>()))
+                , std::enable_if_t<b_type::value, std::integral_constant<int,__LINE__>>* =nullptr
                 >
         static auto constexpr
-        simplify(Libs & libs,Name name, L && lib)
+        simplify(Libs &, Name name, L && lib)
         ->decltype(lib.static_get_simple_named_value(std::forward<L>(lib), name) )
         {
             static_assert(is_valid_tuple_of_libs_v<Libs> ,"");
-            auto B = detail::one_of_these_has_static_get_simple_named_value<Name>(libs);
-            (void)B;
-            static_assert(B  ,"");
             return lib.static_get_simple_named_value(std::forward<L>(lib), name);
         }
 
@@ -1099,8 +1096,8 @@ namespace cambda {
         };
 
         template<typename L, typename Libs
-                , bool b = !detail::has_static_get_simple_named_value<Name, L>()
-                , std::enable_if_t< b, std::integral_constant<int,__LINE__>>* =nullptr
+                , typename b_type = decltype(detail::one_of_these_has_static_get_simple_named_value<Name>(std::declval<Libs>()))
+                , std::enable_if_t<!b_type::value, std::integral_constant<int,__LINE__>>* =nullptr
                 >
         static auto constexpr
         simplify(Libs & libs_to_be_stored_by_reference,Name f, L && lib) -> gather_args_later<Libs, L> {
