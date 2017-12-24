@@ -1419,13 +1419,12 @@ MACRO_FOR_SIMPLE_BINARY_INFIX_OPERATION( "&&"_charpack  , && )
 MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(    "++"_charpack,  ++  )
 MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(    "--"_charpack,  --  )
 MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "*"_charpack,   *  )
-MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
         template<typename T
                 , typename Libs
                 , typename Self >
         auto constexpr
         apply_after_simplification  (Self &&, Libs &, decltype( "&"_charpack       ) , T& t) const
-        ->decltype(&t) // TODO: is this redundant? Two unary '&' overloads?
+        ->  T*         // TODO: is this redundant? Two unary '&' overloads?
         {   return &t; }
 
 

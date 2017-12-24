@@ -499,3 +499,14 @@ test_quicksort()
 
 static_assert(test_quicksort() ,"");
 #endif
+
+auto constexpr
+test_address_of()
+{
+    int x = 0;
+    int *p = nullptr;
+    p = "(& x)"_cambda["x"_binding &= x]();
+    *p = 3;
+    return x;
+}
+static_assert(test_address_of() == 3 ,"");
