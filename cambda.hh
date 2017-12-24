@@ -1265,12 +1265,11 @@ namespace cambda {
         }
     };
 
-    template< typename Libs, typename AST, typename Lib>
+    template< typename Libs, typename AST>
     struct cambda_object_from_the_string_literal
     {
         Libs   libs; // Shouldn't be an &-ref. Maybe be a tuple of &-refs though
         AST m_ast;
-        Lib lib; // may be a &-ref
 
         static_assert(!std::is_reference<Libs>{} ,"");
         static_assert(is_valid_tuple_of_libs_v<Libs>         ,"");
@@ -1299,25 +1298,20 @@ namespace cambda {
             static_assert( is_valid_tuple_of_libs_v<decltype(new_libs)> ,"");
 
             return cambda_object_from_the_string_literal    <   decltype(new_libs) // TODO: extend this
-                                                            ,   AST
-                                                            ,   decltype(
-                                                                    combine_libraries(std::forward<Lib>(lib), std::forward<Binding>(binding_to_insert))
-                                                                        )>
-            { new_libs, m_ast , combine_libraries(std::forward<Lib>(lib), std::forward<Binding>(binding_to_insert)) };
+                                                            ,   AST>
+            { new_libs, m_ast };
             //return *this;
         }
     };
-    template<typename AST, typename Lib
-            , typename Libs    >
+    template<typename AST, typename Libs >
     auto constexpr
-    make_cambda_object_from_the_string_literal(Libs & libs, AST ast, Lib & lib)
+    make_cambda_object_from_the_string_literal(Libs & libs, AST ast)
     -> cambda_object_from_the_string_literal<Libs
                                             ,AST
-                                            ,Lib&
                                             >
     {
         static_assert(is_valid_tuple_of_libs_v<Libs>         ,"");
-        return {libs, ast, lib};
+        return {libs, ast};
     }
     struct starter_lib {
         int ignore;
@@ -1807,7 +1801,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
         constexpr auto libs_tuple = cambda_utils::my_forward_as_tuple(empty_v, starter_lib_v);
         static_assert(is_valid_tuple_of_libs_v<decltype(libs_tuple)> ,"");
 
-        return ::cambda::make_cambda_object_from_the_string_literal(libs_tuple, ast, starter_lib_v);
+        return ::cambda::make_cambda_object_from_the_string_literal(libs_tuple, ast);
     }
 
     template<typename T, T ... chars>
@@ -1819,7 +1813,7 @@ MACRO_FOR_SIMPLE_UNARY_PREFIX_OPERATION(     "&"_charpack,   &  )
         constexpr auto libs_tuple = cambda_utils::my_forward_as_tuple(empty_v);
         static_assert(is_valid_tuple_of_libs_v<decltype(libs_tuple)> ,"");
 
-        return ::cambda::make_cambda_object_from_the_string_literal(libs_tuple, ast, empty_v);
+        return ::cambda::make_cambda_object_from_the_string_literal(libs_tuple, ast);
     }
 
 }
