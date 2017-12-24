@@ -1008,7 +1008,7 @@ namespace cambda {
             , typename ... T
             >
     constexpr auto
-    search_through_the_libs(cambda_utils::priority_tag<2>, Libs & libs, Lib && combined_lib, T && ... t)
+    search_through_the_libs_and_apply(cambda_utils::priority_tag<2>, Libs & libs, Lib && combined_lib, T && ... t)
     -> decltype(std::get<IndexOfWhichLib>(std::move(libs))
             .apply_after_simplification(
                 std::get<IndexOfWhichLib>(std::move(libs))
@@ -1037,10 +1037,10 @@ namespace cambda {
             , typename ... T
             >
     constexpr auto
-    search_through_the_libs(cambda_utils::priority_tag<1>, Libs & libs, Lib && combined_lib, T && ... t)
-    ->decltype(search_through_the_libs<next_index>(cambda_utils::priority_tag<9>{}, libs, std::forward<Lib>(combined_lib), std::forward<T>(t) ... ) )
+    search_through_the_libs_and_apply(cambda_utils::priority_tag<1>, Libs & libs, Lib && combined_lib, T && ... t)
+    ->decltype(cambda::search_through_the_libs_and_apply<next_index>(cambda_utils::priority_tag<9>{}, libs, std::forward<Lib>(combined_lib), std::forward<T>(t) ... ) )
     {
-        return search_through_the_libs<next_index>(cambda_utils::priority_tag<9>{}, libs, std::forward<Lib>(combined_lib), std::forward<T>(t) ... );
+        return cambda::search_through_the_libs_and_apply<next_index>(cambda_utils::priority_tag<9>{}, libs, std::forward<Lib>(combined_lib), std::forward<T>(t) ... );
     }
 
     // simplifier for names.
@@ -1081,17 +1081,17 @@ namespace cambda {
             template<typename ...T>
             auto constexpr
             operator()  ( T && ...t) && // && means that we are entitled to forward 'm_lib' out, and the 'm_libs_reference' will still be good
-            ->decltype(search_through_the_libs<0>(cambda_utils::priority_tag<9>{}, m_libs_reference, std::forward<L>(m_lib), m_f, std::forward<T>(t)...))
+            ->decltype(cambda::search_through_the_libs_and_apply<0>(cambda_utils::priority_tag<9>{}, m_libs_reference, std::forward<L>(m_lib), m_f, std::forward<T>(t)...))
             {
 
                 /*
                 static_assert(std::is_same<
               decltype( std::forward<L>(m_lib).apply_after_simplification(std::forward<L>(m_lib), m_libs_reference, std::forward<L>(m_lib), m_f , std::forward<T>(t) ... )  )
-             ,decltype(search_through_the_libs<0>(cambda_utils::priority_tag<9>{}, m_libs_reference, std::forward<L>(m_lib), m_f, std::forward<T>(t)...))
+             ,decltype(search_through_the_libs_and_apply<0>(cambda_utils::priority_tag<9>{}, m_libs_reference, std::forward<L>(m_lib), m_f, std::forward<T>(t)...))
                 >{},"");
                 //*/
 
-                return search_through_the_libs<0>(cambda_utils::priority_tag<9>{}, m_libs_reference, std::forward<L>(m_lib), m_f, std::forward<T>(t)...);
+                return cambda::search_through_the_libs_and_apply<0>(cambda_utils::priority_tag<9>{}, m_libs_reference, std::forward<L>(m_lib), m_f, std::forward<T>(t)...);
             }
         };
 
