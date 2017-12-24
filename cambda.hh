@@ -727,31 +727,6 @@ namespace cambda {
         Lib1 lib1;
         Lib2 lib2;
 
-        template< typename Self>
-        constexpr auto static
-        getlib1(Self && self)
-        -> decltype(auto)
-        {
-            static_assert(!std::is_rvalue_reference<Lib1>{} ,"");
-            using ReturnType = std::conditional_t   <   std::is_lvalue_reference<Lib1>{}
-                                                    ,   decltype((self.lib1))
-                                                    ,   std::remove_reference_t<decltype((self.lib1))>
-                                                    >;
-            return std::forward<ReturnType>(self.lib1);
-        }
-        template< typename Self>
-        constexpr auto static
-        getlib2(Self && self)
-        -> decltype(auto)
-        {
-            static_assert(!std::is_rvalue_reference<Lib2>{} ,"");
-            using ReturnType = std::conditional_t   <   std::is_lvalue_reference<Lib2>{}
-                                                    ,   decltype((self.lib2))
-                                                    ,   std::remove_reference_t<decltype((self.lib2))>
-                                                    >;
-            return std::forward<ReturnType>(self.lib2);
-        }
-
         static_assert(!std::is_rvalue_reference<Lib1>{} ,"");
         static_assert(!std::is_rvalue_reference<Lib2>{} ,"");
 
@@ -763,30 +738,6 @@ namespace cambda {
             : lib1(std::forward<T>(t))
             , lib2(std::forward<U>(u))
         {}
-
-        /* Now, 'static_get_simple_named_value'
-         * Define two helper overloads, one for each sub-library.
-         * Then forward the call
-         */
-        template< typename Self
-                , char ... cs
-                , typename id = cambda_utils::id_t
-                , typename std::integral_constant<int, __LINE__> * =nullptr
-                >
-        auto constexpr static
-        static_get_simple_named_value(Self && self, cambda_utils::char_pack<cs...> name)
-        ->decltype(self.getlib1(std::forward<Self>(self)).static_get_simple_named_value(self.getlib1(std::forward<Self>(self)), name)  )
-        {   return self.getlib1(std::forward<Self>(self)).static_get_simple_named_value(self.getlib1(std::forward<Self>(self)), name); }
-        template< typename Self
-                , char ... cs
-                , typename id = cambda_utils::id_t
-                , typename std::integral_constant<int, __LINE__> * =nullptr
-                >
-        auto constexpr static
-        static_get_simple_named_value(Self && self, cambda_utils::char_pack<cs...> name)
-        ->decltype(self.getlib2(std::forward<Self>(self)).static_get_simple_named_value(self.getlib2(std::forward<Self>(self)), name)  )
-        {   return self.getlib2(std::forward<Self>(self)).static_get_simple_named_value(self.getlib2(std::forward<Self>(self)), name); }
-
 
     };
 
