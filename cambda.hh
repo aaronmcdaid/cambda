@@ -1079,7 +1079,7 @@ namespace cambda {
             >
     constexpr auto
     search_through_the_libs(cambda_utils::priority_tag<1>, Libs & libs, Lib && combined_lib, T && ... t)
-    -> decltype(auto)
+    ->decltype(auto)
     {
         return search_through_the_libs<IndexOfWhichLib+1>(cambda_utils::priority_tag<9>{}, libs, std::forward<Lib>(combined_lib), std::forward<T>(t) ... );
     }
@@ -1126,7 +1126,15 @@ namespace cambda {
             auto constexpr
             operator()  ( T && ...t) && // && means, I think, we are entitled to forward 'm_lib' out, and the 'm_libs_reference' will still be good
             ->decltype( std::forward<L>(m_lib).apply_after_simplification(std::forward<L>(m_lib), m_libs_reference, std::forward<L>(m_lib), m_f , std::forward<T>(t) ... )  )
-            {   return search_through_the_libs<0>(cambda_utils::priority_tag<9>{}, m_libs_reference, std::forward<L>(m_lib), m_f, std::forward<T>(t)...); }
+            {
+
+                static_assert(std::is_same<
+              decltype( std::forward<L>(m_lib).apply_after_simplification(std::forward<L>(m_lib), m_libs_reference, std::forward<L>(m_lib), m_f , std::forward<T>(t) ... )  )
+             ,decltype(search_through_the_libs<0>(cambda_utils::priority_tag<9>{}, m_libs_reference, std::forward<L>(m_lib), m_f, std::forward<T>(t)...))
+                >{},"");
+
+                return search_through_the_libs<0>(cambda_utils::priority_tag<9>{}, m_libs_reference, std::forward<L>(m_lib), m_f, std::forward<T>(t)...);
+            }
         };
 
         template<typename L, typename Libs
