@@ -719,15 +719,6 @@ namespace cambda {
     constexpr bool
     is_valid_tuple_of_libs_v = is_valid_tuple_of_libs<T>::value;
 
-
-    template< typename Lib1
-            , typename ... Libs
-            >
-    constexpr auto
-    combine_libraries(Lib1 && lib1, Libs && ... )
-    -> Lib1
-    { return std::forward<Lib1>(lib1); }
-
     struct nil_t { }; // to be returned if you write () in cambda, i.e. "()"_cambda()
 
     template< typename T
@@ -1130,19 +1121,6 @@ namespace cambda {
     enum class capture_policy   { byLvalueReference // strictly T&
                                 , byValue // std::decay_t<T&&>
                                 };
-
-    /* TODO: maybe reimplement this comma operator?
-    template< typename B
-            , typename T2
-            , char ...c2 >
-    auto constexpr
-    operator,   (   B && beforeComma
-                ,   binded_name_with_valueOrReference<T2, c2...> && afterComma)
-    ->decltype(auto)
-    {
-        return combine_libraries(std::forward<B>(beforeComma), std::move(afterComma));
-    }
-     */
 
     template< capture_policy cap
             , char ...c>
