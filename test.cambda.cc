@@ -116,8 +116,7 @@ static_assert("(if.constexpr falsec [3.14] ['hi'c])"_cambda() == "hi"_charpack ,
 
 std::vector<int> v{2,3,4};
 auto size_of_v = "(size v)"_cambda
-        [cambda_utils::my_forward_as_tuple(
-        //[std::forward_as_tuple(
+        [std::forward_as_tuple(
                     "v"_binding &= v
                 ,   "size"_binding = [](auto && x){return x.size();}
         )]   //  [] attaches the bindings
