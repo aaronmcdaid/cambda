@@ -1054,6 +1054,32 @@ namespace cambda {
             , typename ... T
             >
     constexpr auto
+    this_lib_entry_has_it(cambda_utils::priority_tag<2>, Libs & libs, Lib && combined_lib, T && ... t)
+    -> decltype((std::get<IndexOfWhichLib>(std::move(libs))
+            .apply_after_simplification(
+                std::get<IndexOfWhichLib>(std::move(libs))
+                , libs
+                , std::forward<Lib>(combined_lib)
+                , std::forward<T>(t) ...
+            ) , std::true_type{}   ))
+    { return {}; }
+
+    template< size_t IndexOfWhichLib
+            , typename Libs
+            , typename Lib
+            , typename ... T
+            >
+    constexpr auto
+    this_lib_entry_has_it(cambda_utils::priority_tag<1>, Libs &, Lib &&, T && ... )
+    -> std::false_type
+    { return {}; }
+
+    template< size_t IndexOfWhichLib
+            , typename Libs
+            , typename Lib
+            , typename ... T
+            >
+    constexpr auto
     search_through_the_libs(cambda_utils::priority_tag<2>, Libs & libs, Lib && combined_lib, T && ... t)
     -> decltype(std::get<IndexOfWhichLib>(std::move(libs))
             .apply_after_simplification(
@@ -1063,6 +1089,8 @@ namespace cambda {
                 , std::forward<T>(t) ...
             )   )
     {
+        auto b = this_lib_entry_has_it<IndexOfWhichLib>(cambda_utils::priority_tag<9>{}, libs, std::forward<Lib>(combined_lib), std::forward<T>(t)...);
+        static_assert( b.value ,"");
          return std::get<IndexOfWhichLib>(std::move(libs))
             .apply_after_simplification(
                 std::get<IndexOfWhichLib>(std::move(libs))
@@ -1081,6 +1109,8 @@ namespace cambda {
     search_through_the_libs(cambda_utils::priority_tag<1>, Libs & libs, Lib && combined_lib, T && ... t)
     ->decltype(auto)
     {
+        auto b = this_lib_entry_has_it<IndexOfWhichLib>(cambda_utils::priority_tag<9>{}, libs, std::forward<Lib>(combined_lib), std::forward<T>(t)...);
+        static_assert(!b.value ,"");
         return search_through_the_libs<IndexOfWhichLib+1>(cambda_utils::priority_tag<9>{}, libs, std::forward<Lib>(combined_lib), std::forward<T>(t) ... );
     }
 
