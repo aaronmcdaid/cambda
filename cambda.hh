@@ -764,52 +764,6 @@ namespace cambda {
             , lib2(std::forward<U>(u))
         {}
 
-
-        /* First, 'apply_after_simplification'
-         * Define two helper overloads, one for each sub-library.
-         * Then forward the call
-         */
-        template< typename ... T
-                , typename Self
-                , typename id = cambda_utils::id_t
-                , typename std::integral_constant<int, __LINE__> * =nullptr
-                >
-        auto constexpr
-        apply_after_simplification( Self && self, T && ... t)
-        ->decltype(id{}(self). getlib1(*this). apply_after_simplification(std::forward<Self>(self), std::forward<T>(t)...)  )
-        {   return     (self). getlib1(*this). apply_after_simplification(std::forward<Self>(self), std::forward<T>(t)...); }
-
-        template< typename ... T
-                , typename Self
-                , typename id = cambda_utils::id_t
-                , typename std::integral_constant<int, __LINE__> * =nullptr
-                >
-        auto constexpr
-        apply_after_simplification(Self && self, T && ... t)
-        ->decltype(id{}(self). getlib2(*this). apply_after_simplification(std::forward<Self>(self), std::forward<T>(t)...)  )
-        {   return     (self). getlib2(*this). apply_after_simplification(std::forward<Self>(self), std::forward<T>(t)...); }
-
-        // ... same as above, but const
-        template< typename ... T
-                , typename Self
-                , typename id = cambda_utils::id_t
-                , typename std::integral_constant<int, __LINE__> * =nullptr
-                >
-        auto constexpr
-        apply_after_simplification(Self && self, T && ... t) const
-        ->decltype(id{}(self). getlib1(*this). apply_after_simplification(std::forward<Self>(self), std::forward<T>(t)...)  )
-        {   return     (self). getlib1(*this). apply_after_simplification(std::forward<Self>(self), std::forward<T>(t)...); }
-
-        template< typename ... T
-                , typename Self
-                , typename id = cambda_utils::id_t
-                , typename std::integral_constant<int, __LINE__> * =nullptr
-                >
-        auto constexpr
-        apply_after_simplification(Self && self, T && ... t) const
-        ->decltype(id{}(self). getlib2(*this). apply_after_simplification(std::forward<Self>(self), std::forward<T>(t)...)  )
-        {   return     (self). getlib2(*this). apply_after_simplification(std::forward<Self>(self), std::forward<T>(t)...); }
-
         /* Now, 'static_get_simple_named_value'
          * Define two helper overloads, one for each sub-library.
          * Then forward the call
