@@ -326,8 +326,8 @@ test_ifNonConstant_with_side_effects()
     int y = -1;
     bool bt = true;
     bool bf = false;
-    "(if bt  [(assign x 3)] [(assign x 5)])"_cambda       ["bt"_binding = bt]["x"_binding &= x](); // TODO: reenable comma operator here and on next line
-    "(if bf  [(assign x 300)] [(assign x 500)])"_cambda   ["bf"_binding = bf]["x"_binding &= y](); // TODO: reenable comma operator here and on next line
+    "(if bt  [(assign x 3)] [(assign x 5)])"_cambda       ["bt"_binding = bt]["x"_binding &= x]();
+    "(if bf  [(assign x 300)] [(assign x 500)])"_cambda   ["bf"_binding = bf]["x"_binding &= y]();
     return x + y;
 }
 static_assert(test_ifNonConstant_with_side_effects() == 503 ,"");
@@ -400,8 +400,8 @@ test_partition()
                     )]
                 )
         )--"_cambda
-                [   "b"_binding = std::begin(a)] // TODO: reenable comma operator
-                [   "e"_binding = std::end  (a)] // TODO: reenable comma operator
+                [   "b"_binding = std::begin(a)]
+                [   "e"_binding = std::end  (a)]
                 ();
         return cambda_utils::equal_array(a, (int[]){2,5,3,6,9,7,8});
 }
