@@ -721,53 +721,12 @@ namespace cambda {
 
 
     template< typename Lib1
-            , typename Lib2 >
-    struct library_combiner
-    {
-        Lib1 lib1;
-        Lib2 lib2;
-
-        static_assert(!std::is_rvalue_reference<Lib1>{} ,"");
-        static_assert(!std::is_rvalue_reference<Lib2>{} ,"");
-
-        template< typename T
-                , typename U
-                >
-        constexpr
-        library_combiner(T&&t, U&&u)
-            : lib1(std::forward<T>(t))
-            , lib2(std::forward<U>(u))
-        {}
-
-    };
-
-
-    template< typename Lib1
-            , typename Lib2
+            , typename ... Libs
             >
     constexpr auto
-    combine_libraries(Lib1 && lib1, Lib2 && lib2)
-    -> library_combiner <   Lib1
-                        ,   Lib2
-                        >
-    { return {std::forward<Lib1>(lib1),std::forward<Lib2>(lib2)}; }
-
-
-    template< typename Lib1
-            , typename Lib2
-            , typename Lib3
-            , typename ...Libs
-            >
-    constexpr auto
-    combine_libraries   (   Lib1 && lib1
-                        ,   Lib2 && lib2
-                        ,   Lib3 && lib3
-                        ,   Libs && ... libs   )
-    -> decltype(auto)
-    {   return combine_libraries    (   std::forward<Lib1>(lib1)
-                                    ,   combine_libraries   (   std::forward<Lib2>(lib2)
-                                                            ,   std::forward<Lib3>(lib3)
-                                                            ,   std::forward<Libs>(libs)... )); }
+    combine_libraries(Lib1 && lib1, Libs && ... )
+    -> Lib1
+    { return std::forward<Lib1>(lib1); }
 
     struct nil_t { }; // to be returned if you write () in cambda, i.e. "()"_cambda()
 
