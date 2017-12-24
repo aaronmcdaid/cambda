@@ -1309,14 +1309,25 @@ namespace cambda {
         -> decltype(auto)
         {
             static_assert(!std::is_reference<MoreLibs>{} ,""); // tuple passed in by reference, therefore we can 'steal' the contents
-            static_assert( is_valid_tuple_of_libs_v<MoreLibs> ,"");
+
+            using u = cambda_utils::template_unpack_t<std::decay_t<decltype(binding_to_insert)>>;
+
+            auto converter = u::apply([](auto ... tys) {return cambda_utils::type_t<std::tuple<
+                        std::conditional_t< std::is_rvalue_reference< typename decltype(tys) :: type >{}
+                            ,   std::remove_reference_t<typename decltype(tys) :: type>
+                            ,   typename decltype(tys) :: type
+                            >
+                    ... >>{} ;});
+            using conv_t = typename decltype(converter)::type;
+
+            static_assert(std::tuple_size<conv_t>::value == std::tuple_size<MoreLibs>::value ,"");
+            static_assert( is_valid_tuple_of_libs_v<conv_t> ,"");
 
             return cambda_object_from_the_string_literal
-            <   decltype(std::tuple_cat( libs , std::forward<MoreLibs>(binding_to_insert)))
-            ,   AST>
-            {   std::tuple_cat( libs , std::forward<MoreLibs>(binding_to_insert))
-            ,   m_ast };
-            //return *this;
+                <   decltype(std::tuple_cat( libs , conv_t (std::forward<MoreLibs>(binding_to_insert))))
+                ,   AST>
+                {            std::tuple_cat( libs , conv_t (std::forward<MoreLibs>(binding_to_insert)))
+                ,   m_ast };
         }
     };
     template<typename AST, typename Libs >
