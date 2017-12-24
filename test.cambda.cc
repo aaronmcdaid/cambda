@@ -116,10 +116,10 @@ static_assert("(if.constexpr falsec [3.14] ['hi'c])"_cambda() == "hi"_charpack ,
 
 std::vector<int> v{2,3,4};
 auto size_of_v = "(size v)"_cambda
-        [   "v"_binding &= v ]
-        [  "size"_binding = // TODO: renable use of comma operator here
-                        [](auto && x){return x.size();}
-        ]   //  [] attaches the bindings
+        [cambda_utils::my_forward_as_tuple(
+                    "v"_binding &= v
+                ,   "size"_binding = [](auto && x){return x.size();}
+        )]   //  [] attaches the bindings
         (); //  () executes
 
 std::initializer_list<int> il{2,3,4};

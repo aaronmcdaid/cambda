@@ -1243,12 +1243,14 @@ namespace cambda {
             return ::cambda:: multi_statement_execution<decltype(m_ast)> :: eval( libs );
         }
 
-        template<typename Binding>
+        template<typename Binding
+                , std::enable_if_t<!is_valid_tuple_of_libs_v<Binding> , std::integral_constant<int,__LINE__>>* =nullptr >
         constexpr auto
         operator[] (Binding && binding_to_insert) && // the '&&' is important, allows us to 'move' from this->lib
         -> decltype(auto)
         {
             static_assert(!std::is_reference<Binding>{} ,"");
+            static_assert(!is_valid_tuple_of_libs_v<Binding> ,"");
 
             auto new_libs = std::tuple_cat(
                     libs ,
@@ -1259,6 +1261,23 @@ namespace cambda {
             return cambda_object_from_the_string_literal    <   decltype(new_libs) // TODO: extend this
                                                             ,   AST>
             { new_libs, m_ast };
+            //return *this;
+        }
+
+        template<typename MoreLibs
+                , std::enable_if_t< is_valid_tuple_of_libs_v<MoreLibs> , std::integral_constant<int,__LINE__>>* =nullptr >
+        constexpr auto
+        operator[] (MoreLibs && binding_to_insert) && // the '&&' is important, allows us to 'move' from this->lib
+        -> decltype(auto)
+        {
+            static_assert(!std::is_reference<MoreLibs>{} ,"");
+            static_assert( is_valid_tuple_of_libs_v<MoreLibs> ,"");
+
+            return cambda_object_from_the_string_literal
+            <   decltype(std::tuple_cat( libs , std::forward<MoreLibs>(binding_to_insert)))
+            ,   AST>
+            {   std::tuple_cat( libs , std::forward<MoreLibs>(binding_to_insert))
+            ,   m_ast };
             //return *this;
         }
     };
