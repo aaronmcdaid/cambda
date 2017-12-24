@@ -693,7 +693,6 @@ namespace cambda {
     template<typename ... T>
     struct is_valid_tuple_of_libs<std::tuple<T...>>
     {
-        static_assert(  std::min(std::initializer_list<bool>{!std::is_rvalue_reference<T>{}                 ... }  ) ,""); // all are refs (l-ref or r-ref)
         constexpr static
         bool value =    std::min(std::initializer_list<bool>{!std::is_rvalue_reference<T>{}                 ... }  );
     };
@@ -1260,12 +1259,12 @@ namespace cambda {
         }
 
         template<typename Binding
-                , std::enable_if_t<!is_valid_tuple_of_libs_v<Binding> , std::integral_constant<int,__LINE__>>* =nullptr >
+                , std::enable_if_t  < !is_a_stdtuple<std::decay_t<Binding>>::value
+                                    , std::integral_constant<int,__LINE__>>* =nullptr >
         constexpr auto
         operator[] (Binding && binding_to_insert) && // the '&&' is important, allows us to 'move' from this->lib
         -> decltype(auto)
         {
-            static_assert(!is_a_stdtuple<std::decay_t<decltype(binding_to_insert)>>::value ,"");
             static_assert(!std::is_reference<Binding>{} ,"");
             static_assert(!is_valid_tuple_of_libs_v<Binding> ,"");
 
@@ -1282,14 +1281,13 @@ namespace cambda {
         }
 
         template<typename MoreLibs
-                , std::enable_if_t< is_valid_tuple_of_libs_v<MoreLibs> , std::integral_constant<int,__LINE__>>* =nullptr >
+                , std::enable_if_t  <  is_a_stdtuple<std::decay_t<MoreLibs>>::value
+                                    , std::integral_constant<int,__LINE__>>* =nullptr >
         constexpr auto
         operator[] (MoreLibs && binding_to_insert) && // the '&&' is important, allows us to 'move' from this->lib
         -> decltype(auto)
         {
-            static_assert( is_a_stdtuple<std::decay_t<decltype(binding_to_insert)>>::value ,"");
-
-            static_assert(!std::is_reference<MoreLibs>{} ,"");
+            static_assert(!std::is_reference<MoreLibs>{} ,""); // tuple passed in by reference, therefore we can 'steal' the contents
             static_assert( is_valid_tuple_of_libs_v<MoreLibs> ,"");
 
             return cambda_object_from_the_string_literal
