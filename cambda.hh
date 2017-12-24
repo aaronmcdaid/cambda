@@ -1137,6 +1137,7 @@ namespace cambda {
                                 , byValue // std::decay_t<T&&>
                                 };
 
+    /* TODO: maybe reimplement this comma operator?
     template< typename B
             , typename T2
             , char ...c2 >
@@ -1147,6 +1148,7 @@ namespace cambda {
     {
         return combine_libraries(std::forward<B>(beforeComma), std::move(afterComma));
     }
+     */
 
     template< capture_policy cap
             , char ...c>
